@@ -1,0 +1,51 @@
+#!/bin/sh
+PATH=$PATH:/usr/sbin
+
+BITSPERPIXEL="$(fbset | grep geom | awk '{print $6}')"
+YRES="$(fbset | grep geom | awk '{print $3}')"
+
+if [ "$1" = "" ]; then
+	echo PVR-INIT: Please use start, stop, or restart.
+	exit 1
+fi
+
+if [ "$1" = "stop" -o  "$1" = "restart" ]; then
+	echo Stopping PVR
+	rmmod bufferclass_ti
+	rmmod omaplfb 2>/dev/null
+	rmmod pvrsrvkm 2>/dev/null
+fi
+
+if [ "$1" = "stop" ]; then
+	exit 0
+fi
+
+# Set RGBA ordering to something the drivers like
+if [ "$BITSPERPIXEL" = "32" ] ; then
+	fbset -rgba 8/16,8/8,8/0,8/24
+fi
+
+# Try to enable triple buffering when there's enough VRAM
+fbset -vyres $(expr $YRES \* 3) 
+
+echo Starting PVR
+insmod $(busybox find /lib/modules/$(uname -r) -name "pvrsrvkm.ko")
+modprobe omaplfb
+modprobe bufferclass_ti
+
+pvr_maj=`grep "pvrsrvkm$" /proc/devices | cut -b1,2,3`
+bc_maj=`grep "bc" /proc/devices | cut -b1,2,3`
+
+if [ -e /dev/pvrsrvkm ] ; then 
+	rm -f /dev/pvrsrvkm
+fi
+
+mknod /dev/pvrsrvkm c $pvr_maj 0 
+chmod 666 /dev/pvrsrvkm
+
+sgxprepare
+
+devmem2 0x48004B48 w 0x2 > /dev/null
+devmem2 0x48004B10 w 0x1 > /dev/null
+devmem2 0x48004B00 w 0x2 > /dev/null
+/usr/bin/pvrsrvinit

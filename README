@@ -1,0 +1,30 @@
+
+Usage Information:
+
+	There are targets:
+
+	- "tv" as "tv_setup.sh"
+		Pandaboard/ES as media center for TV
+
+	- "car" as "car_setup.sh" - not supported yet
+		IGEP0030 as car hub controller with lcd and periferials
+
+	- "pda-sa1110" as "pda-sa1110_setup.sh"
+		several handheld devices:
+		- iPAQ H3600
+
+	- "pda-pxa25x" as "pda-pxa25x_setup.sh"
+		several handheld devices:
+		- iPAQ H2200
+
+	Example usage:
+
+	Run ". tv_setup.sh" to setup OE environment.
+
+	Setup generate/load configuration files:
+	- build-<target>/conf/local.conf
+	- build-<target>/env.source
+	- build-<target>/crosstools-setup
+
+	Then use bitbake command.
+

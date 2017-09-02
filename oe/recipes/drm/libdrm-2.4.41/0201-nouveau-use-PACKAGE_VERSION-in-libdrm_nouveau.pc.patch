@@ -1,0 +1,26 @@
+From 481763c2c7f5224a9f053ab3a2b2356eb89a96f0 Mon Sep 17 00:00:00 2001
+From: Maarten Lankhorst <maarten.lankhorst@canonical.com>
+Date: Wed, 16 Jan 2013 14:29:14 +0100
+Subject: [PATCH 1/7] nouveau: use @PACKAGE_VERSION@ in libdrm_nouveau.pc
+
+Signed-off-by: Maarten Lankhorst <maarten.lankhorst@canonical.com>
+---
+ nouveau/libdrm_nouveau.pc.in |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/nouveau/libdrm_nouveau.pc.in b/nouveau/libdrm_nouveau.pc.in
+index 454fc87..9abfd81 100644
+--- a/nouveau/libdrm_nouveau.pc.in
++++ b/nouveau/libdrm_nouveau.pc.in
+@@ -5,7 +5,7 @@ includedir=@includedir@
+ 
+ Name: libdrm_nouveau
+ Description: Userspace interface to nouveau kernel DRM services
+-Version: 2.4.33
++Version: @PACKAGE_VERSION@
+ Libs: -L${libdir} -ldrm_nouveau
+ Cflags: -I${includedir} -I${includedir}/libdrm
+ Requires.private: libdrm
+-- 
+1.7.9.5
+

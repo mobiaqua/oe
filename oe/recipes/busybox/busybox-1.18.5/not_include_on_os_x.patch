@@ -1,0 +1,13 @@
+diff -ur old/include/libbb.h new/include/libbb.h
+--- old/include/libbb.h	2011-09-30 08:40:29.000000000 +0200
++++ new/include/libbb.h	2011-09-30 08:41:54.000000000 +0200
+@@ -65,7 +65,9 @@
+ /* If using busybox's shadow implementation, do not include the shadow.h
+  * header as the toolchain may not provide it at all.
+  */
++#ifndef __APPLE__
+ #  include <shadow.h>
++#endif
+ # endif
+ #endif
+ #if defined __FreeBSD__ || defined __OpenBSD__

@@ -1,0 +1,26 @@
+From 7438a9eb4f266260f788fc72276c0c5162d7cb44 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Vincent=20Stehl=C3=A9?= <v-stehle@ti.com>
+Date: Wed, 18 Apr 2012 09:29:48 +0200
+Subject: [PATCH 6/7] gitignore
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Signed-off-by: Vincent Stehlé <v-stehle@ti.com>
+---
+ .gitignore |    2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/.gitignore b/.gitignore
+index 225fd80..ea54bb0 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -85,3 +85,5 @@ tests/kmstest/kmstest
+ tests/vbltest/vbltest
+ tests/radeon/radeon_ttm
+ man/*.3
++tests/proptest/proptest
++tags
+-- 
+1.7.9.5
+

@@ -1,0 +1,12 @@
+diff -urp old/sunrpc/Makefile new/sunrpc/Makefile
+--- old/sunrpc/Makefile	2015-01-02 19:09:58.000000000 +0100
++++ new/sunrpc/Makefile	2015-01-02 19:14:49.000000000 +0100
+@@ -178,7 +178,7 @@ $(cross-rpcgen-objs): $(objpfx)cross-%.o
+ 		$(OUTPUT_OPTION) $(native-compile-mkdep-flags) -c
+ 
+ $(objpfx)cross-rpcgen: $(cross-rpcgen-objs)
+-	$(BUILD_CC) $^ $(BUILD_LDFLAGS) -o $@
++	$(BUILD_CC) $^ $(BUILD_LDFLAGS) -lintl -o $@
+ 
+ # This makes sure -DNOT_IN_libc is passed for all these modules.
+ cpp-srcs-left := $(rpcgen-objs:.o=.c)

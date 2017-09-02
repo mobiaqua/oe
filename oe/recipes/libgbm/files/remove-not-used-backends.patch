@@ -1,0 +1,24 @@
+diff -urp old/backend.c new/backend.c
+--- old/backend.c	2016-02-01 07:34:38.000000000 +0100
++++ new/backend.c	2016-02-02 20:09:09.000000000 +0100
+@@ -40,8 +40,6 @@
+  * directory..
+  */
+ static const char *backends[] = {
+-      "gbm_dri.so",
+-      "gbm_gallium_drm.so",
+       "gbm_pvr.so",
+ };
+ 
+diff -urp old/common_drm.h new/common_drm.h
+--- old/common_drm.h	2016-02-01 07:34:38.000000000 +0100
++++ new/common_drm.h	2016-02-02 20:09:00.000000000 +0100
+@@ -31,8 +31,6 @@
+ #include "gbmint.h"
+ 
+ enum gbm_drm_driver_type {
+-   GBM_DRM_DRIVER_TYPE_DRI,
+-   GBM_DRM_DRIVER_TYPE_GALLIUM,
+    GBM_DRM_DRIVER_TYPE_CUSTOM,    /* catch-all for non-mesa drivers */
+ };
+ 

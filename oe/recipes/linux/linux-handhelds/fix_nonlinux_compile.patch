@@ -1,0 +1,123 @@
+diff -ur old/scripts/genksyms/parse.c_shipped new/scripts/genksyms/parse.c_shipped
+--- old/scripts/genksyms/parse.c_shipped	2007-02-24 00:52:30.000000000 +0100
++++ new/scripts/genksyms/parse.c_shipped	2010-06-19 05:56:06.000000000 +0200
+@@ -144,7 +144,11 @@
+ 
+ 
+ #include <assert.h>
++#ifdef __APPLE__
++#include <malloc/malloc.h>
++#else
+ #include <malloc.h>
++#endif
+ #include "genksyms.h"
+ 
+ static int is_typedef;
+diff -urN old/scripts/genksyms/parse.y new/scripts/genksyms/parse.y
+--- old/scripts/genksyms/parse.y	2008-07-24 02:41:35.000000000 +0200
++++ new/scripts/genksyms/parse.y	2009-12-19 15:51:53.000000000 +0100
+@@ -24,7 +24,11 @@
+ %{
+ 
+ #include <assert.h>
++#ifdef __APPLE__
++#include <malloc/malloc.h>
++#else
+ #include <malloc.h>
++#endif
+ #include "genksyms.h"
+ 
+ static int is_typedef;
+diff -ur old/scripts/kallsyms.c new/scripts/kallsyms.c
+--- old/scripts/kallsyms.c	2010-06-18 17:58:58.000000000 +0200
++++ new/scripts/kallsyms.c	2010-06-18 18:01:22.000000000 +0200
+@@ -373,7 +373,11 @@
+ 		p1 = table[i].sym;
+ 
+ 		/* find the token on the symbol */
++#if defined(__APPLE__)
++		p2 = strstr(p1, str);
++#else
+ 		p2 = memmem(p1, len, str, 2);
++#endif
+ 		if (!p2) continue;
+ 
+ 		/* decrease the counts for this symbol's tokens */
+@@ -392,8 +396,11 @@
+ 			if (size < 2) break;
+ 
+ 			/* find the token on the symbol */
++#if defined(__APPLE__)
++			p2 = strstr(p1, str);
++#else
+ 			p2 = memmem(p1, size, str, 2);
+-
++#endif
+ 		} while (p2);
+ 
+ 		table[i].len = len;
+diff -urN old/scripts/mod/file2alias.c new/scripts/mod/file2alias.c
+--- old/scripts/mod/file2alias.c	2008-07-24 02:41:35.000000000 +0200
++++ new/scripts/mod/file2alias.c	2009-12-19 16:18:53.000000000 +0100
+@@ -37,7 +37,18 @@
+  * even potentially has different endianness and word sizes, since
+  * we handle those differences explicitly below */
+ #include "../../include/linux/mod_devicetable.h"
+-#include "../../include/linux/input.h"
++
++#define EV_MAX                  0x1f
++#define KEY_MUTE                113
++#define KEY_MIN_INTERESTING     113
++#define KEY_MAX                 0x1ff
++#define REL_MAX                 0x0f
++#define ABS_MAX                 0x3f
++#define SW_MAX                  0x0f
++#define MSC_MAX                 0x07
++#define LED_MAX                 0x0f
++#define SND_MAX                 0x07
++#define FF_MAX          	0x7f
+ 
+ #define ADD(str, sep, cond, field)                              \
+ do {                                                            \
+diff -ur old/scripts/mod/sumversion.c new/scripts/mod/sumversion.c
+--- old/scripts/mod/sumversion.c	2007-02-24 00:52:30.000000000 +0100
++++ new/scripts/mod/sumversion.c	2010-06-18 17:49:46.000000000 +0200
+@@ -9,6 +9,10 @@
+ #include <string.h>
+ #include "modpost.h"
+ 
++#ifndef PATH_MAX
++#define PATH_MAX 1024
++#endif
++
+ /*
+  * Stolen form Cryptographic API.
+  *
+diff -ur old/scripts/kconfig/lxdialog/check-lxdialog.sh new/scripts/kconfig/lxdialog/check-lxdialog.sh
+--- old/scripts/kconfig/lxdialog/check-lxdialog.sh	2006-04-12 20:07:47.000000000 +0200
++++ new/scripts/kconfig/lxdialog/check-lxdialog.sh	2013-11-17 14:27:15.000000000 +0100
+@@ -19,6 +19,12 @@
+ 		echo '-lcurses'
+ 		exit
+ 	fi
++	#MobiAqua: compatible with MacOS X
++	$cc -print-file-name=libncurses.dylib | grep -q /
++	if [ $? -eq 0 ]; then
++		echo '-lncurses'
++		exit
++	fi
+ 	exit 1
+ }
+ 
+diff -urp old/Makefile new/Makefile
+--- old/Makefile	2013-01-05 20:17:05.000000000 +0100
++++ new/Makefile	2013-01-05 20:26:47.000000000 +0100
+@@ -245,7 +245,7 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH"
+ 
+ HOSTCC       = gcc
+ HOSTCXX      = g++
+-HOSTCFLAGS   = -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer
++HOSTCFLAGS   = -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer $(HOST_INC) -DKBUILD_NO_NLS
+ HOSTCXXFLAGS = -O2
+ 
+ # Decide whether to build built-in, modular, or both.

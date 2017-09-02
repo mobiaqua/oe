@@ -1,0 +1,12 @@
+diff -urp old/Makefile new/Makefile
+--- old/Makefile	2013-11-17 10:47:51.000000000 +0100
++++ new/Makefile	2013-11-17 13:18:46.000000000 +0100
+@@ -89,7 +89,7 @@ ALL = x-load.bin System.map x-load.bin.i
+ all:		$(ALL)
+  
+ x-load.bin.ift: x-load.bin
+-			contrib/signGP x-load.bin
++			signGP x-load.bin
+ 			cp x-load.bin.ift MLO
+  
+ x-load.bin:	x-load

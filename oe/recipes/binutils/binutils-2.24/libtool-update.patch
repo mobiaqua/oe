@@ -1,0 +1,296 @@
+Index: binutils-2.20.1/libtool.m4
+===================================================================
+--- binutils-2.20.1.orig/libtool.m4
++++ binutils-2.20.1/libtool.m4
+@@ -89,7 +89,8 @@ _LT_SET_OPTIONS([$0], [$1])
+ LIBTOOL_DEPS="$ltmain"
+ 
+ # Always use our own libtool.
+-LIBTOOL='$(SHELL) $(top_builddir)/libtool'
++LIBTOOL='$(SHELL) $(top_builddir)'
++LIBTOOL="$LIBTOOL/$host_alias-libtool"
+ AC_SUBST(LIBTOOL)dnl
+ 
+ _LT_SETUP
+@@ -211,7 +212,7 @@ delay_single_quote_subst='s/'\''/'\'\\\\
+ no_glob_subst='s/\*/\\\*/g'
+ 
+ # Global variables:
+-ofile=libtool
++ofile=${host_alias}-libtool
+ can_build_shared=yes
+ 
+ # All known linkers require a `.a' archive for static linking (except MSVC,
+@@ -2445,7 +2446,7 @@ linux*oldld* | linux*aout* | linux*coff*
+   ;;
+ 
+ # This must be Linux ELF.
+-linux* | k*bsd*-gnu | kopensolaris*-gnu)
++linux* | k*bsd*-gnu)
+   version_type=linux
+   need_lib_prefix=no
+   need_version=no
+@@ -2454,21 +2455,16 @@ linux* | k*bsd*-gnu | kopensolaris*-gnu)
+   finish_cmds='PATH="\$PATH:/sbin" ldconfig -n $libdir'
+   shlibpath_var=LD_LIBRARY_PATH
+   shlibpath_overrides_runpath=no
+-
+   # Some binutils ld are patched to set DT_RUNPATH
+-  AC_CACHE_VAL([lt_cv_shlibpath_overrides_runpath],
+-    [lt_cv_shlibpath_overrides_runpath=no
+-    save_LDFLAGS=$LDFLAGS
+-    save_libdir=$libdir
+-    eval "libdir=/foo; wl=\"$_LT_TAGVAR(lt_prog_compiler_wl, $1)\"; \
+-	 LDFLAGS=\"\$LDFLAGS $_LT_TAGVAR(hardcode_libdir_flag_spec, $1)\""
+-    AC_LINK_IFELSE([AC_LANG_PROGRAM([],[])],
+-      [AS_IF([ ($OBJDUMP -p conftest$ac_exeext) 2>/dev/null | grep "RUNPATH.*$libdir" >/dev/null],
+-	 [lt_cv_shlibpath_overrides_runpath=yes])])
+-    LDFLAGS=$save_LDFLAGS
+-    libdir=$save_libdir
+-    ])
+-  shlibpath_overrides_runpath=$lt_cv_shlibpath_overrides_runpath
++  save_LDFLAGS=$LDFLAGS
++  save_libdir=$libdir
++  eval "libdir=/foo; wl=\"$_LT_TAGVAR(lt_prog_compiler_wl, $1)\"; \
++       LDFLAGS=\"\$LDFLAGS $_LT_TAGVAR(hardcode_libdir_flag_spec, $1)\""
++  AC_LINK_IFELSE([AC_LANG_PROGRAM([],[])],
++    [AS_IF([ ($OBJDUMP -p conftest$ac_exeext) 2>/dev/null | grep "RUNPATH.*$libdir" >/dev/null],
++       [shlibpath_overrides_runpath=yes])])
++  LDFLAGS=$save_LDFLAGS
++  libdir=$save_libdir
+ 
+   # This implies no fast_install, which is unacceptable.
+   # Some rework will be needed to allow for fast_install
+@@ -3077,7 +3073,7 @@ irix5* | irix6* | nonstopux*)
+   ;;
+ 
+ # This must be Linux ELF.
+-linux* | k*bsd*-gnu | kopensolaris*-gnu)
++linux* | k*bsd*-gnu)
+   lt_cv_deplibs_check_method=pass_all
+   ;;
+ 
+@@ -3698,7 +3694,7 @@ m4_if([$1], [CXX], [
+ 	    ;;
+ 	esac
+ 	;;
+-      linux* | k*bsd*-gnu | kopensolaris*-gnu)
++      linux* | k*bsd*-gnu)
+ 	case $cc_basename in
+ 	  KCC*)
+ 	    # KAI C++ Compiler
+@@ -3982,7 +3978,7 @@ m4_if([$1], [CXX], [
+       _LT_TAGVAR(lt_prog_compiler_static, $1)='-non_shared'
+       ;;
+ 
+-    linux* | k*bsd*-gnu | kopensolaris*-gnu)
++    linux* | k*bsd*-gnu)
+       case $cc_basename in
+       # old Intel for x86_64 which still supported -KPIC.
+       ecc*)
+@@ -4363,7 +4359,7 @@ _LT_EOF
+       _LT_TAGVAR(archive_expsym_cmds, $1)='sed "s,^,_," $export_symbols >$output_objdir/$soname.expsym~$CC -shared $pic_flag $libobjs $deplibs $compiler_flags ${wl}-h,$soname ${wl}--retain-symbols-file,$output_objdir/$soname.expsym ${wl}--image-base,`expr ${RANDOM-$$} % 4096 / 2 \* 262144 + 1342177280` -o $lib'
+       ;;
+ 
+-    gnu* | linux* | tpf* | k*bsd*-gnu | kopensolaris*-gnu)
++    gnu* | linux* | tpf* | k*bsd*-gnu)
+       tmp_diet=no
+       if test "$host_os" = linux-dietlibc; then
+ 	case $cc_basename in
+@@ -5116,38 +5112,36 @@ x|xyes)
+       # Test whether the compiler implicitly links with -lc since on some
+       # systems, -lgcc has to come before -lc. If gcc already passes -lc
+       # to ld, don't add -lc before -lgcc.
+-      AC_CACHE_CHECK([whether -lc should be explicitly linked in],
+-	[lt_cv_]_LT_TAGVAR(archive_cmds_need_lc, $1),
+-	[$RM conftest*
+-	echo "$lt_simple_compile_test_code" > conftest.$ac_ext
+-
+-	if AC_TRY_EVAL(ac_compile) 2>conftest.err; then
+-	  soname=conftest
+-	  lib=conftest
+-	  libobjs=conftest.$ac_objext
+-	  deplibs=
+-	  wl=$_LT_TAGVAR(lt_prog_compiler_wl, $1)
+-	  pic_flag=$_LT_TAGVAR(lt_prog_compiler_pic, $1)
+-	  compiler_flags=-v
+-	  linker_flags=-v
+-	  verstring=
+-	  output_objdir=.
+-	  libname=conftest
+-	  lt_save_allow_undefined_flag=$_LT_TAGVAR(allow_undefined_flag, $1)
+-	  _LT_TAGVAR(allow_undefined_flag, $1)=
+-	  if AC_TRY_EVAL(_LT_TAGVAR(archive_cmds, $1) 2\>\&1 \| $GREP \" -lc \" \>/dev/null 2\>\&1)
+-	  then
+-	    lt_cv_[]_LT_TAGVAR(archive_cmds_need_lc, $1)=no
+-	  else
+-	    lt_cv_[]_LT_TAGVAR(archive_cmds_need_lc, $1)=yes
+-	  fi
+-	  _LT_TAGVAR(allow_undefined_flag, $1)=$lt_save_allow_undefined_flag
+-	else
+-	  cat conftest.err 1>&5
+-	fi
+-	$RM conftest*
+-	])
+-      _LT_TAGVAR(archive_cmds_need_lc, $1)=$lt_cv_[]_LT_TAGVAR(archive_cmds_need_lc, $1)
++      AC_MSG_CHECKING([whether -lc should be explicitly linked in])
++      $RM conftest*
++      echo "$lt_simple_compile_test_code" > conftest.$ac_ext
++
++      if AC_TRY_EVAL(ac_compile) 2>conftest.err; then
++        soname=conftest
++        lib=conftest
++        libobjs=conftest.$ac_objext
++        deplibs=
++        wl=$_LT_TAGVAR(lt_prog_compiler_wl, $1)
++	pic_flag=$_LT_TAGVAR(lt_prog_compiler_pic, $1)
++        compiler_flags=-v
++        linker_flags=-v
++        verstring=
++        output_objdir=.
++        libname=conftest
++        lt_save_allow_undefined_flag=$_LT_TAGVAR(allow_undefined_flag, $1)
++        _LT_TAGVAR(allow_undefined_flag, $1)=
++        if AC_TRY_EVAL(_LT_TAGVAR(archive_cmds, $1) 2\>\&1 \| $GREP \" -lc \" \>/dev/null 2\>\&1)
++        then
++	  _LT_TAGVAR(archive_cmds_need_lc, $1)=no
++        else
++	  _LT_TAGVAR(archive_cmds_need_lc, $1)=yes
++        fi
++        _LT_TAGVAR(allow_undefined_flag, $1)=$lt_save_allow_undefined_flag
++      else
++        cat conftest.err 1>&5
++      fi
++      $RM conftest*
++      AC_MSG_RESULT([$_LT_TAGVAR(archive_cmds_need_lc, $1)])
+       ;;
+     esac
+   fi
+@@ -5848,7 +5842,7 @@ if test "$_lt_caught_CXX_error" != yes;
+         _LT_TAGVAR(inherit_rpath, $1)=yes
+         ;;
+ 
+-      linux* | k*bsd*-gnu | kopensolaris*-gnu)
++      linux* | k*bsd*-gnu)
+         case $cc_basename in
+           KCC*)
+ 	    # Kuck and Associates, Inc. (KAI) C++ Compiler
+Index: binutils-2.20.1/ltmain.sh
+===================================================================
+--- binutils-2.20.1.orig/ltmain.sh
++++ binutils-2.20.1/ltmain.sh
+@@ -1703,8 +1558,6 @@ The following components of LINK-COMMAND
+ 
+   -all-static       do not do any dynamic linking at all
+   -avoid-version    do not add a version suffix if possible
+-  -bindir BINDIR    specify path to binaries directory (for systems where
+-                    libraries must be found in the PATH setting at runtime)
+   -dlopen FILE      \`-dlpreopen' FILE if it cannot be dlopened at runtime
+   -dlpreopen FILE   link in FILE and add its symbols to lt_preloaded_symbols
+   -export-dynamic   allow symbols from OUTPUT-FILE to be resolved with dlsym(3)
+@@ -4219,7 +4072,6 @@ func_mode_link ()
+     new_inherited_linker_flags=
+ 
+     avoid_version=no
+-    bindir=
+     dlfiles=
+     dlprefiles=
+     dlself=no
+@@ -4312,11 +4164,6 @@ func_mode_link ()
+ 	esac
+ 
+ 	case $prev in
+-	bindir)
+-	  bindir="$arg"
+-	  prev=
+-	  continue
+-	  ;;
+ 	dlfiles|dlprefiles)
+ 	  if test "$preload" = no; then
+ 	    # Add the symbol object into the linking commands.
+@@ -4578,11 +4425,6 @@ func_mode_link ()
+ 	continue
+ 	;;
+ 
+-      -bindir)
+-	prev=bindir
+-	continue
+-	;;
+-
+       -dlopen)
+ 	prev=dlfiles
+ 	continue
+@@ -5570,8 +5412,14 @@ func_mode_link ()
+ 	    absdir="$abs_ladir"
+ 	    libdir="$abs_ladir"
+ 	  else
+-	    dir="$libdir"
+-	    absdir="$libdir"
++	    # Adding 'libdir' from the .la file to our library search paths
++	    # breaks crosscompilation horribly.  We cheat here and don't add
++	    # it, instead adding the path where we found the .la.  -CL
++	    dir="$abs_ladir"
++	    absdir="$abs_ladir"
++	    libdir="$abs_ladir"
++	    #dir="$libdir"
++	    #absdir="$libdir"
+ 	  fi
+ 	  test "X$hardcode_automatic" = Xyes && avoidtemprpath=yes
+ 	else
+@@ -5942,8 +5790,6 @@ func_mode_link ()
+ 		add="$libdir/$linklib"
+ 	      fi
+ 	    else
+-	      # We cannot seem to hardcode it, guess we'll fake it.
+-	      add_dir="-L$libdir"
+ 	      # Try looking first in the location we're being installed to.
+ 	      if test -n "$inst_prefix_dir"; then
+ 		case $libdir in
+@@ -6089,7 +5935,17 @@ func_mode_link ()
+ 		  fi
+ 		  ;;
+ 		*)
+-		  path="-L$absdir/$objdir"
++                  # OE sets installed=no in staging. We need to look in $objdir and $absdir,
++                  # preferring $objdir. RP 31/04/2008
++                  if test -f "$absdir/$objdir/$depdepl" ; then
++		    depdepl="$absdir/$objdir/$depdepl"
++		    path="-L$absdir/$objdir"
++                  elif test -f "$absdir/$depdepl" ; then
++		    depdepl="$absdir/$depdepl"
++		    path="-L$absdir"
++                  else
++		    path="-L$absdir/$objdir"
++                  fi
+ 		  ;;
+ 		esac
+ 		else
+@@ -8279,27 +8135,9 @@ EOF
+ 	  fi
+ 	  $RM $output
+ 	  # place dlname in correct position for cygwin
+-	  # In fact, it would be nice if we could use this code for all target
+-	  # systems that can't hard-code library paths into their executables
+-	  # and that have no shared library path variable independent of PATH,
+-	  # but it turns out we can't easily determine that from inspecting
+-	  # libtool variables, so we have to hard-code the OSs to which it
+-	  # applies here; at the moment, that means platforms that use the PE
+-	  # object format with DLL files.  See the long comment at the top of
+-	  # tests/bindir.at for full details.
+ 	  tdlname=$dlname
+ 	  case $host,$output,$installed,$module,$dlname in
+-	    *cygwin*,*lai,yes,no,*.dll | *mingw*,*lai,yes,no,*.dll | *cegcc*,*lai,yes,no,*.dll)
+-	      # If a -bindir argument was supplied, place the dll there.
+-	      if test "x$bindir" != x ;
+-	      then
+-		func_relative_path "$install_libdir" "$bindir"
+-		tdlname=$func_relative_path_result$dlname
+-	      else
+-		# Otherwise fall back on heuristic.
+-		tdlname=../bin/$dlname
+-	      fi
+-	      ;;
++	    *cygwin*,*lai,yes,no,*.dll | *mingw*,*lai,yes,no,*.dll | *cegcc*,*lai,yes,no,*.dll) tdlname=../bin/$dlname ;;
+ 	  esac
+ 	  $ECHO > $output "\
+ # $outputname - a libtool library file

@@ -1,0 +1,12 @@
+diff -ur old/Makefile new/Makefile
+--- old/Makefile	2010-12-16 18:11:21.000000000 +0100
++++ new/Makefile	2011-10-19 22:33:30.000000000 +0200
+@@ -212,7 +212,7 @@
+ # before the first Monday in January when a "%V" format is used and January 1
+ # falls on a Friday, Saturday, or Sunday.
+ 
+-CFLAGS=
++CFLAGS=-DSTD_INSPIRED
+ 
+ # If you want zic's -s option used when installing, uncomment the next line
+ # ZFLAGS=	-s

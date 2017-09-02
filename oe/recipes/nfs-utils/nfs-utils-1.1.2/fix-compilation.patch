@@ -1,0 +1,78 @@
+diff -ur old/support/export/mount.x new/support/export/mount.x
+--- old/support/export/mount.x	2008-03-14 16:46:29.000000000 +0100
++++ new/support/export/mount.x	2011-12-13 22:43:01.000000000 +0100
+@@ -44,6 +44,8 @@
+ %#include <memory.h>
+ #endif
+ 
++typedef unsigned int rpc_uint;
++
+ const MNTPATHLEN = 1024;	/* maximum bytes in a pathname argument */
+ const MNTNAMLEN = 255;		/* maximum bytes in a name argument */
+ const FHSIZE = 32;		/* size in bytes of a file handle */
+diff -ur old/tools/rpcdebug/rpcdebug.c new/tools/rpcdebug/rpcdebug.c
+--- old/tools/rpcdebug/rpcdebug.c	2008-03-14 16:46:29.000000000 +0100
++++ new/tools/rpcdebug/rpcdebug.c	2011-12-13 22:36:21.000000000 +0100
+@@ -23,7 +23,11 @@
+ #include <getopt.h>
+ #include <unistd.h>
+ #include <string.h>
++#ifdef __APPLE__
++#include <malloc/malloc.h>
++#else
+ #include <malloc.h>
++#endif
+ #include <fcntl.h>
+ #include <ctype.h>
+ /* RPC debug flags
+diff -ur old/tools/rpcgen/rpc_cout.c new/tools/rpcgen/rpc_cout.c
+--- old/tools/rpcgen/rpc_cout.c	2011-12-14 12:14:45.000000000 +0100
++++ new/tools/rpcgen/rpc_cout.c	2011-12-14 12:17:16.000000000 +0100
+@@ -38,7 +38,11 @@
+ #include <stdio.h>
+ #include <string.h>
+ #include <stdlib.h>
++#ifdef __APPLE__
++#include <malloc/malloc.h>
++#else
+ #include <malloc.h>
++#endif
+ #include <ctype.h>
+ #include "rpc_parse.h"
+ #include "rpc_util.h"
+diff -ur old/tools/rpcgen/rpc_main.c new/tools/rpcgen/rpc_main.c
+--- old/tools/rpcgen/rpc_main.c	2008-03-14 16:46:29.000000000 +0100
++++ new/tools/rpcgen/rpc_main.c	2011-12-14 12:25:52.000000000 +0100
+@@ -545,10 +545,6 @@
+ 	  timerflag = 1;
+ 	}
+ 
+-#ifndef linux
+-	if( !tirpcflag && inetdflag )
+-	  f_print(fout, "#include <sys/ttycom.h>/* TIOCNOTTY */\n");
+-#endif
+ 	if( Cflag && (inetdflag || pmflag ) ) {
+ 	  f_print(fout, "#ifdef __cplusplus\n");
+ 	  f_print(fout, "#include <sysent.h> /* getdtablesize, open */\n"); 
+@@ -569,9 +565,6 @@
+ 		f_print(fout, "#include <netinet/in.h>\n");
+ 	} 
+ 
+-	if ( (netflag || pmflag) && tirpcflag ) {
+-		f_print(fout, "#include <netconfig.h>\n");
+-	}
+ 	if (/*timerflag &&*/ tirpcflag)
+ 		f_print(fout, "#include <sys/resource.h> /* rlimit */\n");
+ 	if (logflag || inetdflag || pmflag) {
+diff -ur old/utils/statd/sm_inter.x new/utils/statd/sm_inter.x
+--- old/utils/statd/sm_inter.x	2008-03-14 16:46:29.000000000 +0100
++++ new/utils/statd/sm_inter.x	2011-12-13 22:46:42.000000000 +0100
+@@ -44,6 +44,8 @@
+ %#include <string.h>
+ #endif
+ 
++typedef unsigned int rpc_uint;
++
+ program SM_PROG { 
+ 	version SM_VERS  {
+ 		/* res_stat = stat_succ if status monitor agrees to monitor */

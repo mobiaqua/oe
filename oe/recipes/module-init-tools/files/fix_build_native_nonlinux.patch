@@ -1,0 +1,66 @@
+diff -ur old/Makefile.am new/Makefile.am
+--- old/Makefile.am	2010-03-10 09:54:26.000000000 +0100
++++ new/Makefile.am	2011-09-29 20:03:28.000000000 +0200
+@@ -36,8 +36,8 @@
+ modinfo_LDADD = $(LDADD) libmodtools.a
+ modindex_LDADD = $(LDADD) libmodtools.a
+ 
+-MAN5 = modprobe.conf.5 modules.dep.5 depmod.conf.5 modprobe.d.5
+-MAN8 = depmod.8 insmod.8 lsmod.8 rmmod.8 modprobe.8 modinfo.8
++MAN5 = 
++MAN8 = depmod.8
+ SGML = $(addprefix doc/,  $(MAN5:%.5=%.sgml) $(MAN8:%.8=%.sgml))
+ dist_man_MANS = $(MAN5) $(MAN8)
+ # If they haven't overridden mandir, fix it (never /man!)
+@@ -45,13 +45,13 @@
+ 
+ TESTSUITE := $(shell test -e @srcdir@/tests && find @srcdir@/tests -type f ! -name '*~')
+ 
+-EXTRA_DIST = generate-modprobe.conf FAQ CODING stress_modules.sh install-with-care $(SGML) $(man_MANS) $(TESTSUITE)
++EXTRA_DIST = FAQ CODING stress_modules.sh install-with-care $(SGML) $(man_MANS) $(TESTSUITE)
+ 
+-sbin_PROGRAMS = insmod modprobe rmmod depmod modinfo
++sbin_PROGRAMS = depmod
+ if BUILD_STATIC_UTILS
+-sbin_PROGRAMS += insmod.static
++sbin_PROGRAMS += 
+ endif
+-bin_PROGRAMS = lsmod
++bin_PROGRAMS = 
+ noinst_PROGRAMS=modindex
+ noinst_LIBRARIES = libmodtools.a
+ INSTALL = $(SHELL) $(top_srcdir)/install-with-care
+diff -ur old/depmod.c new/depmod.c
+--- old/depmod.c	2010-05-25 20:54:16.000000000 +0200
++++ new/depmod.c	2011-09-29 20:07:51.000000000 +0200
+@@ -13,7 +13,7 @@
+ #include <string.h>
+ #include <errno.h>
+ #include <unistd.h>
+-#include <elf.h>
++#include <libelf.h>
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <fcntl.h>
+diff -ur old/elfops.c new/elfops.c
+--- old/elfops.c	2010-03-10 08:37:08.000000000 +0100
++++ new/elfops.c	2011-09-29 20:08:02.000000000 +0200
+@@ -1,5 +1,5 @@
+ /* The nasty work of reading 32 and 64-bit modules is in here. */
+-#include <elf.h>
++#include <libelf.h>
+ #include <sys/types.h>
+ #include <unistd.h>
+ #include <stdlib.h>
+diff -ur old/util.c new/util.c
+--- old/util.c	2010-03-10 07:02:37.000000000 +0100
++++ new/util.c	2011-09-29 20:08:46.000000000 +0200
+@@ -3,7 +3,7 @@
+ #include <stdint.h>
+ #include <string.h>
+ #include <errno.h>
+-#include <elf.h>
++#include <libelf.h>
+ #include <sys/types.h>
+ #include <regex.h>
+ #include "logging.h"

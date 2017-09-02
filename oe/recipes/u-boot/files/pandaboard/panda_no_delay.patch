@@ -1,0 +1,12 @@
+diff -urp old/include/configs/omap4_common.h new/include/configs/omap4_common.h
+--- old/include/configs/omap4_common.h	2013-01-04 16:43:13.000000000 +0100
++++ new/include/configs/omap4_common.h	2013-01-04 16:45:35.000000000 +0100
+@@ -144,7 +144,7 @@
+  * Environment setup
+  */
+ 
+-#define CONFIG_BOOTDELAY	3
++#define CONFIG_BOOTDELAY	0
+ 
+ #define CONFIG_ENV_OVERWRITE
+ 
