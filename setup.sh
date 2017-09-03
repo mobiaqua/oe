@@ -28,51 +28,57 @@ get_os() {
 	export $OS
 }
 
+gnutools="[ awk b2sum base32 base64 basename cat chcon chgrp chmod chown chroot cksum comm cp \
+csplit cut date dd df dir dircolors dirname du echo env expand expr factor false fmt fold \
+groups head hostid id install join kill link ln logname ls md5sum mkdir mkfifo mknod mktemp \
+mv nice nl nohup nproc numfmt od paste pathchk pinky pr printenv printf ptx pwd readlink \
+realpath rm rmdir runcon sed seq sha1sum sha224sum sha256sum sha384sum sha512sum shred shuf \
+sleep sort split stat stdbuf stty sum sync tac tail tee test timeout touch tr true \
+truncate tsort tty uname unexpand uniq unlink uptime users vdir wc who whoami yes"
+
 prepare_tools() {
 	OE_BASE=`pwd -P`
-	rm -f ${OE_BASE}/oe/bin/deftar
-	rm -f ${OE_BASE}/oe/bin/tar
-	rm -f ${OE_BASE}/oe/bin/sed
-	rm -f ${OE_BASE}/oe/bin/readlink
+	/bin/rm -f ${OE_BASE}/oe/bin/deftar
+	/bin/rm -f ${OE_BASE}/oe/bin/tar
+	/bin/rm -f ${OE_BASE}/oe/bin/\]
+	/bin/rm -f ${OE_BASE}/oe/bin/\[
 
 	get_os
 	case $OS in
 	Darwin)
 		if [ -e /opt/local/bin/gnutar ]; then
-			ln -s /opt/local/bin/gnutar ${OE_BASE}/oe/bin/tar
+			/bin/ln -s /opt/local/bin/gnutar ${OE_BASE}/oe/bin/tar
 		elif [ -e /sw/bin/gtar ]; then
-			ln -s /sw/bin/gtar ${OE_BASE}/oe/bin/tar
+			/bin/ln -s /sw/bin/gtar ${OE_BASE}/oe/bin/tar
 		fi
 		if [ -e /usr/bin/tar ]; then
-			ln -s /usr/bin/tar ${OE_BASE}/oe/bin/deftar
+			/bin/ln -s /usr/bin/tar ${OE_BASE}/oe/bin/deftar
 		fi
-		if [ -e /opt/local/bin/gsed ]; then
-			ln -s /opt/local/bin/gsed ${OE_BASE}/oe/bin/sed
-		elif [ -e /sw/bin/gsed ]; then
-			ln -s /sw/bin/gsed ${OE_BASE}/oe/bin/sed
-		fi
-		if [ -e /opt/local/bin/greadlink ]; then
-			ln -s /opt/local/bin/greadlink ${OE_BASE}/oe/bin/readlink
-		elif [ -e /sw/sbin/greadlink ]; then
-			ln -s /sw/sbin/greadlink ${OE_BASE}/oe/bin/readlink
-		fi
+		for i in $gnutools; do
+			/bin/rm -f ${OE_BASE}/oe/bin/$i
+			if [ -e /opt/local/bin/g$i ]; then
+				/bin/ln -s /opt/local/bin/g$i ${OE_BASE}/oe/bin/$i
+			elif [ -e /sw/sbin/g$i ]; then
+				/bin/ln -s /sw/sbin/g$i ${OE_BASE}/oe/bin/$i
+			fi
+		done
 
-		if [ ! -e ${OE_BASE}/oe/bin/tar ]; then
+		if [ ! -e /opt/local/bin/gnutar ] && [ ! -e /sw/bin/gtar ]; then
 			echo "* ERROR *  Missing GNU tar!"
 			return 1
 		fi
-		if [ ! -e ${OE_BASE}/oe/bin/sed ]; then
+		if [ ! -e /opt/local/bin/gsed ] && [ ! -e /sw/bin/gsed ]; then
 			echo "* ERROR *  Missing GNU sed!"
 			return 1
 		fi
-		if [ ! -e ${OE_BASE}/oe/bin/readlink ]; then
-			echo "* ERROR *  Missing GNU readlink!"
+		if [ ! -e /opt/local/bin/ginstall ] && [ ! -e /sw/bin/ginstall ]; then
+			echo "* ERROR *  Missing GNU coreutils!"
 			return 1
 		fi
 		;;
 	Linux)
 		if [ -e /bin/tar ]; then
-			ln -s /bin/tar ${OE_BASE}/oe/bin/deftar
+			/bin/ln -s /bin/tar ${OE_BASE}/oe/bin/deftar
 		fi
 	esac
 
@@ -166,7 +172,7 @@ DISTRO = \"${DISTRO}\"
 INHERIT = \"rm_work\"
 IMAGE_KEEPROOTFS = \"1\"
 CACHE = \"${OE_BASE}/build-${DISTRO}/cache/oe-cache.\${USER}\"
-ASSUME_PROVIDED += \" git-native perl-native python-native desktop-file-utils-native linux-libc-headers-native glib-2.0-native intltool-native \"
+ASSUME_PROVIDED += \" git-native perl-native python-native desktop-file-utils-native linux-libc-headers-native glib-2.0-native intltool-native xz-native\"
 PARALLEL_MAKE = \"-j 4\"
 BB_NUMBER_THREADS = \"3\"
 " > ${OE_BASE}/build-${DISTRO}/conf/local.conf
