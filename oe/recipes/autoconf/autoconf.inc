@@ -14,6 +14,8 @@ SRC_URI = "${GNU_MIRROR}/autoconf/autoconf-${PV}.tar.gz \
 
 inherit autotools texinfo
 
+CACHED_CONFIGUREVARS += "ac_cv_path_PERL=${USRBINPATH}/perl"
+
 do_configure() {
 	oe_runconf
 }
