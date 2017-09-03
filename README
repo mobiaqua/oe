@@ -9,14 +9,6 @@ Usage Information:
 	- "car" as "car_setup.sh" - not supported yet
 		IGEP0030 as car hub controller with lcd and periferials
 
-	- "pda-sa1110" as "pda-sa1110_setup.sh"
-		several handheld devices:
-		- iPAQ H3600
-
-	- "pda-pxa25x" as "pda-pxa25x_setup.sh"
-		several handheld devices:
-		- iPAQ H2200
-
 	Example usage:
 
 	Run ". tv_setup.sh" to setup OE environment.
