@@ -1,6 +1,7 @@
 # Copyright (C) 2012 Khem Raj <raj.khem@gmail.com>
 # Released under the MIT license (see COPYING.MIT for the terms)
 
+SUMMARY = "Linux kernel style configuration framework for other projects"
 DESCRIPTION = "The kconfig-frontends project aims at centralising \
 the effort of keeping an up-to-date, out-of-tree, packaging of the \
 kconfig infrastructure, ready for use by third-party projects. \
@@ -10,20 +11,13 @@ HOMEPAGE = "http://ymorin.is-a-geek.org/projects/kconfig-frontends"
 LICENSE = "GPL-2.0"
 LIC_FILES_CHKSUM = "file://COPYING;md5=9b8cf60ff39767ff04b671fca8302408"
 SECTION = "devel"
-DEPENDS += "ncurses flex bison gperf"
-PR = "r0"
-PV = "3.6.0"
-SPIN = "0"
-SRC_URI = "http://ymorin.is-a-geek.org/download/${BPN}/${BPN}-${PV}-${SPIN}.tar.xz \
-           file://fix-configure-for-old.patch \
-          "
+DEPENDS += "ncurses flex bison gperf-native"
+SRC_URI = "http://ymorin.is-a-geek.org/download/${BPN}/${BP}.tar.xz"
 
-SRC_URI[md5sum] = "91ca87abb3c99c3fd40a7babb05ec507"
-SRC_URI[sha256sum] = "3084989a9b146688f318b5524dfb7ab3ba47c9cef355d1aebaa520befdb48da0"
+SRC_URI[md5sum] = "b939280dcc83f8feabd87a1d5f9b00c2"
+SRC_URI[sha256sum] = "ea2615a62c74bea6ce3b38402f00c7513858f307f6ba7aa9fdbf0bbc12bcf407"
 
-S = "${WORKDIR}/${BPN}-${PV}-${SPIN}"
-
-inherit autotools
+inherit autotools pkgconfig
 do_configure_prepend () {
 	mkdir -p scripts/.autostuff/m4
 }
@@ -37,7 +31,7 @@ EXTRA_OECONF += "--disable-gconf --disable-qconf"
 
 # Some packages have the version preceeding the .so instead properly
 # versioned .so.<version>, so we need to reorder and repackage.
-SOLIBS = "-${PV}.so"
+SOLIBS = "-${@d.getVar('PV', True)[:-2]}.so"
 FILES_SOLIBSDEV = "${libdir}/libkconfig-parser.so"
 
 BBCLASSEXTEND = "native"
