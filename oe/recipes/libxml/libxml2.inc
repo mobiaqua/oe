@@ -2,15 +2,14 @@ DESCRIPTION = "GNOME XML Parser library"
 SECTION = "libs"
 PRIORITY = "optional"
 LICENSE = "MIT"
-DEPENDS_virtclass-native = "python-native"
+DEPENDS_virtclass-native = "python-native zlib-native pkgconfig-native"
 
 SRC_URI = "ftp://xmlsoft.org/libxml2/libxml2-${PV}.tar.gz;name=archive"
 S = "${WORKDIR}/${BPN}-${PV}"
 
 nolargefile = "${@base_contains('DISTRO_FEATURES', 'largefile', '', '-DNO_LARGEFILE_SOURCE', d)}"
-EXTRA_OEMAKE_append_libc-uclibc = "'CFLAGS=${CFLAGS} ${nolargefile}'"
 
-INC_PR = "r9"
+INC_PR = "r1"
 
 BBCLASSEXTEND = "native"
 
@@ -19,11 +18,14 @@ inherit autotools pkgconfig binconfig
 EXTRA_OECONF = "\
  --without-legacy \
  --with-catalog \
- --with-docbook \
- --with-c14n"
+ --without-docbook \
+ --with-c14n \
+ --without-lzma \
+ --with-zlib \
+"
 
-XPY = " --without-python"
-XPY_virtclass-native = " --with-python=${PYTHON_DIR}" 
+XPY = " --without-python --enable-static"
+XPY_virtclass-native = " --without-python --enable-static"
 
 EXTRA_OECONF += "${XPY}"
 
