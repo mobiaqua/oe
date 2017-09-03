@@ -19,10 +19,6 @@ SRC_URI = "git://git.yoctoproject.org/opkg-utils;protocol=git \
 
 S = "${WORKDIR}/git"
 
-# Avoid circular dependencies from package_ipk.bbclass
-#MobiAqua: added coreutils-native for md5sum
-PACKAGES_virtclass-native = "coreutils-native"
-
 do_install() {
 	oe_runmake PREFIX=${prefix} DESTDIR=${D} install
 }
