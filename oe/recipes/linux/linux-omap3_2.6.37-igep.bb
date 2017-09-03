@@ -5,7 +5,7 @@ LICENSE = "GPL"
 DEFAULT_PREFERENCE = "-1"
 DEFAULT_PREFERENCE_igep0030 = "1"
 
-DEPENDS = "coreutils-native elf-native"
+DEPENDS = "elf-native"
 
 FILESPATHPKG =. "linux-omap3:"
 

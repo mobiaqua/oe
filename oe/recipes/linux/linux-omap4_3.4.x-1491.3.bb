@@ -7,7 +7,7 @@ COMPATIBLE_MACHINE = "board-tv"
 DEFAULT_PREFERENCE = "-1"
 DEFAULT_PREFERENCE_board-tv = "10"
 
-DEPENDS = "coreutils-native elf-native"
+DEPENDS = "elf-native"
 
 inherit kernel
 
