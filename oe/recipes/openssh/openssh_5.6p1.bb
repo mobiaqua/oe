@@ -2,7 +2,7 @@ require openssh.inc
 
 PR = "${INC_PR}.0"
 
-SRC_URI = "ftp://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-${PV}.tar.gz \
+SRC_URI = "http://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-${PV}.tar.gz \
            file://sshd_config \
            file://ssh_config \
            file://init \
