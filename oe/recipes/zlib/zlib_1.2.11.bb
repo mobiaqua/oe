@@ -19,11 +19,11 @@ SRC_URI[sha256sum] = "4ff941449631ace0d4d203e3483be9dbc9da454084111f97ea0a2114e1
 CFLAGS += "-D_REENTRANT"
 
 do_configure() {
-	uname=GNU ./configure --prefix=${prefix} --static --libdir=${libdir}
+	uname=GNU ./configure --prefix=${prefix} --libdir=${libdir}
 }
 
 do_compile() {
-	oe_runmake static
+	oe_runmake
 }
 
 do_install() {
