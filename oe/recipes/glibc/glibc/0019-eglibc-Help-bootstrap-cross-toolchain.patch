@@ -1,27 +1,38 @@
+From c2d49eab20db4ab02b6de62092fedc623d757146 Mon Sep 17 00:00:00 2001
+From: Khem Raj <raj.khem@gmail.com>
+Date: Wed, 18 Mar 2015 00:49:28 +0000
+Subject: [PATCH 19/24] eglibc: Help bootstrap cross toolchain
+
 Taken from EGLIBC, r1484 + r1525
-	
-	2007-02-20  Jim Blandy  <jimb@codesourcery.com>
-	
-	        * Makefile (install-headers): Preserve old behavior: depend on
-	        $(inst_includedir)/gnu/stubs.h only if install-bootstrap-headers
-	        is set; otherwise, place gnu/stubs.h on the 'install-others' list.
-	
-	2007-02-16  Jim Blandy  <jimb@codesourcery.com>
-	
-	        * Makefile: Amend make install-headers to install everything
-	        necessary for building a cross-compiler.  Install gnu/stubs.h as
-	        part of 'install-headers', not 'install-others'.
-	        If install-bootstrap-headers is 'yes', install a dummy copy of
-	        gnu/stubs.h, instead of computing the real thing.
-	        * include/stubs-bootstrap.h: New file.
+
+        2007-02-20  Jim Blandy  <jimb@codesourcery.com>
+
+                * Makefile (install-headers): Preserve old behavior: depend on
+                $(inst_includedir)/gnu/stubs.h only if install-bootstrap-headers
+                is set; otherwise, place gnu/stubs.h on the 'install-others' list.
+
+        2007-02-16  Jim Blandy  <jimb@codesourcery.com>
+
+                * Makefile: Amend make install-headers to install everything
+                necessary for building a cross-compiler.  Install gnu/stubs.h as
+                part of 'install-headers', not 'install-others'.
+                If install-bootstrap-headers is 'yes', install a dummy copy of
+                gnu/stubs.h, instead of computing the real thing.
+                * include/stubs-bootstrap.h: New file.
 
 Upstream-Status: Pending
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+---
+ Makefile                  | 22 +++++++++++++++++++++-
+ include/stubs-bootstrap.h | 12 ++++++++++++
+ 2 files changed, 33 insertions(+), 1 deletion(-)
+ create mode 100644 include/stubs-bootstrap.h
 
-Index: git/Makefile
-===================================================================
---- git.orig/Makefile	2014-08-27 18:35:18.908070587 +0000
-+++ git/Makefile	2014-08-27 18:35:19.340070587 +0000
-@@ -69,9 +69,18 @@
+diff --git a/Makefile b/Makefile
+index 9a01c93..a6ae003 100644
+--- a/Makefile
++++ b/Makefile
+@@ -69,9 +69,18 @@ subdir-dirs = include
  vpath %.h $(subdir-dirs)
  
  # What to install.
@@ -41,7 +52,7 @@ Index: git/Makefile
  ifeq (yes,$(build-shared))
  headers += gnu/lib-names.h
  endif
-@@ -151,6 +160,16 @@
+@@ -151,6 +160,16 @@ others: $(common-objpfx)testrun.sh
  
  subdir-stubs := $(foreach dir,$(subdirs),$(common-objpfx)$(dir)/stubs)
  
@@ -58,7 +69,7 @@ Index: git/Makefile
  ifndef abi-variants
  installed-stubs = $(inst_includedir)/gnu/stubs.h
  else
-@@ -177,6 +196,7 @@
+@@ -177,6 +196,7 @@ $(inst_includedir)/gnu/stubs.h: $(+force)
  
  install-others-nosubdir: $(installed-stubs)
  endif
@@ -66,10 +77,11 @@ Index: git/Makefile
  
  
  # Since stubs.h is never needed when building the library, we simplify the
-Index: git/include/stubs-bootstrap.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ git/include/stubs-bootstrap.h	2014-08-27 18:35:19.340070587 +0000
+diff --git a/include/stubs-bootstrap.h b/include/stubs-bootstrap.h
+new file mode 100644
+index 0000000..1d2b669
+--- /dev/null
++++ b/include/stubs-bootstrap.h
 @@ -0,0 +1,12 @@
 +/* Placeholder stubs.h file for bootstrapping.
 +
@@ -83,3 +95,6 @@ Index: git/include/stubs-bootstrap.h
 +   difficult headers.  The <gnu/stubs.h> header depends, via the
 +   EGLIBC subdir 'stubs' make targets, on every .o file in EGLIBC, but
 +   an empty stubs.h like this will do fine for GCC.  */
+-- 
+2.6.4
+

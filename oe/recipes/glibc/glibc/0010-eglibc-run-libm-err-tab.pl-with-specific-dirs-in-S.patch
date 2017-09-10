@@ -1,7 +1,7 @@
-From 713d822908d1b2ae8403af7f9375c7054ed3dd49 Mon Sep 17 00:00:00 2001
+From 69a3e30b49d28a7386d18725528652931510cbfc Mon Sep 17 00:00:00 2001
 From: Ting Liu <b28495@freescale.com>
 Date: Wed, 19 Dec 2012 04:39:57 -0600
-Subject: [PATCH] eglibc: run libm-err-tab.pl with specific dirs in ${S}
+Subject: [PATCH 10/24] eglibc: run libm-err-tab.pl with specific dirs in ${S}
 
 libm-err-tab.pl will parse all the files named "libm-test-ulps"
 in the given dir recursively. To avoid parsing the one in
@@ -10,18 +10,18 @@ ${S}/.pc/aarch64-0001-glibc-fsf-v1-eaf6f205.patch/ports/sysdeps/
 aarch64/libm-test-ulps), run libm-err-tab.pl with specific dirs
 in ${S}.
 
-Upstream-Status: inappropriate [OE specific]
+Upstream-Status: Inappropriate [OE specific]
 
 Signed-off-by: Ting Liu <b28495@freescale.com>
 ---
- manual/Makefile |    3 ++-
+ manual/Makefile | 3 ++-
  1 file changed, 2 insertions(+), 1 deletion(-)
 
-Index: git/manual/Makefile
-===================================================================
---- git.orig/manual/Makefile	2014-08-29 10:35:18.728070587 -0700
-+++ git/manual/Makefile	2014-08-29 10:35:18.720070587 -0700
-@@ -105,7 +105,8 @@
+diff --git a/manual/Makefile b/manual/Makefile
+index cdb6763..0b32a0a 100644
+--- a/manual/Makefile
++++ b/manual/Makefile
+@@ -105,7 +105,8 @@ $(objpfx)libm-err.texi: $(objpfx)stamp-libm-err
  $(objpfx)stamp-libm-err: libm-err-tab.pl $(wildcard $(foreach dir,$(sysdirs),\
  						     $(dir)/libm-test-ulps))
  	pwd=`pwd`; \
@@ -31,3 +31,6 @@ Index: git/manual/Makefile
  	$(move-if-change) $(objpfx)libm-err-tmp $(objpfx)libm-err.texi
  	touch $@
  
+-- 
+2.6.4
+

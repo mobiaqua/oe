@@ -1,11 +1,11 @@
-diff -urp old/iconvdata/Makefile new/iconvdata/Makefile
---- old/iconvdata/Makefile	2016-02-02 19:11:55.000000000 +0100
-+++ new/iconvdata/Makefile	2016-02-02 19:11:15.000000000 +0100
-@@ -26,45 +26,7 @@ include ../Makeconfig
+diff -ur old/iconvdata/Makefile new/iconvdata/Makefile
+--- old/iconvdata/Makefile	2017-09-10 14:50:19.000000000 +0200
++++ new/iconvdata/Makefile	2017-09-10 14:55:19.000000000 +0200
+@@ -23,45 +23,7 @@
+ include ../Makeconfig
  
  # Names of all the shared objects which implement the transformations.
- modules-$(OPTION_EGLIBC_CHARSETS)					 \
--	:= ISO8859-1 ISO8859-2 ISO8859-3 ISO8859-4 ISO8859-5		 \
+-modules	:= ISO8859-1 ISO8859-2 ISO8859-3 ISO8859-4 ISO8859-5		 \
 -	   ISO8859-6 ISO8859-7 ISO8859-8 ISO8859-9 ISO8859-10		 \
 -	   ISO8859-11 ISO8859-13 ISO8859-14 ISO8859-15 ISO8859-16	 \
 -	   T.61 ISO_6937 SJIS KOI-8 HP-ROMAN8 HP-ROMAN9 EBCDIC-AT-DE	 \
@@ -44,7 +44,7 @@ diff -urp old/iconvdata/Makefile new/iconvdata/Makefile
 -	   IBM1364 IBM1371 IBM1388 IBM1390 IBM1399 ISO_11548-1 MIK BRF	 \
 -	   MAC-CENTRALEUROPE KOI8-RU ISO8859-9E				 \
 -	   CP770 CP771 CP772 CP773 CP774
-+	:= IBM850
++modules	:= IBM852
  
- modules.so := $(addsuffix .so, $(modules-y))
+ modules.so := $(addsuffix .so, $(modules))
  
