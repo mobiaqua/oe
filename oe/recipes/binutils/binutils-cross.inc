@@ -5,6 +5,7 @@ PROVIDES = "virtual/${TARGET_PREFIX}binutils"
 PACKAGES = ""
 EXTRA_OECONF = "--with-sysroot=${STAGING_DIR_TARGET} \
 		--program-prefix=${TARGET_PREFIX} \
+		--enable-poison-system-directories \
 		--disable-werror \
 	       "
 EXTRA_OECONF_append_mips64 = " --enable-64-bit-bfd"

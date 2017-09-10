@@ -40,8 +40,9 @@ FILES_${PN}-symlinks = " \
 S = "${WORKDIR}/binutils-${PV}"
 B = "${S}/build.${HOST_SYS}.${TARGET_SYS}"
 
-#MobiAqua: added --disable-werror
 EXTRA_OECONF = "--program-prefix=${TARGET_PREFIX} \
+		--enable-deterministic-archives \
+		--enable-plugins \
 		--enable-shared \
 		--disable-werror"
 
