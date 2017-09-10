@@ -13,8 +13,15 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=59530bdf33659b29e73d4adb9f9f6552 \
 inherit autotools
 
 SRC_URI = "${GNU_MIRROR}/gdb/gdb-${PV}.tar.gz \
-          "
+           file://0001-include-sys-types.h-for-mode_t.patch \
+           file://0002-make-man-install-relative-to-DESTDIR.patch \
+           file://0006-Dont-disable-libreadline.a-when-using-disable-static.patch \
+           file://0009-Change-order-of-CFLAGS.patch \
+           file://0010-resolve-restrict-keyword-conflict.patch \
+"
 
+SRC_URI[md5sum] = "88401d874046b0ba83f78f30e43c6ad8"
+SRC_URI[sha256sum] = "57e9e9aa3172ee16aa1e9c66fef08b4393b51872cc153e3f1ffdf18a57440586"
 
 export CC_FOR_BUILD = "${BUILD_CC}"
 export CXX_FOR_BUILD = "${BUILD_CXX}"
@@ -35,10 +42,10 @@ EXTRA_OECONF = "--disable-gdbtk --disable-tui --disable-x --disable-werror \
                 ${GDBPROPREFIX} ${EXPAT} \
                 ${@base_contains('DISTRO_FEATURES', 'multiarch', '--enable-64-bit-bfd', '', d)} \
                 --disable-rpath \
+                --disable-gas --disable-binutils \
+                --disable-ld --disable-gold \
+                --disable-gprof \
                "
-
-SRC_URI[md5sum] = "f3b97de919a9dba84490b2e076ec4cb0"
-SRC_URI[sha256sum] = "4994ad986726ac4128a6f1bd8020cd672e9a92aa76b80736563ef992992764ef"
 
 GDBPROPREFIX = "--program-prefix=''"
 
