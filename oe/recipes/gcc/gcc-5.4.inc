@@ -21,7 +21,8 @@ NATIVEDEPS = "mpfr-native gmp-native libmpc-native zlib-native"
 
 LICENSE = "GPL-3.0-with-GCC-exception & GPLv3"
 
-BASEURI = "${GNU_MIRROR}/gcc/gcc-${PV}/gcc-${PV}.tar.bz2"
+#BASEURI = "${GNU_MIRROR}/gcc/gcc-${PV}/gcc-${PV}.tar.bz2"
+BASEURI = "http://releases.linaro.org/components/toolchain/gcc-linaro/5.4-2017.05/gcc-linaro-5.4-2017.05.tar.xz"
 
 SRC_URI = "\
            ${BASEURI} \
@@ -45,7 +46,6 @@ SRC_URI = "\
            file://0034-Don-t-search-host-directory-during-relink-if-inst_pr.patch \
            file://0035-Dont-link-the-plugins-with-libgomp-explicitly.patch \
            file://0036-Use-SYSTEMLIBS_DIR-replacement-instead-of-hardcoding.patch \
-           file://0038-fix-g-sysroot.patch \
            file://0039-libcc1-fix-libcc1-s-install-path-and-rpath.patch \
            file://0041-Search-target-sysroot-gcc-version-specific-dirs-with.patch \
            file://0042-Fix-various-_FOR_BUILD-and-related-variables.patch \
@@ -61,8 +61,11 @@ SRC_URI = "\
            file://libc++-abort.patch \
 "
 
-SRC_URI[md5sum] = "4c626ac2a83ef30dfb9260e6f59c2b30"
-SRC_URI[sha256sum] = "608df76dec2d34de6558249d8af4cbee21eceddbcb580d666f7a5a583ca3303a"
+S = "${WORKDIR}/gcc-linaro-5.4-2017.05"
+B = "${S}/build.${HOST_SYS}.${TARGET_SYS}"
+
+SRC_URI[md5sum] = "97baf4d63260b8e30ec2ec41057297d4"
+SRC_URI[sha256sum] = "94276fa9c437d282361fc1ab31038b49e5e7cb424152152ef5bedbc7d7fd2fd4"
 
 # Language Overrides
 FORTRAN = ""
