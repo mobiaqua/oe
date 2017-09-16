@@ -6,11 +6,11 @@ PR = "r1"
 
 # Third digit in PV should be incremented after a minor release
 
-PV = "5.4.0"
+PV = "5.4.1"
 
 # BINV should be incremented to a revision after a minor gcc release
 
-BINV = "5.4.0"
+BINV = "5.4.1"
 
 INC_PR = "r1"
 
