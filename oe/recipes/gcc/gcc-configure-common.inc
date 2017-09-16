@@ -20,8 +20,6 @@ OBJC ?= ",objc"
 # hidden symbols in libgcc.a which linker complains
 # when linking shared libraries further in the build like (gnutls)
 
-OPTSPACE = "${@base_contains('TARGET_ARCH', 'powerpc', '', '--enable-target-optspace',d)}"
-# gcc 3.x expects 'f77', 4.0 expects 'f95', 4.1 and 4.2 expect 'fortran'
 FORTRAN ?= ",f77"
 LANGUAGES ?= "c,c++${OBJC}${FORTRAN}${JAVA}"
 
@@ -41,11 +39,19 @@ EXTRA_OECONF = "${@['--enable-clocale=generic', ''][bb.data.getVar('USE_NLS', d,
                 --enable-symvers=gnu \
                 --enable-libstdcxx-pch \
                 --program-prefix=${TARGET_PREFIX} \
-                ${OPTSPACE} \
                 ${EXTRA_OECONF_BASE} \
                 ${EXTRA_OECONF_FPU} \
                 ${EXTRA_OECONF_PATHS} \
                 ${@get_gcc_mips_plt_setting(bb, d)}"
+
+# Set this here since GCC configure won't auto-detect and enable
+# initfini-arry when cross compiling.
+EXTRA_OECONF_append = " --enable-initfini-array"
+
+export gcc_cv_collect2_libs = 'none required'
+# We need to set gcc_cv_collect2_libs else there is cross-compilation badness
+# in the config.log files (which might not get generated until do_compile
+# hence being missed by the insane do_configure check).
 
 # Build uclibc compilers without cxa_atexit support
 EXTRA_OECONF_append_linux               = " --enable-__cxa_atexit"

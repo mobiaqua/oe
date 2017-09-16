@@ -10,12 +10,14 @@ EXTRA_OECONF = "--with-local-prefix=${STAGING_DIR_TARGET}${target_prefix} \
 		--disable-multilib \
 		--disable-threads \
 		--enable-languages=c \
+		--disable-libatomic \
 		--program-prefix=${TARGET_PREFIX} \
 		${EXTRA_OECONF_PATHS} \
-		${OPTSPACE} \
 		${EXTRA_OECONF_INTERMEDIATE} \
 		${@get_gcc_fpu_setting(bb, d)} \
 		${@get_gcc_mips_plt_setting(bb, d)}"
+
+#		--with-build-sysroot=${STAGING_DIR_TARGET} \
 
 do_install () {
         oe_runmake 'DESTDIR=${D}' install
