@@ -1,0 +1,22 @@
+diff -urp old/text-utils/column.c new/text-utils/column.c
+--- old/text-utils/column.c	2010-02-04 12:54:00.000000000 +0100
++++ new/text-utils/column.c	2017-09-16 13:24:52.000000000 +0200
+@@ -43,6 +43,7 @@
+ 
+ #include <ctype.h>
+ #include <limits.h>
++#include <bits/posix2_lim.h>
+ #include <stdio.h>
+ #include <unistd.h>
+ #include <stdlib.h>
+diff -urp old/text-utils/pg.c new/text-utils/pg.c
+--- old/text-utils/pg.c	2010-03-18 23:11:23.000000000 +0100
++++ new/text-utils/pg.c	2017-09-16 13:24:37.000000000 +0200
+@@ -44,6 +44,7 @@
+ #include <string.h>
+ #include <stdlib.h>
+ #include <limits.h>
++#include <bits/posix2_lim.h>
+ #include <ctype.h>
+ #include <errno.h>
+ #include <unistd.h>

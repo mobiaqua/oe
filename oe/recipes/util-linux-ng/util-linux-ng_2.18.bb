@@ -6,6 +6,8 @@ SRC_URI += "file://uclibc-compile.patch \
 	    file://util-linux-ng-replace-siginterrupt.patch \
 	    file://fdiskbsdlabel.h-nios2.patch \
 	    file://uclibc-nolargefile.patch \
+	    file://fix-PIPE_BUF.patch \
+	    file://fix-LINE_MAX.patch \
            "
 
 # fallocate is glibc 2.10, fallocate64 is glibc 2.11
