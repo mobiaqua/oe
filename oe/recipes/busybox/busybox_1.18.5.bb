@@ -3,6 +3,7 @@ require busybox_1.1x.inc
 #MobiAqua: added not_include_on_os_x.patch
 SRC_URI += "file://fix-iptunnel-location.patch \
 	    file://not_include_on_os_x.patch \
+	    file://fix-PRIO_PROCESS.patch \
 	"
 
 PR = "${INC_PR}.0"

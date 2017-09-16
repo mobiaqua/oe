@@ -1,0 +1,45 @@
+diff -urp old/loginutils/passwd.c new/loginutils/passwd.c
+--- old/loginutils/passwd.c	2011-06-12 17:41:51.000000000 +0200
++++ new/loginutils/passwd.c	2017-09-16 16:38:53.000000000 +0200
+@@ -4,6 +4,7 @@
+  */
+ #include "libbb.h"
+ #include <syslog.h>
++#include <sys/resource.h>
+ 
+ static void nuke_str(char *str)
+ {
+diff -urp old/miscutils/time.c new/miscutils/time.c
+--- old/miscutils/time.c	2011-06-12 17:41:51.000000000 +0200
++++ new/miscutils/time.c	2017-09-16 16:41:21.000000000 +0200
+@@ -11,6 +11,8 @@
+ 
+ #include "libbb.h"
+ 
++#include <sys/resource.h>
++
+ /* Information on the resources used by a child process.  */
+ typedef struct {
+ 	int waitstatus;
+diff -urp old/networking/ntpd.c new/networking/ntpd.c
+--- old/networking/ntpd.c	2017-09-16 16:30:11.000000000 +0200
++++ new/networking/ntpd.c	2017-09-16 16:38:37.000000000 +0200
+@@ -31,6 +31,7 @@
+ #include <math.h>
+ #include <netinet/ip.h> /* For IPTOS_LOWDELAY definition */
+ #include <sys/timex.h>
++#include <sys/resource.h>
+ #ifndef IPTOS_LOWDELAY
+ # define IPTOS_LOWDELAY 0x10
+ #endif
+diff -urp old/shell/shell_common.c new/shell/shell_common.c
+--- old/shell/shell_common.c	2011-06-12 17:41:52.000000000 +0200
++++ new/shell/shell_common.c	2017-09-16 16:45:07.000000000 +0200
+@@ -18,6 +18,7 @@
+  */
+ #include "libbb.h"
+ #include "shell_common.h"
++#include <sys/resource.h>
+ 
+ const char defifsvar[] ALIGN1 = "IFS= \t\n";
+ 
