@@ -1,0 +1,11 @@
+diff -urp old/arch/arm/cpu/armv7/config.mk new/arch/arm/cpu/armv7/config.mk
+--- old/arch/arm/cpu/armv7/config.mk	2017-09-04 00:15:09.000000000 +0200
++++ new/arch/arm/cpu/armv7/config.mk	2017-09-16 15:31:56.000000000 +0200
+@@ -24,6 +24,7 @@ PLATFORM_RELFLAGS += -fno-common -ffixed
+ 
+ # Make ARMv5 to allow more compilers to work, even though its v7a.
+ PLATFORM_CPPFLAGS += -march=armv5
++PLATFORM_CPPFLAGS += $(PF_NO_UNALIGNED)
+ # =========================================================================
+ #
+ # Supply options according to compiler version

@@ -21,6 +21,11 @@ FILESPATHPKG =. "files/pandaboard:files:"
 SRC_URI = "git://git.linaro.org/boot/u-boot-linaro-stable.git;protocol=git \
 	   file://panda_no_delay.patch \
 	   file://fix_older_cards.patch \
+	   file://0001-Add-linux-compiler-gcc5.h-to-fix-builds-with-gcc5.patch \
+	   file://0002-ARM-asm-io.h-use-static-inline.patch \
+	   file://0003-gcc5-no-unalligned-access.patch \
+	   file://u-boot-002-gcc5-use_gcc_inline_version_instead_c99.patch \
+	   file://fix-weak.patch \
 	   file://boot-panda-label.script \
 	   file://boot-panda-sdcard.script \
 	   file://boot-panda-nfs.script \
