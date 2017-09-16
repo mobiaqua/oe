@@ -1,0 +1,11 @@
+diff -urp old/support/nfs/xcommon.c new/support/nfs/xcommon.c
+--- old/support/nfs/xcommon.c	2017-09-16 16:19:14.000000000 +0200
++++ new/support/nfs/xcommon.c	2017-09-16 16:18:43.000000000 +0200
+@@ -16,6 +16,7 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
++#include <linux/limits.h>
+ 
+ #include "xcommon.h"
+ #include "nls.h"	/* _() */

@@ -14,6 +14,7 @@ SRC_URI = "${SOURCEFORGE_MIRROR}/nfs/nfs-utils-${PV}.tar.gz \
 	file://nfs-utils-uclibc-compile.patch \
 	file://nfs-utils-S_ISREG-missing-include.patch \
 	file://fix-compilation.patch \
+	file://fix-MAX_PATH.patch \
 	file://nfsserver \
    "
 
