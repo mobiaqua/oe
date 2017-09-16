@@ -1,0 +1,22 @@
+diff -urp old/libudev/libudev-util-private.c new/libudev/libudev-util-private.c
+--- old/libudev/libudev-util-private.c	2010-08-03 11:42:26.000000000 +0200
++++ new/libudev/libudev-util-private.c	2017-09-16 14:49:07.000000000 +0200
+@@ -21,6 +21,7 @@
+ #include <grp.h>
+ #include <sys/wait.h>
+ #include <sys/param.h>
++#include <sys/resource.h>
+ 
+ #include "libudev.h"
+ #include "libudev-private.h"
+diff -urp old/udev/udevd.c new/udev/udevd.c
+--- old/udev/udevd.c	2010-11-22 13:48:06.000000000 +0100
++++ new/udev/udevd.c	2017-09-16 14:50:39.000000000 +0200
+@@ -43,6 +43,7 @@
+ #include <sys/ioctl.h>
+ #include <sys/inotify.h>
+ #include <sys/utsname.h>
++#include <sys/resource.h>
+ 
+ #include "udev.h"
+ #include "sd-daemon.h"

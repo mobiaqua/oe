@@ -14,6 +14,7 @@ RDEPENDS_${PN} += "module-init-tools-depmod udev-utils"
 SRC_URI = "http://pkgs.fedoraproject.org/repo/pkgs/udev/udev-166.tar.bz2/4db27d73fdbe94f47fd89fdd105c2dfb/udev-166.tar.bz2 \
 	   file://mount.blacklist \
 	   file://run.rules \
+	   file://fix-PRIO_PROCESS.patch \
 	   "
 
 SRC_URI[md5sum] = "4db27d73fdbe94f47fd89fdd105c2dfb"

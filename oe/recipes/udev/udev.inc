@@ -12,7 +12,8 @@ SRC_URI = "http://kernel.org/pub/linux/utils/kernel/hotplug/udev-${PV}.tar.gz \
 	   file://network.sh \
 	   file://local.rules \
            file://init \
-	   file://udev-compat-wrapper-patch"
+	   file://udev-compat-wrapper-patch \
+	   "
 
 INC_PR = "r36"
 
