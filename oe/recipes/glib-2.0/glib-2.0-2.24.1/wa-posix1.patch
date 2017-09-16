@@ -1,0 +1,11 @@
+diff -urp old/glib/giounix.c new/glib/giounix.c
+--- old/glib/giounix.c	2010-04-13 15:33:16.000000000 +0200
++++ new/glib/giounix.c	2017-09-16 14:36:13.000000000 +0200
+@@ -42,6 +42,7 @@
+ #include <errno.h>
+ #include <string.h>
+ #include <fcntl.h>
++#include <bits/posix1_lim.h>
+ 
+ #include "glib.h"
+ #include "galias.h"

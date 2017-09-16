@@ -23,6 +23,7 @@ SRC_URI = "\
   file://60_wait-longer-for-threads-to-die.patch \
   file://glib-mkenums-interpreter.patch \
   file://disable-ipv6.patch \
+  file://wa-posix1.patch \
 "
 
 noipv6 = "${@base_contains('DISTRO_FEATURES', 'ipv6', '', '-DDISABLE_IPV6', d)}"
