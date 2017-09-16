@@ -11,6 +11,7 @@ inherit autotools binconfig test
 
 SRC_URI = "${GNU_MIRROR}/ncurses/ncurses-${PV}.tar.gz \
         file://tic-hang.patch \
+        file://ncurses_patch_5.9p_src_all.patch \
         file://config.cache \
 "
 
