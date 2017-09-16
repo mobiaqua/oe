@@ -1,0 +1,11 @@
+diff -urp old/backend.c new/backend.c
+--- old/backend.c	2017-09-16 14:45:57.000000000 +0200
++++ new/backend.c	2017-09-16 14:59:18.000000000 +0200
+@@ -30,6 +30,7 @@
+ #include <stdlib.h>
+ #include <string.h>
+ #include <limits.h>
++#include <linux/limits.h>
+ #include <dlfcn.h>
+ 
+ #include "backend.h"
