@@ -4,11 +4,10 @@ LICENSE = "GPLv2+|LGPLv2+|NewBSD|MIT"
 SECTION = "base"
 DEPENDS = "util-linux-ng"
 
-SRC_URI = "${SOURCEFORGE_MIRROR}/e2fsprogs/e2fsprogs-${PV}.tar.gz"
+SRC_URI = "git://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git;protocol=git"
+S = "${WORKDIR}/git"
 
-S = "${WORKDIR}/e2fsprogs-${PV}"
-
-INC_PR = "r30"
+INC_PR = "r1"
 
 inherit autotools gettext
 
@@ -17,7 +16,7 @@ EXTRA_OECONF = "${@['','--disable-tls'][bb.data.getVar('ARM_ABI', d, 1) == 'oabi
 		bb.data.getVar('TARGET_OS', d, 1).find('uclibc') >= 0 ]} \
 		--enable-elf-shlibs \
 		--enable-dynamic-e2fsck --disable-nls --sbindir=${base_sbindir} \
-		--disable-libuuid --disable-libblkid --disable-fsck"
+		--disable-libuuid --disable-uuidd --disable-libblkid --disable-fsck"
 
 PARALLEL_MAKE = ""
 
@@ -33,7 +32,7 @@ do_install_append () {
 }
 
 do_install_append_pn-e2fsprogs () {
-	for f in e2fsck mke2fs uuidd; do
+	for f in e2fsck mke2fs; do
 		mv ${D}${base_sbindir}/$f ${D}${base_sbindir}/$f.${PN}
 	done
 	for f in chattr; do
@@ -51,12 +50,10 @@ do_install_append_pn-e2fsprogs () {
 
 pkg_postinst_e2fsprogs () {
 	update-alternatives --install ${bindir}/chattr chattr chattr.${PN} 100
-	update-alternatives --install ${base_sbindir}/uuidd uuidd uuidd.${PN} 10
 }
 
 pkg_prerm_e2fsprogs () {
 	update-alternatives --remove chattr chattr.${PN}
-	update-alternatives --remove uuidd uuidd.${PN}
 }
 
 
