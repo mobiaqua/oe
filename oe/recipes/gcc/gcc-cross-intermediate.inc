@@ -10,7 +10,6 @@ EXTRA_OECONF = "--with-local-prefix=${STAGING_DIR_TARGET}${target_prefix} \
 		--disable-multilib \
 		--disable-threads \
 		--enable-languages=c \
-		--disable-libatomic \
 		--program-prefix=${TARGET_PREFIX} \
 		${EXTRA_OECONF_PATHS} \
 		${EXTRA_OECONF_INTERMEDIATE} \

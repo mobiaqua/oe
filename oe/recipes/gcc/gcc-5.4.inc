@@ -90,6 +90,7 @@ EXTRA_OECONF_INTERMEDIATE = "\
  --disable-libgomp \
  --disable-libitm \
  --disable-libquadmath \
+ --disable-libatomic \
  --with-system-zlib \
  --disable-lto \
  --disable-plugin \
