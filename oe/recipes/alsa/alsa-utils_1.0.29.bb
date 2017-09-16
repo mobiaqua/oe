@@ -15,6 +15,7 @@ SRC_URI = "ftp://ftp.alsa-project.org/pub/utils/alsa-utils-${PV}.tar.bz2 \
            file://0001-alsactl-don-t-let-systemd-unit-restore-the-volume-wh.patch \
            file://alsa-utils-aplay-interrupt-signal-handling.patch \
            file://assume-storing-is-success-if-not-sound-card-device.patch \
+           file://fix-MAX_PATH.patch \
           "
 
 SRC_URI[md5sum] = "6b289bf874c4c9a63f4b3973093dd404"
