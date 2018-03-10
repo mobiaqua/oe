@@ -39,11 +39,4 @@ do_install () {
 	# found. These need to be relative paths so they work in different locations.
 	dest=${D}${libexecdir}/gcc/${TARGET_SYS}/${BINV}/
 	install -d $dest
-	# fixed limits.h infact includes the so called real limits.h
-	# which should come from libc but when we build libc-initial
-	# then bunch of configure tests include fixed limits.h which in turn
-	# includes real limits.h but this real limits.h is not staged yet
-	# so we overwirte the generated include-fixed/limits.h for gcc-cross-initial
-	# to get rid references to real limits.h
-	cp gcc/include-fixed/limits.h ${D}${gcclibdir}/${TARGET_SYS}/${BINV}/include/limits.h
 }

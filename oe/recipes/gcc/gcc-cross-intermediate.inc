@@ -16,8 +16,6 @@ EXTRA_OECONF = "--with-local-prefix=${STAGING_DIR_TARGET}${target_prefix} \
 		${@get_gcc_fpu_setting(bb, d)} \
 		${@get_gcc_mips_plt_setting(bb, d)}"
 
-#		--with-build-sysroot=${STAGING_DIR_TARGET} \
-
 do_install () {
         oe_runmake 'DESTDIR=${D}' install
         install -d ${D}${target_base_libdir}
@@ -35,9 +33,4 @@ do_install () {
    Use the shared library, but some functions are only in
    the static library.  */
 GROUP ( libgcc_s.so.1 libgcc.a )" > ${D}${target_libdir}/libgcc_s.so
-    # If this is important, we should remove the staging package here
-	# get rid of dummy libc.so
-	#if [ -z "`file ${STAGING_DIR_TARGET}${target_libdir}/libc.so | grep "ASCII C program text"`" ]; then
-	#	rm -rf ${STAGING_DIR_TARGET}${target_libdir}/libc.so
-	#fi
 }

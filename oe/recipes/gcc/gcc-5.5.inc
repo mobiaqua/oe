@@ -6,15 +6,15 @@ PR = "r1"
 
 # Third digit in PV should be incremented after a minor release
 
-PV = "5.4.1"
+PV = "5.5"
 
 # BINV should be incremented to a revision after a minor gcc release
 
-BINV = "5.4.1"
+BINV = "5.5"
 
 INC_PR = "r1"
 
-FILESDIR = "${@os.path.dirname(bb.data.getVar('FILE',d,1))}/gcc-5.4"
+FILESDIR = "${@os.path.dirname(bb.data.getVar('FILE',d,1))}/gcc-5.5"
 
 DEPENDS =+ "mpfr gmp libmpc zlib"
 NATIVEDEPS = "mpfr-native gmp-native libmpc-native zlib-native"
@@ -22,7 +22,7 @@ NATIVEDEPS = "mpfr-native gmp-native libmpc-native zlib-native"
 LICENSE = "GPL-3.0-with-GCC-exception & GPLv3"
 
 #BASEURI = "${GNU_MIRROR}/gcc/gcc-${PV}/gcc-${PV}.tar.bz2"
-BASEURI = "http://releases.linaro.org/components/toolchain/gcc-linaro/5.4-2017.05/gcc-linaro-5.4-2017.05.tar.xz"
+BASEURI = "http://releases.linaro.org/components/toolchain/gcc-linaro/5.5-2017.10/gcc-linaro-5.5-2017.10.tar.xz"
 
 SRC_URI = "\
            ${BASEURI} \
@@ -58,14 +58,13 @@ SRC_URI = "\
            file://0059-libgcc-use-ldflags.patch \
            file://CVE-2016-6131.patch \
            file://drop_define.patch \
-           file://libc++-abort.patch \
 "
 
-S = "${WORKDIR}/gcc-linaro-5.4-2017.05"
+S = "${WORKDIR}/gcc-linaro-5.5-2017.10"
 B = "${S}/build.${HOST_SYS}.${TARGET_SYS}"
 
-SRC_URI[md5sum] = "97baf4d63260b8e30ec2ec41057297d4"
-SRC_URI[sha256sum] = "94276fa9c437d282361fc1ab31038b49e5e7cb424152152ef5bedbc7d7fd2fd4"
+SRC_URI[md5sum] = "8e6dc4d4d9d295077e917d205a186d29"
+SRC_URI[sha256sum] = "acbf1eda48439b83bf49f5a24ed3e4c31bd1680f3cebd9282e0c21eb3cdeb25c"
 
 # Language Overrides
 FORTRAN = ""
