@@ -68,11 +68,11 @@ FILES_libavfilter = "${libdir}/libavfilter*.so.*"
 FILES_libavfilter-dev = "${libdir}/libavfilter*.so ${libdir}/pkgconfig/libavfilter.pc ${libdir}/libavfilter*.a"
 FILES_libavfilter-dbg += "${libdir}/.debug/libavfilter*"
 
-DEPENDS_i586 += "yasm-native"
-DEPENDS_i686 += "yasm-native"
+DEPENDS_i586 += "nasm-native"
+DEPENDS_i686 += "nasm-native"
 
-SRCREV = "58a8e4733ae0b597aa0c92bdc73462a9fe8114cc"
-SRCPV = "3.3"
+SRCREV = "e4b95f710ba4df47e0437d6f90065cc6d4b92c1d"
+SRCPV = "3.4.2"
 
 PV = "git+stable+r${SRCPV}"
 PR = "r1"
