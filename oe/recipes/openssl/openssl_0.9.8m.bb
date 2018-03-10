@@ -13,7 +13,9 @@ SRC_URI += "file://configure-targets.patch \
             file://debian.patch \
             file://oe-ldflags.patch \
             file://no-docs.patch \
-            file://find.pl"
+            file://find.pl \
+            file://openssl-util-perlpath.pl-cwd.patch \
+            "
 
 SRC_URI_append_nios2 += "file://Configure-nios2.patch"
 
