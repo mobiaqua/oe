@@ -76,8 +76,8 @@ FILES_libavfilter-dbg += "${libdir}/.debug/libavfilter*"
 DEPENDS_i586 += "nasm-native"
 DEPENDS_i686 += "nasm-native"
 
-SRCREV = "49a90d5d31433fc999d26f6c5d83f3d4560befee"
-SRCPV = "4.0"
+SRCREV = "bb01cd3cc01c9982e4b57f8ce5cfd6ec4724f848"
+SRCPV = "4.1"
 
 PV = "git+stable+r${SRCPV}"
 PR = "r1"
