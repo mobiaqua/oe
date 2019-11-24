@@ -159,7 +159,7 @@ setup() {
 
 	BBF="\${OE_BASE}/oe/recipes/*/*.bb"
 
-	DL_DIR=${DL_DIR:="$HOME/sources"}
+	DL_DIR=${MA_DL_DIR:="$HOME/sources"}
 
 	if [ ! -f ${OE_BASE}/build-${DISTRO}/conf/local.conf ] || [ ! -f ${OE_BASE}/build-${DISTRO}/env.source ] || [ "$1" = "--force" ]; then
 		PATH_TO_TOOLS="build-${DISTRO}/tmp/sysroots/`uname -m`-`uname -s | awk '{print tolower($0)}'`/usr"
