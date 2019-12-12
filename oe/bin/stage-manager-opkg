@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # ipkg - the itsy package management system
 #
 # Copyright (C) 2001 Carl D. Worth

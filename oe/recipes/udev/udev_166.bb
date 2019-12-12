@@ -8,7 +8,7 @@ PR = "r7"
 #MobiAqua: use this working version as newer doesn't work properly
 
 # Needed for udev-extras
-DEPENDS = "gperf-native usbutils acl glib-2.0 mtd-utils"
+DEPENDS = "usbutils acl glib-2.0 mtd-utils"
 RDEPENDS_${PN} += "module-init-tools-depmod udev-utils"
 
 SRC_URI = "http://pkgs.fedoraproject.org/repo/pkgs/udev/udev-166.tar.bz2/4db27d73fdbe94f47fd89fdd105c2dfb/udev-166.tar.bz2 \

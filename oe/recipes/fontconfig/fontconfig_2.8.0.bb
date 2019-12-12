@@ -1,7 +1,7 @@
 DESCRIPTION = "A library for configuring and customizing font access."
 SECTION = "libs"
 LICENSE = "BSD"
-DEPENDS = "expat freetype zlib"
+DEPENDS = "freetype zlib"
 
 # Work around past breakage in debian.bbclass
 RPROVIDES_fontconfig-utils = "libfontconfig-utils"

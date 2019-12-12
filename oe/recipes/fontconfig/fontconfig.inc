@@ -1,7 +1,7 @@
 DESCRIPTION = "A library for configuring and customizing font access."
 SECTION = "libs"
 LICENSE = "BSD"
-DEPENDS = "expat freetype freetype-native zlib"
+DEPENDS = "freetype freetype-native zlib"
 
 PR = "r1"
 # Work around past breakage in debian.bbclass

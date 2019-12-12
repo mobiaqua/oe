@@ -1,7 +1,5 @@
 require glibc.inc
 
-DEPENDS += "gperf-native kconfig-frontends-native"
-
 SRCREV = "5a4f52493bc18322749ab15c4f5ae8deb7977201"
 
 SRCBRANCH = "release/${PV}/master"

@@ -8,11 +8,15 @@
 
 
 ## Set target IP address
-#MA_TARGET_IP=192.168.1.10
+#MA_TARGET_IP=192.168.1.2
 
 
 ## Set DNS IP address
 #MA_DNS_IP=192.168.1.1
+
+
+## Set Gateway IP address
+#MA_GATEWAY_IP=192.168.1.1
 
 
 ## Set target MAC address in format: xx:xx:xx:xx:xx:xx

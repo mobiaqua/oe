@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # opkg-build -- construct a .ipk from a directory
 # Carl Worth <cworth@east.isi.edu>
