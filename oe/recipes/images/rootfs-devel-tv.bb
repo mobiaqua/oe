@@ -5,7 +5,8 @@ require rootfs-tools.inc
 require rootfs-tools-addons.inc
 
 INSTALL_PKGS += "u-boot-pandaboard libdce libdce-firmware libavcodec libavformat libavutil libavresample \
-                libswscale omapdrmtest kmscube libmpg123 omap4-sgx-libs omap4-sgx-modules openssh-sftp-server mpv"
+                libswscale omapdrmtest kmscube libmpg123 omap4-sgx-libs omap4-sgx-modules openssh-sftp-server mpv \
+                dbus bluez4 bluez-hcidump"
 
 DEPENDS += "gdb-cross"
 RDEPENDS += ""
