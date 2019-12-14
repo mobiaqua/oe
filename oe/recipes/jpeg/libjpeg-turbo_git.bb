@@ -5,9 +5,9 @@ LICENSE = "BSD-3-Clause"
 
 PV = "8d+git${SRCREV}"
 
-SRCREV = "e5f280c4c4821d50012de3429a67971cdd72bd7d"
+SRCREV = "3e33473e7311e937e20cb72166b89fe72c6037e7"
 
-SRC_URI = "git://github.com/libjpeg-turbo/libjpeg-turbo.git;protocol=git"
+SRC_URI = "git://github.com/libjpeg-turbo/libjpeg-turbo.git;protocol=git;branch=1.5.x"
 
 S = "${WORKDIR}/git"
 
