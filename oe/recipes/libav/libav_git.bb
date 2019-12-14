@@ -109,6 +109,8 @@ EXTRA_OECONF = " \
         --enable-avformat \
         --enable-avutil \
         --enable-swscale \
+        --enable-swresample \
+        --enable-avfilter \
         --enable-avresample \
         --enable-protocol=file \
         --enable-bsf=mov2textsub,h264_mp4toannexb,hevc_mp4toannexb,mpeg4_unpack_bframes \
