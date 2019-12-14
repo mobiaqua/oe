@@ -109,3 +109,8 @@ do_install () {
 	install -m 0755 ${WORKDIR}/mount.sh ${D}${sysconfdir}/udev/scripts/mount.sh
 	install -m 0755 ${WORKDIR}/network.sh ${D}${sysconfdir}/udev/scripts
 }
+
+do_install_append () {
+	# hid2hci has moved to bluez4. removed in udev as of version 169
+	rm -f ${D}${base_libdir}/udev/hid2hci
+}
