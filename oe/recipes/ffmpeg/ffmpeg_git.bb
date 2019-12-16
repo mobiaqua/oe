@@ -35,6 +35,7 @@ PACKAGES += "libav-x264-presets \
              libavutil   libavutil-dev   libavutil-dbg \
              libpostproc libpostproc-dev libpostproc-dbg \
              libswscale  libswscale-dev  libswscale-dbg \
+             libswresample  libswresample-dev  libswresample-dbg \
              libavfilter libavfilter-dev libavfilter-dbg \
             "
 
@@ -68,6 +69,10 @@ FILES_libpostproc-dbg += "${libdir}/.debug/libpostproc*"
 FILES_libswscale = "${libdir}/libswscale*.so.*"
 FILES_libswscale-dev = "${libdir}/libswscale*.so ${libdir}/pkgconfig/libswscale.pc ${libdir}/libswscale*.a"
 FILES_libswscale-dbg += "${libdir}/.debug/libswscale*"
+
+FILES_libswresample = "${libdir}/libswresample*.so.*"
+FILES_libswresample-dev = "${libdir}/libswresample*.so ${libdir}/pkgconfig/libswresample.pc ${libdir}/libswresample*.a"
+FILES_libswresample-dbg += "${libdir}/.debug/libswresample*"
 
 FILES_libavfilter = "${libdir}/libavfilter*.so.*"
 FILES_libavfilter-dev = "${libdir}/libavfilter*.so ${libdir}/pkgconfig/libavfilter.pc ${libdir}/libavfilter*.a"

@@ -1,4 +1,4 @@
-DEPENDS = "libdce libdrm libav libgbm virtual/egl"
+DEPENDS = "libdce libdrm ffmpeg libgbm virtual/egl"
 
 inherit autotools
 

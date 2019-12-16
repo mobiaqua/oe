@@ -1,5 +1,5 @@
 INSTALL_PKGS += "\
-	mc gdbserver gdb valgrind glibc-dbg libav-dbg \
+	mc gdbserver gdb valgrind glibc-dbg ffmpeg-dbg \
 "
 
 RRECOMMENDS += ""
