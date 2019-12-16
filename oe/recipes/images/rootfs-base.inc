@@ -9,7 +9,8 @@ DEPENDS_append=" virtual/kernel"
 INSTALL_PKGS = "\
 	base-files base-passwd busybox kernel-modules sysvinit sysvinit-pidof netbase modutils-initscripts \
 	tinylogin initscripts update-alternatives alsa-utils alsa-state alsa-utils-alsamixer \
-	glibc-gconv-ibm850 module-init-tools-depmod ifupdown modutils-collateral dropbear nfs-utils-client \
+	glibc-gconv-ibm850 glibc-gconv-cp1250 module-init-tools-depmod ifupdown modutils-collateral \
+	dropbear nfs-utils-client \
 	util-linux-ng libstdc++ libgcc \
 "
 
