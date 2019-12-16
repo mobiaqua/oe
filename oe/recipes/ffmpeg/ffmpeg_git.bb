@@ -93,7 +93,7 @@ SRC_URI = "git://source.ffmpeg.org/ffmpeg.git;protocol=git;branch=release/${SRCP
 S = "${WORKDIR}/git"
 B = "${S}/build.${HOST_SYS}.${TARGET_SYS}"
 
-FULL_OPTIMIZATION_armv7a = "-fexpensive-optimizations -fno-tree-vectorize -fomit-frame-pointer -O4 -ffast-math"
+FULL_OPTIMIZATION_armv7a-hf = "-fexpensive-optimizations -fno-tree-vectorize -fomit-frame-pointer -O4 -ffast-math"
 BUILD_OPTIMIZATION = "${FULL_OPTIMIZATION}"
 
 EXTRA_FFCONF_board-tv = "--cpu=cortex-a9"
