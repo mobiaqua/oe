@@ -12,7 +12,7 @@ SRC_URI = "http://www.mpg123.de/download/mpg123-${PV}.tar.bz2"
 EXTRA_OECONF="--with-cpu=generic_nofpu --enable-network=no"
 EXTRA_OECONF_arm="--with-cpu=arm_nofpu --with-optimization=4 --enable-network=no"
 EXTRA_OECONF_arm6="--with-cpu=arm_nofpu --with-optimization=4 --enable-network=no"
-EXTRA_OECONF_armv7a="--with-cpu=neon --with-optimization=4 --enable-network=no"
+EXTRA_OECONF_armv7a-hf="--with-cpu=neon --with-optimization=4 --enable-network=no"
 
 inherit autotools
 
