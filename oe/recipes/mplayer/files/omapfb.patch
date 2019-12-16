@@ -1,0 +1,92 @@
+diff -ur old/Makefile new/Makefile
+--- old/Makefile	2011-12-11 08:34:46.000000000 +0100
++++ new/Makefile	2011-12-11 08:37:41.000000000 +0100
+@@ -514,7 +514,8 @@
+ SRCS_MPLAYER-$(DXR2)         += libao2/ao_dxr2.c libvo/vo_dxr2.c
+ SRCS_MPLAYER-$(DXR3)         += libvo/vo_dxr3.c
+ SRCS_MPLAYER-$(ESD)          += libao2/ao_esd.c
+ SRCS_MPLAYER-$(FBDEV)        += libvo/vo_fbdev.c libvo/vo_fbdev2.c
++SRCS_MPLAYER-$(OMAPFB)       += libvo/vo_omapfb.c libvo/yuv420_to_yuv422.S
+ SRCS_MPLAYER-$(FFMPEG)       += libvo/vo_png.c
+ SRCS_MPLAYER-$(GGI)          += libvo/vo_ggi.c
+ SRCS_MPLAYER-$(GIF)          += libvo/vo_gif89a.c
+diff -ur old/configure new/configure
+--- old/configure	2011-12-09 15:17:12.000000000 +0100
++++ new/configure	2011-12-11 08:46:42.000000000 +0100
+@@ -704,6 +704,7 @@
+ _svga=auto
+ _vesa=auto
+ _fbdev=auto
++_omapfb=no
+ _dvb=auto
+ _dxr2=auto
+ _dxr3=auto
+@@ -1068,6 +1069,8 @@
+   --disable-vesa)       _vesa=no        ;;
+   --enable-fbdev)       _fbdev=yes      ;;
+   --disable-fbdev)      _fbdev=no       ;;
++  --enable-omapfb)      _omapfb=yes     ;;
++  --disable-omapfb)     _omapfb=no      ;;
+   --enable-dvb)         _dvb=yes        ;;
+   --disable-dvb)        _dvb=no         ;;
+   --enable-dxr2)        _dxr2=yes       ;;
+@@ -4667,6 +4670,22 @@
+ 
+ 
+ 
++echocheck "omapfb"
++if test "$_omapfb" = auto ; then
++  _omapfb=no
++  linux && _omapfb=yes
++fi
++if test "$_omapfb" = yes ; then
++  def_omapfb='#define CONFIG_OMAPFB 1'
++  vomodules="omapfb $vomodules"
++else
++  def_omapfb='#undef CONFIG_OMAPFB'
++  novomodules="omapfb $novomodules"
++fi
++echores "$_omapfb"
++
++
++
+ echocheck "DVB"
+ if test "$_dvb" = auto ; then
+   _dvb=no
+@@ -7875,6 +7894,7 @@
+ FAAD = $_faad
+ FASTMEMCPY = $_fastmemcpy
+ FBDEV = $_fbdev
++OMAPFB = $_omapfb
+ FREETYPE = $_freetype
+ FTP = $_ftp
+ GIF = $_gif
+@@ -8419,6 +8439,7 @@
+ $def_dxr2
+ $def_dxr3
+ $def_fbdev
++$def_omapfb
+ $def_ggi
+ $def_ggiwmh
+ $def_gif
+diff -ur old/libvo/video_out.c new/libvo/video_out.c
+--- old/libvo/video_out.c	2011-12-11 08:36:51.000000000 +0100
++++ new/libvo/video_out.c	2011-12-11 08:38:15.000000000 +0100
+@@ -111,6 +111,7 @@
+ extern const vo_functions_t video_out_zr2;
+ extern const vo_functions_t video_out_bl;
+ extern const vo_functions_t video_out_fbdev2;
++extern const vo_functions_t video_out_omapfb;
+ extern const vo_functions_t video_out_png;
+ extern const vo_functions_t video_out_ggi;
+ extern const vo_functions_t video_out_aa;
+@@ -218,6 +219,9 @@
+         &video_out_fbdev,
+         &video_out_fbdev2,
+ #endif
++#ifdef CONFIG_OMAPFB
++        &video_out_omapfb,
++#endif
+ #ifdef CONFIG_SVGALIB
+         &video_out_svga,
+ #endif

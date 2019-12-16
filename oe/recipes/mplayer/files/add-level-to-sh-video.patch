@@ -1,0 +1,22 @@
+diff -ur old/libmpdemux/demux_lavf.c new/libmpdemux/demux_lavf.c
+--- old/libmpdemux/demux_lavf.c	2011-12-21 21:03:16.000000000 +0100
++++ new/libmpdemux/demux_lavf.c	2011-12-21 21:01:14.000000000 +0100
+@@ -405,6 +405,7 @@
+                 codec->height, codec->sample_aspect_ratio.den);
+ 
+             sh_video->ds= demuxer->video;
++            sh_video->level = codec->level;
+             if(codec->extradata_size)
+                 memcpy(sh_video->bih + 1, codec->extradata, codec->extradata_size);
+             if( mp_msg_test(MSGT_HEADER,MSGL_V) ) print_video_header(sh_video->bih, MSGL_V);
+diff -ur old/libmpdemux/stheader.h new/libmpdemux/stheader.h
+--- old/libmpdemux/stheader.h	2011-12-21 21:35:03.000000000 +0100
++++ new/libmpdemux/stheader.h	2011-12-21 21:33:15.000000000 +0100
+@@ -109,6 +109,7 @@
+   // output driver/filters: (set by libmpcodecs core)
+   unsigned int outfmtidx;
+   struct vf_instance *vfilter;          // the video filter chain, used for this video stream
++  int level;
+   int vf_initialized;
+ #ifdef CONFIG_DYNAMIC_PLUGINS
+   void *dec_handle;

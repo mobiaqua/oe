@@ -1,0 +1,25 @@
+diff -ur old/sub/osd_template.c new/sub/osd_template.c
+--- old/sub/osd_template.c	2011-12-25 22:15:52.000000000 +0100
++++ new/sub/osd_template.c	2011-12-25 22:52:26.000000000 +0100
+@@ -466,10 +466,21 @@
+ #ifdef FAST_OSD
+ 		dstbase[4*x+0]=dstbase[4*x+1]=dstbase[4*x+2]=src[x];
+ #else
++#ifdef CONFIG_OMAP4
++		if (src[x] != 0) {
++			dstbase[4*x+0]=0x50;
++			dstbase[4*x+1]=dstbase[4*x+2]=src[x];
++			dstbase[4*x+3]=0xff;
++		} else {
++			dstbase[4*x+0]=dstbase[4*x+1]=dstbase[4*x+2]=0;
++			dstbase[4*x+3]=255-srca[x];
++		}
++#else
+ 		dstbase[4*x+0]=((dstbase[4*x+0]*srca[x])>>8)+src[x];
+ 		dstbase[4*x+1]=((dstbase[4*x+1]*srca[x])>>8)+src[x];
+ 		dstbase[4*x+2]=((dstbase[4*x+2]*srca[x])>>8)+src[x];
+ #endif
++#endif
+             }
+         }
+ #endif /* arch_x86 */
