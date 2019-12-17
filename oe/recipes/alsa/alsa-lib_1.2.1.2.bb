@@ -15,8 +15,8 @@ BBCLASSEXTEND = "native nativesdk"
 ARM_INSTRUCTION_SET = "arm"
 
 SRC_URI = "https://www.alsa-project.org/files/pub/lib/${BP}.tar.bz2"
-SRC_URI[md5sum] = "e6d429dbdcfaa0f034d907fa6dc3735e"
-SRC_URI[sha256sum] = "488373aef5396682f3a411a6d064ae0ad196b9c96269d0bb912fbdeec94b994b"
+SRC_URI[md5sum] = "82ddd3698469beec147e4f4a67134ea0"
+SRC_URI[sha256sum] = "958e260e3673f1f6ff6b2d2c0df3fc2e469bea5b2957163ce96ce17f23e87943"
 
 inherit autotools pkgconfig
 
