@@ -3,7 +3,7 @@ SECTION = "multimedia"
 PRIORITY = "optional"
 HOMEPAGE = "http://www.mplayerhq.hu/"
 DEPENDS = "ffmpeg zlib libpng jpeg freetype fontconfig alsa-lib lzo libmpg123 ncurses virtual/kernel"
-DEPENDS_append_pandaboard = " libdce"
+DEPENDS_append_board-tv = " libdce"
 RDEPENDS_${PN} = "mplayer-common glibc-gconv-cp1250 ttf-dejavu-sans"
 
 LICENSE = "GPL"
@@ -13,19 +13,20 @@ SRC_URI = "svn://svn.mplayerhq.hu/mplayer;module=trunk \
 	   file://makefile-nostrip-svn.patch \
 	   file://mplayer-arm-pld.patch \
 "
-SRC_URI_append_armv7a = " \
+SRC_URI_append_armv7a-hf = " \
 	file://yuv420_to_yuv422.S \
 	file://yuv420_to_nv12.S \
 	file://vo_omapfb.c \
 	file://vo_omap4_v4l2.c \
 	file://vd_omap4_dce.c \
 	file://vd_omap4_dce.h \
-	file://omapfb.patch \
-	file://omap4.patch \
+#	file://omapfb.patch \
+#	file://omap4.patch \
 	file://vo_omap4_osd.patch \
-	file://fix_h264.patch \
-	file://fix_wmv3.patch \
+#	file://fix_h264.patch \
+#	file://fix_wmv3.patch \
 	file://add-level-to-sh-video.patch \
+	file://fix_alsa_buffer_size.patch \
 	"
 
 ARM_INSTRUCTION_SET = "ARM"
@@ -157,16 +158,17 @@ EXTRA_OECONF = " \
 "
 
 EXTRA_OECONF_append_armv6 = " --enable-armv6"
-EXTRA_OECONF_append_armv7a = " --enable-armv6 --enable-neon"
+EXTRA_OECONF_append_armv7a-hf = " --enable-armv6 --enable-neon"
 
-EXTRA_OECONF_append_pandaboard = " --enable-omap4"
+#EXTRA_OECONF_append_board-tv = " --enable-omap4"
+EXTRA_OECONF_append_board-tv = " --enable-fbdev"
 EXTRA_OECONF_append_igep0030 = " --enable-omapfb"
 
 FULL_OPTIMIZATION = "-fexpensive-optimizations -fomit-frame-pointer -frename-registers -O4 -ffast-math"
-FULL_OPTIMIZATION_armv7a = "-fno-tree-vectorize -fomit-frame-pointer -O4 -frename-registers -ffast-math"
+FULL_OPTIMIZATION_armv7a-hf = "-fno-tree-vectorize -fomit-frame-pointer -O4 -frename-registers -ffast-math"
 BUILD_OPTIMIZATION = "${FULL_OPTIMIZATION}"
 
-do_configure_prepend_armv7a() {
+do_configure_prepend_armv7a-hf() {
 	cp ${WORKDIR}/yuv420_to_yuv422.S ${S}/libvo
 	cp ${WORKDIR}/yuv420_to_nv12.S ${S}/libvo
 	cp ${WORKDIR}/vo_omapfb.c ${S}/libvo

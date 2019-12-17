@@ -1,10 +1,9 @@
 diff -ur old/libmpdemux/demux_lavf.c new/libmpdemux/demux_lavf.c
 --- old/libmpdemux/demux_lavf.c	2011-12-21 21:03:16.000000000 +0100
 +++ new/libmpdemux/demux_lavf.c	2011-12-21 21:01:14.000000000 +0100
-@@ -405,6 +405,7 @@
+@@ -405,5 +405,6 @@
                  codec->height, codec->sample_aspect_ratio.den);
  
-             sh_video->ds= demuxer->video;
 +            sh_video->level = codec->level;
              if(codec->extradata_size)
                  memcpy(sh_video->bih + 1, codec->extradata, codec->extradata_size);

@@ -5,7 +5,7 @@ diff -ur old/Makefile new/Makefile
  SRCS_MPLAYER-$(ESD)          += libao2/ao_esd.c
  SRCS_MPLAYER-$(FBDEV)        += libvo/vo_fbdev.c libvo/vo_fbdev2.c
  SRCS_MPLAYER-$(OMAPFB)       += libvo/vo_omapfb.c libvo/yuv420_to_yuv422.S
-+SRCS_MPLAYER-$(OMAP4)        += libvo/vo_omap4_v4l2.c libvo/yuv420_to_nv12.S libmpcodecs/vd_omap4_dce.c
++SRCS_MPLAYER-$(OMAP4)        += libvo/yuv420_to_nv12.S
  SRCS_MPLAYER-$(FFMPEG)       += libvo/vo_png.c
  SRCS_MPLAYER-$(GGI)          += libvo/vo_ggi.c
  SRCS_MPLAYER-$(GIF)          += libvo/vo_gif89a.c
@@ -84,7 +84,7 @@ diff -ur old/libvo/video_out.c new/libvo/video_out.c
          &video_out_omapfb,
  #endif
 +#ifdef CONFIG_OMAP4
-+        &video_out_omap4_v4l2,
++//        &video_out_omap4_v4l2,
 +#endif
  #ifdef CONFIG_SVGALIB
          &video_out_svga,
