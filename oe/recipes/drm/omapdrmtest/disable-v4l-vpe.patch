@@ -5,7 +5,7 @@ diff -ur old/Makefile.am new/Makefile.am
  #
  
  SUBDIRS = util omx_cam
--bin_PROGRAMS = fliptest v4l2capturedisplay filevpedisplay capturevpedisplay
+-bin_PROGRAMS = fliptest v4l2capturedisplay filevpedisplay capturevpedisplay YUVRGBdisplay
 -
 -if ENABLE_V4L2_DMABUF
 -bin_PROGRAMS += dmabuftest
@@ -45,7 +45,7 @@ diff -ur old/Makefile.am new/Makefile.am
 -yuvcopytest_LDADD = $(LDADD_COMMON)
 -videnc2test_SOURCES = videnc2test.c
 -videnc2test_LDADD = $(LDADD_COMMON)
- endif
+ YUVRGBdisplay_SOURCES = YUVRGBdisplay.c
 diff -ur old/configure.ac new/configure.ac
 --- old/configure.ac	2016-01-31 08:10:16.000000000 +0100
 +++ new/configure.ac	2016-01-31 08:28:54.000000000 +0100

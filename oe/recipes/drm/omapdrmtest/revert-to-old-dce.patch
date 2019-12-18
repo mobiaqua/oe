@@ -15,8 +15,8 @@ diff -urp old/viddec3test.c new/viddec3test.c
 +#include <ti/xdais/xdas.h>
 +#include <ti/sdo/ce/Engine.h>
 +#include <ti/sdo/ce/video3/viddec3.h>
- 
- #include <pthread.h>
+ #include <signal.h>
+ #include <unistd.h>
  
 @@ -90,8 +92,6 @@ decoder_close(struct decoder *decoder)
  	if (decoder->params)         dce_free(decoder->params);
@@ -27,34 +27,6 @@ diff -urp old/viddec3test.c new/viddec3test.c
  		dce_free(decoder->inBufs);
  	}
  	if (decoder->outBufs)        dce_free(decoder->outBufs);
-@@ -157,7 +157,7 @@ decoder_open(int argc, char **argv)
- 		/* calculate output buffer parameters: */
- 		width  = ALIGN2 (width, 4);        /* round up to macroblocks */
- 		height = ALIGN2 (height, 4);       /* round up to macroblocks */
--		if (decoder->demux->cc->codec_id == CODEC_ID_MPEG2VIDEO) {
-+		if (decoder->demux->cc->codec_id == AV_CODEC_ID_MPEG2VIDEO) {
- 			padded_width = width;
- 			padded_height= height;
- 		}
-@@ -230,15 +230,15 @@ decoder_open(int argc, char **argv)
- 	decoder->params->numOutputDataUnits = 0;
- 	decoder->params->errorInfoMode    = IVIDEO_ERRORINFO_OFF;
- 
--	if (decoder->demux->cc->codec_id == CODEC_ID_MPEG2VIDEO) {
-+	if (decoder->demux->cc->codec_id == AV_CODEC_ID_MPEG2VIDEO) {
-             decoder->codec = VIDDEC3_create(decoder->engine,
-                                         "ivahd_mpeg2vdec", decoder->params);
-         }
--        else if (decoder->demux->cc->codec_id == CODEC_ID_H264) {
-+        else if (decoder->demux->cc->codec_id == AV_CODEC_ID_H264) {
-             decoder->codec = VIDDEC3_create(decoder->engine,
-                                         "ivahd_h264dec", decoder->params);
-         }
--	else if (decoder->demux->cc->codec_id == CODEC_ID_MPEG4) {
-+	else if (decoder->demux->cc->codec_id == AV_CODEC_ID_MPEG4) {
- 		decoder->demux->first_in_buff = 1;
- 		decoder->codec = VIDDEC3_create(decoder->engine,
-                                         "ivahd_mpeg4dec", decoder->params);
 @@ -279,16 +279,19 @@ decoder_open(int argc, char **argv)
  
  	decoder->inBufs = dce_alloc(sizeof(XDM2_BufDesc));
@@ -93,35 +65,29 @@ diff -urp old/viddec3test.c new/viddec3test.c
  	int eof = 0; /* end of file flag */
  
  
-@@ -363,21 +365,15 @@ decoder_process(struct decoder *decoder)
-         /*set the parameters if it is not the end of file */
- 	if (!eof) {
- 		inArgs->inputID = (XDAS_Int32)buf;
--		outBufs->descs[0].buf = buf->fd[0];
--		outBufs->descs[1].buf = (buf->multiplanar) ?buf->fd[1]:(XDAS_Int8 *)((outBufs->descs[0].buf));
-+		outBufs->descs[0].buf = (XDAS_Int8 *)omap_bo_handle(buf->bo[0]);
+@@ -352,17 +352,11 @@
+ 				decoder->lastOutBuf = buf;
  
+                                 inArgs->inputID = (XDAS_Int32)buf;
+-                                outBufs->descs[0].buf = buf->fd[0];
+-                                outBufs->descs[1].buf = (buf->multiplanar) ?buf->fd[1]:(XDAS_Int8 *)((outBufs->descs[0].buf));
 -
--		if(buf->multiplanar){
--			decoder->outBuf_fd[0] = buf->fd[0];
--			decoder->outBuf_fd[1] = buf->fd[1];
--            dce_buf_lock(2,decoder->outBuf_fd);
--		}
--		else{
--			decoder->outBuf_fd[0] = buf->fd[0];
--			dce_buf_lock(1,decoder->outBuf_fd);
-+		if (buf->multiplanar) {
-+			outBufs->descs[1].buf = (XDAS_Int8 *)omap_bo_handle(buf->bo[1]);
-+		} else {
-+			outBufs->descs[1].buf = (XDAS_Int8 *)decoder->uv_offset;
- 		}
--		decoder->outBufs->descs[0].bufSize.bytes =decoder->padded_width*decoder->padded_height;
--		decoder->outBufs->descs[1].bufSize.bytes = decoder->padded_width* (decoder->padded_height/2);
-+		decoder->outBufs->descs[0].bufSize.bytes = decoder->padded_width * decoder->padded_height;
-+		decoder->outBufs->descs[1].bufSize.bytes = decoder->padded_width * (decoder->padded_height / 2);
- 	}
- 
- 	do {
+-                                if(buf->multiplanar){
+-                                    decoder->outBuf_fd[0] = buf->fd[0];
+-                                    decoder->outBuf_fd[1] = buf->fd[1];
+-                                    dce_buf_lock(2,decoder->outBuf_fd);
+-                                }
+-                                else{
+-                                    decoder->outBuf_fd[0] = buf->fd[0];
+-                                    dce_buf_lock(1,decoder->outBuf_fd);
++                                outBufs->descs[0].buf = (XDAS_Int8 *)omap_bo_handle(buf->bo[0]);
++                                if (buf->multiplanar) {
++                                        outBufs->descs[1].buf = (XDAS_Int8 *)omap_bo_handle(buf->bo[1]);
++                                } else {
++                                        outBufs->descs[1].buf = (XDAS_Int8 *)decoder->uv_offset;
+                                 }
+                                 decoder->outBufs->descs[0].bufSize.bytes =decoder->padded_width*decoder->padded_height;
+                                 decoder->outBufs->descs[1].bufSize.bytes = decoder->padded_width* (decoder->padded_height/2);
 @@ -387,11 +383,11 @@ decoder_process(struct decoder *decoder)
  			outArgs->outputID[0] = 0;
  			outArgs->freeBufID[0] = 0;
@@ -138,7 +104,7 @@ diff -urp old/viddec3test.c new/viddec3test.c
  			outArgs->outBufsInUseFlag = 0;
  
  		} else {
-@@ -423,21 +419,8 @@ decoder_process(struct decoder *decoder)
+@@ -447,20 +441,6 @@
  		for (i = 0; outArgs->freeBufID[i]; i++) {
  			buf = (struct buffer *)outArgs->freeBufID[i];
  			disp_put_vid_buffer(decoder->disp, buf);
@@ -151,15 +117,14 @@ diff -urp old/viddec3test.c new/viddec3test.c
 -				decoder->outBuf_fd[freeBufCount++] = buf->fd[0];
 -				DBG("FreeBufID: %p fd:%d\n", outArgs->freeBufID[i], buf->fd[0]);
 -			}
+-		}
+-
+-		if(freeBufCount){
+-			dce_buf_unlock(freeBufCount,decoder->outBuf_fd);
+-			freeBufCount =0;
  		}
  
--		if(freeBufCount){
--            if(!eof)dce_buf_unlock(freeBufCount,decoder->outBuf_fd);
--			freeBufCount =0;
--		}
- 		if (outArgs->outBufsInUseFlag) {
- 			MSG("%p: TODO... outBufsInUseFlag", decoder); // XXX
- 		}
+ 		decoder->outBufsInUseFlag = outArgs->outBufsInUseFlag;
 @@ -450,7 +433,6 @@ void *decode_stream(void *decoderHandle)
  {
  	int ret = 0;
