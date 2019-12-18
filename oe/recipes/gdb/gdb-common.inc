@@ -13,15 +13,22 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=59530bdf33659b29e73d4adb9f9f6552 \
 inherit autotools
 
 SRC_URI = "${GNU_MIRROR}/gdb/gdb-${PV}.tar.gz \
-           file://0001-include-sys-types.h-for-mode_t.patch \
+           file://0001-gdbserver-ctrl-c-handling.patch \
            file://0002-make-man-install-relative-to-DESTDIR.patch \
+           file://0003-mips-linux-nat-Define-_ABIO32-if-not-defined.patch \
+           file://0004-ppc-ptrace-Define-pt_regs-uapi_pt_regs-on-GLIBC-syst.patch \
+           file://0005-Add-support-for-Renesas-SH-sh4-architecture.patch \
            file://0006-Dont-disable-libreadline.a-when-using-disable-static.patch \
+           file://0007-use-asm-sgidefs.h.patch \
+           file://0008-Use-exorted-definitions-of-SIGRTMIN.patch \
            file://0009-Change-order-of-CFLAGS.patch \
            file://0010-resolve-restrict-keyword-conflict.patch \
+           file://0011-Fix-invalid-sigprocmask-call.patch \
+           file://CVE-2019-1010180.patch \
 "
 
-SRC_URI[md5sum] = "88401d874046b0ba83f78f30e43c6ad8"
-SRC_URI[sha256sum] = "57e9e9aa3172ee16aa1e9c66fef08b4393b51872cc153e3f1ffdf18a57440586"
+SRC_URI[md5sum] = "3c61672225a6a80875a5eea8cd25e2a0"
+SRC_URI[sha256sum] = "26ce655216cd03f4611518a7a1c31d80ec8e884c16715e9ba8b436822e51434b"
 
 export CC_FOR_BUILD = "${BUILD_CC}"
 export CXX_FOR_BUILD = "${BUILD_CXX}"
