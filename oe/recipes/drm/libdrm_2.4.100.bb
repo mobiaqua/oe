@@ -16,8 +16,8 @@ SRC_URI = "http://dri.freedesktop.org/libdrm/${BP}.tar.bz2 \
 
 FILESPATHPKG =. "libdrm-${PN}:"
 
-SRC_URI[md5sum] = "31964aa15bdea1a40c5941d4ce0962ee"
-SRC_URI[sha256sum] = "d80dd5a76c401f4c8756dcccd999c63d7e0a3bad258d96a829055cfd86ef840b"
+SRC_URI[md5sum] = "f47bc87e28198ba527e6b44ffdd62f65"
+SRC_URI[sha256sum] = "c77cc828186c9ceec3e56ae202b43ee99eb932b4a87255038a80e8a1060d0a5d"
 
 inherit autotools pkgconfig
 
