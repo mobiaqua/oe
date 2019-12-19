@@ -26,6 +26,7 @@ EXTRA_OECONF += "--disable-cairo-tests \
                  --enable-omap-experimental-api \
                  --disable-valgrind \
                  --disable-manpages \
+                 --disable-kms \
                  --disable-freedreno \
                  --disable-intel \
                  --disable-radeon \
@@ -40,4 +41,3 @@ PACKAGES =+ "${PN}-drivers ${PN}-omap"
 RRECOMMENDS_${PN}-drivers = "${PN}-omap"
 
 FILES_${PN}-omap = "${libdir}/libdrm_omap.so.*"
-FILES_${PN}-kms = "${libdir}/libkms*.so.*"
