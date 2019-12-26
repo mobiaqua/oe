@@ -113,7 +113,7 @@ prepare_tools() {
 	fi
 	if [ "$OS" = "Linux" ]; then
 		for i in $tools; do
-			if [ ! -e /usr/bin/$i ]; then
+			if [ ! -e /usr/bin/$i ] && [ ! -e /bin/$i ]; then
 				echo "* ERROR *  Missing $i!"
 				return 1
 			fi
