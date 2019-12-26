@@ -118,7 +118,7 @@ prepare_tools() {
 		done
 	fi
 
-	if [ "$OS" = "Darwin" ]
+	if [ "$OS" = "Darwin" ]; then
 		path=`whereis desktop-file-install`
 		if [ ! -e /opt/local/bin/desktop-file-install ]; then
 			echo "* ERROR *  Missing desktop-file-utils package"
