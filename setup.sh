@@ -132,83 +132,86 @@ prepare_tools() {
 		return 1
 	fi
 
-	path=`whereis intltoolize`
-	if [ "$OS" = "Darwin" ] && [ ! -e /opt/local/bin/intltoolize ]; then
-		echo "* ERROR *  Missing intltool package"
-		return 1
+	if [ "$OS" = "Darwin" ]; then
+		path=`whereis intltoolize`
+		if [ ! -e /opt/local/bin/intltoolize ]; then
+			echo "* ERROR *  Missing intltool package"
+			return 1
+		fi
 	fi
-	if [ "$OS" != "Darwin" ] && [ "$path" = "" ]; then
+	if [ "$OS" == "Linux" ] && [ ! -e /usr/bin/intltoolize ]; then
 		echo "* ERROR *  Missing intltool package"
 		return 1
 	fi
 
-	path=`whereis xz`
-	if [ "$OS" = "Darwin" ] && [ ! -e /opt/local/bin/xz ]; then
-		echo "* ERROR *  Missing xz package"
-		return 1
+	if [ "$OS" = "Darwin" ]; then
+		path=`whereis xz`
+		if [ ! -e /opt/local/bin/xz ]; then
+			echo "* ERROR *  Missing xz package"
+			return 1
+		fi
 	fi
-	if [ "$OS" != "Darwin" ] && [ "$path" = "" ]; then
+	if [ "$OS" == "Linux" ] && [ ! -e /usr/bin/xz ]; then
 		echo "* ERROR *  Missing xz-utils package"
 		return 1
 	fi
 
-	path=`whereis m4`
 	if [ "$OS" = "Darwin" ]; then
-		/bin/rm -f ${OE_BASE}/oe/bin/m4
-		if [ -e /opt/local/bin/gm4 ]; then
-			/bin/ln -s /opt/local/bin/gm4 ${OE_BASE}/oe/bin/m4
-		else
+		path=`whereis m4`
+		if [ ! -e /opt/local/bin/m4 ]; then
 			echo "* ERROR *  Missing m4 package"
 			return 1
 		fi
 	fi
-	if [ "$OS" != "Darwin" ] && [ "$path" = "" ]; then
+	if [ "$OS" == "Linux" ] && [ ! -e /usr/bin/m4 ]; then
 		echo "* ERROR *  Missing m4 package"
 		return 1
 	fi
 
-	path=`whereis makeinfo`
-	if [ "$OS" = "Darwin" ] && [ ! -e /opt/local/bin/makeinfo ]; then
-		echo "* ERROR *  Missing texinfo package"
-		return 1
+	if [ "$OS" = "Darwin" ]; then
+		path=`whereis makeinfo`
+		if [ ! -e /opt/local/bin/makeinfo ]; then
+			echo "* ERROR *  Missing texinfo package"
+			return 1
+		fi
 	fi
-	if [ "$OS" != "Darwin" ] && [ "$path" = "" ]; then
+	if [ "$OS" == "Linux" ] && [ ! -e /usr/bin/makeinfo ]; then
 		echo "* ERROR *  Missing texinfo package"
 		return 1
 	fi
 
-	path=`whereis svn`
-	if [ "$OS" = "Darwin" ] && [ ! -e /opt/local/bin/svn ]; then
-		echo "* ERROR *  Missing subversion package"
-		return 1
+	if [ "$OS" = "Darwin" ]; then
+		path=`whereis svn`
+		if [ ! -e /opt/local/bin/svn ]; then
+			echo "* ERROR *  Missing subversion package"
+			return 1
+		fi
 	fi
-	if [ "$OS" != "Darwin" ] && [ "$path" = "" ]; then
+	if [ "$OS" == "Linux" ] && [ ! -e /usr/bin/svn ]; then
 		echo "* ERROR *  Missing subversion package"
 		return 1
 	fi
 
-	path=`whereis glibtool`
-	if [ "$OS" = "Darwin" ] && [ ! -e /opt/local/bin/glibtool ]; then
-		echo "* ERROR *  Missing glib2 package"
-		return 1
+	if [ "$OS" = "Darwin" ]; then
+		path=`whereis glibtool`
+		if [ ! -e /opt/local/bin/glibtool ]; then
+			echo "* ERROR *  Missing glib2 package"
+			return 1
+		fi
 	fi
-	if [ "$OS" != "Darwin" ] && [ "$path" = "" ]; then
+	if [ "$OS" == "Linux" ] && [ ! -e /usr/bin/glibtool ]; then
 		echo "* ERROR *  Missing libglib2.0-bin package"
 		return 1
 	fi
 
-	path=`whereis pkg-config`
-	if [ "$OS" = "Darwin" ] && [ ! -e /opt/local/bin/pkg-config ]; then
-		echo "* ERROR *  Missing pkgconfig package"
-		return 1
+	if [ "$OS" = "Darwin" ]; then
+		path=`whereis xargs`
+		if [ "$path" = "" ]; then
+			echo "* ERROR *  Missing findutils package"
+			return 1
+		fi
 	fi
-	if [ "$OS" != "Darwin" ] && [ "$path" = "" ]; then
-		echo "* ERROR *  Missing pkg-config package"
-		return 1
-	fi
-
-	path=`whereis xargs`
-	if [ "$path" = "" ]; then
+	if [ "$OS" == "Linux" ] && [ ! -e /usr/bin/xargs ]; then
 		echo "* ERROR *  Missing findutils package"
 		return 1
 	fi
@@ -221,6 +224,10 @@ prepare_tools() {
 			echo "* ERROR *  Missing findutils package"
 			return 1
 		fi
+	fi
+	if [ "$OS" == "Linux" ] && [ ! -e /usr/bin/find ]; then
+		echo "* ERROR *  Missing findutils package"
+		return 1
 	fi
 
 	return 0
