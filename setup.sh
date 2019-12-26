@@ -199,7 +199,7 @@ prepare_tools() {
 			return 1
 		fi
 	fi
-	if [ "$OS" == "Linux" ] && [ ! -e /usr/bin/glibtool ]; then
+	if [ "$OS" == "Linux" ] && [ ! -e /usr/bin/gapplication ]; then
 		echo "* ERROR *  Missing libglib2.0-bin package"
 		return 1
 	fi
