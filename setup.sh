@@ -88,9 +88,11 @@ prepare_tools() {
 		;;
 	Linux)
 		if [ -e /bin/tar ]; then
+			rm -f ${OE_BASE}/oe/bin/deftar
 			/bin/ln -s /bin/tar ${OE_BASE}/oe/bin/deftar
 		fi
 		if [ -e /bin/readlink ]; then
+			rm -f ${OE_BASE}/oe/bin/readlink
 			/bin/ln -s /bin/readlink ${OE_BASE}/oe/bin/readlink
 		fi
 	esac
@@ -111,7 +113,7 @@ prepare_tools() {
 	fi
 	if [ "$OS" = "Linux" ]; then
 		for i in $tools; do
-			if [ -e /usr/bin/$i ]; then
+			if [ ! -e /usr/bin/$i ]; then
 				echo "* ERROR *  Missing $i!"
 				return 1
 			fi
