@@ -4,7 +4,7 @@ LICENSE = "LGPL"
 SECTION = "libs"
 PR = "r1"
 
-SRC_URI = "http://www.mr511.de/software/libelf-${PV}.tar.gz;name=archive \
+SRC_URI = "https://fossies.org/linux/misc/old/libelf-${PV}.tar.gz;name=archive \
 	  "
 inherit autotools
 
