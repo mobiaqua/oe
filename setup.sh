@@ -107,16 +107,16 @@ prepare_tools() {
 					return 1
 				fi
 			fi
-		fi
-	done
+		done
+	fi
 	if [ "$OS" = "Linux" ]
 		for i in $tools; do
 			if [ -e /usr/bin/$i ]; then
 				echo "* ERROR *  Missing $i!"
 				return 1
 			fi
-		fi
-	done
+		done
+	fi
 
 	if [ "$OS" = "Darwin" ]
 		path=`whereis desktop-file-install`
