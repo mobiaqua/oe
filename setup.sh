@@ -95,7 +95,7 @@ prepare_tools() {
 		fi
 	esac
 
-	if [ "$OS" = "Darwin" ]
+	if [ "$OS" = "Darwin" ]; then
 		for i in $tools; do
 			path=`whereis $i`
 			if [ "$path" = "" ]; then
@@ -109,7 +109,7 @@ prepare_tools() {
 			fi
 		done
 	fi
-	if [ "$OS" = "Linux" ]
+	if [ "$OS" = "Linux" ]; then
 		for i in $tools; do
 			if [ -e /usr/bin/$i ]; then
 				echo "* ERROR *  Missing $i!"
