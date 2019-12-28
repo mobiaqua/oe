@@ -37,11 +37,10 @@ do_install() {
 	cp -pR ${WORKDIR}/includes/* ${D}${includedir}/
 
 	install -d ${D}${libdir}
-	for i in EGL GLESv1_CM GLESv2 IMGegl PVRScopeServices glslcompiler pvr2d pvrws_KMS srv_init srv_um usc
+	for i in GLESv1_CM GLESv2 IMGegl PVRScopeServices glslcompiler pvr2d pvrws_KMS srv_init srv_um usc
 	do
 		cp -p ${S}${libdir}/lib${i}.so.1.9.6.0 ${D}${libdir}/lib${i}.so
 	done
-	ln -s libEGL.so ${D}${libdir}/libEGL.so.1
 	ln -s libGLESv1_CM.so ${D}${libdir}/libGLESv1_CM.so.1
 	ln -s libGLESv2.so ${D}${libdir}/libGLESv2.so.2
 
