@@ -5,10 +5,10 @@ LICENSE = "GPLv2"
 COMPATIBLE_MACHINE = "board-tv"
 
 PR = "r0"
-PV = "1.9.0.8.1.1"
+PV = "1.9.6"
 PR_append = "+gitr-${SRCREV}"
 
-DEPENDS = "libdrm linux-omap4"
+DEPENDS = "libdrm linux-omap4 omap4-sgx-pvrsrvinit"
 
 SRCREV = "1b9a0badb65efd7f5112798b26ecbdbbc00ca5bb"
 

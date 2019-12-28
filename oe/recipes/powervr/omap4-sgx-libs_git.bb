@@ -13,7 +13,6 @@ SRC_URI = "git://github.com/mobiaqua/pvr-omap4.git;protocol=git \
 	   "
 
 COMPATIBLE_MACHINE = "board-tv"
-DEPENDS = "omap4-sgx-modules"
 PROVIDES += "virtual/egl"
 
 DEFAULT_PREFERENCE = "10"
@@ -34,9 +33,6 @@ do_compile() {
 }
 
 do_install() {
-	install -d ${D}${bindir}
-	cp -pR ${S}${bindir}/pvrsrvinit ${D}${bindir}/
-
 	install -d ${D}${includedir}
 	cp -pR ${WORKDIR}/includes/* ${D}${includedir}/
 

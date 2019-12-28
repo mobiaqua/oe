@@ -6,7 +6,7 @@ DESCRIPTION = "<description>"
 PV = "1.0.0"
 PR = "r0"
 
-INSTALL_PKGS += "u-boot-pandaboard omap4-sgx-libs omap4-sgx-modules"
+INSTALL_PKGS += "u-boot-pandaboard omap4-sgx-libs omap4-sgx-modules omap4-sgx-pvrsrvinit"
 
 RDEPENDS += ""
 RRECOMMENDS += ""
