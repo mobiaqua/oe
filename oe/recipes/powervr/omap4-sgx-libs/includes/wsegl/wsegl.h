@@ -61,7 +61,7 @@ extern "C" {
 // WSEGL API Version Number
 */
 
-#define WSEGL_VERSION 4
+#define WSEGL_VERSION 2
 #define WSEGL_DEFAULT_DISPLAY 0
 #define WSEGL_DEFAULT_NATIVE_ENGINE 0
 
@@ -69,7 +69,7 @@ extern "C" {
 #define WSEGL_TRUE		1
 #define WSEGL_NULL		0
 
-#define	WSEGL_UNREFERENCED_PARAMETER(param) (param) = (param)
+#define WSEGL_UNREFERENCED_PARAMETER(param) (param) = (param)
 
 /*
 // WSEGL handles
@@ -108,7 +108,7 @@ typedef struct WSEGLCaps_TAG
 /*
 // Drawable type
 */
-#define WSEGL_NO_DRAWABLE			0x0
+#define WSEGL_NO_DRAWABLE		0x0
 #define WSEGL_DRAWABLE_WINDOW		0x1
 #define WSEGL_DRAWABLE_PIXMAP		0x2
 
@@ -176,7 +176,7 @@ typedef struct WSEGLConfig_TAG
 {
 	/*
 	// Type of drawables this configuration applies to -
-	// OR'd values of drawable types. 
+	// OR'd values of drawable types.
 	*/
 	unsigned long			ui32DrawableType;
 
@@ -193,16 +193,13 @@ typedef struct WSEGLConfig_TAG
 	unsigned long			ulNativeVisualID;
 
 	/* Native Visual */
-	unsigned long			ulNativeVisualType;
+	void				*hNativeVisual;
 
 	/* Transparent Type */
-	WSEGLTransparentType	eTransparentType;
+	WSEGLTransparentType		eTransparentType;
 
 	/* Transparent Color - only used if transparent type is COLOR_KEY */
 	unsigned long			ulTransparentColor; /* packed as 0x00RRGGBB */
-
-	/* Framebuffer Target - set to WSEGL_TRUE if config compatible with framebuffer */
-	unsigned long			ulFramebufferTarget;
 
 } WSEGLConfig;
 
@@ -227,7 +224,7 @@ typedef enum WSEGLError_TAG
 	 */
 	WSEGL_BAD_CONFIG = WSEGL_BAD_MATCH,
 
-} WSEGLError; 
+} WSEGLError;
 
 /*
 // Drawable orientation (in degrees anti-clockwise)
@@ -239,7 +236,7 @@ typedef enum WSEGLRotationAngle_TAG
 	WSEGL_ROTATE_180 = 2,
 	WSEGL_ROTATE_270 = 3
 
-} WSEGLRotationAngle; 
+} WSEGLRotationAngle;
 
 /*
 // Drawable information required by OpenGL-ES driver
@@ -259,34 +256,19 @@ typedef struct WSEGLDrawableParams_TAG
 	WSEGLPixelFormat		ePixelFormat;
 
 	/* User space cpu virtual address of the drawable */
-	void   					*pvLinearAddress;
+	void				*pvLinearAddress;
 
 	/* HW address of the drawable */
 	unsigned long			ui32HWAddress;
 
-	/* Override display's HW_SYNC mode */
-	unsigned long			bWaitForRender;
+	/* Private data for the drawable */
+	void				*hPrivateData;
 
 	/* Flags */
 	unsigned long			ulFlags;
 
 	/* Rotation angle of drawable (presently source only) */
 	WSEGLRotationAngle		eRotationAngle;
-
-	/*
-	// Optional PowerVR Services 4 MEMINFO pointer. This may be used for
-	// internal (implicit) synchronization purposes, and by PDUMP. It should
-	// refer to the same object as the other fields in this structure.
-	*/
-	void					*hMemInfo;
-
-	/*
-	// Optional PowerVR Services 4 SYNCINFO pointers to sent down as source
-	// surface (texture) dependencies of a render. If these are provided
-	// when not applicable, they will be ignored. If a sync is not needed,
-	// it should be passed as NULL.
-	*/
-	void					*ahSyncInfo[WSEGL_MAX_SRC_SYNCS];
 
 } WSEGLDrawableParams;
 
@@ -323,18 +305,13 @@ typedef struct WSEGL_FunctionTable_TAG
 
 	WSEGLError (*pfnWSEGL_CopyFromPBuffer)(void *, unsigned long, unsigned long, unsigned long, WSEGLPixelFormat, NativePixmapType);
 
-	WSEGLError (*pfnWSEGL_GetDrawableParameters)(WSEGLDrawableHandle, WSEGLDrawableParams *, WSEGLDrawableParams *, unsigned long);
+	WSEGLError (*pfnWSEGL_GetDrawableParameters)(WSEGLDrawableHandle, WSEGLDrawableParams *, WSEGLDrawableParams *);
 
 	WSEGLError (*pfnWSEGL_ConnectDrawable)(WSEGLDrawableHandle);
 
 	WSEGLError (*pfnWSEGL_DisconnectDrawable)(WSEGLDrawableHandle);
 
-	WSEGLError (*pfnWSEGL_FlagStartFrame)(void);
-
-
-#if defined (__QNXNTO__)
-	WSEGLError (*pfnWSEGL_WaitForDrawableRenderBuffer)(WSEGLDrawableHandle);
-#endif
+	WSEGLError (*pfnWSEGL_PresentDrawable)(WSEGLDrawableHandle, unsigned int, int, int, int, int);
 
 } WSEGL_FunctionTable;
 
@@ -343,7 +320,7 @@ WSEGL_IMPORT const WSEGL_FunctionTable *WSEGL_GetFunctionTablePointer(void);
 
 #ifdef __cplusplus
 }
-#endif 
+#endif
 
 #endif /* __WSEGL_H__ */
 
