@@ -12,6 +12,7 @@ DEPENDS = "libpthread-stubs udev"
 
 SRC_URI = "http://dri.freedesktop.org/libdrm/${BP}.tar.bz2 \
            file://remove-xorg-dep.patch \
+           file://add-deps.patch \
           "
 
 FILESPATHPKG =. "libdrm-${PN}:"
