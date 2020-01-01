@@ -6,7 +6,7 @@ PR = "r0"
 
 DEPENDS = "udev libdrm"
 
-SRCREV = "fbf975f64e1d08587ee30c6e1d8cd9c0690d4721"
+SRCREV = "7c469a6d7a92ee702c5852d35564b3942878b5b2"
 SRC_URI = "git://github.com/mobiaqua/libgbm.git;protocol=git \
 "
 
