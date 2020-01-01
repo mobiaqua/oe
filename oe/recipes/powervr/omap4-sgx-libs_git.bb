@@ -37,7 +37,7 @@ do_install() {
 	cp -pR ${WORKDIR}/includes/* ${D}${includedir}/
 
 	install -d ${D}${libdir}
-	for i in GLESv1_CM GLESv2 IMGegl PVRScopeServices glslcompiler pvr2d pvrws_KMS srv_init srv_um usc
+	for i in GLESv1_CM GLESv2 IMGegl PVRScopeServices glslcompiler pvr2d srv_init srv_um usc
 	do
 		cp -p ${S}${libdir}/lib${i}.so.1.9.6.0 ${D}${libdir}/lib${i}.so
 	done
@@ -45,9 +45,6 @@ do_install() {
 	ln -s libGLESv2.so ${D}${libdir}/libGLESv2.so.2
 
 	cp -p ${S}${libdir}/libwayland-server.so.0 ${D}${libdir}/
-
-	install -d ${D}${libdir}/gbm
-	cp -p ${S}${libdir}/gbm/gbm_pvr.so.1.9.6.0 ${D}${libdir}/gbm/gbm_pvr.so
 
 	install -d ${D}${libdir}/pkgconfig
 	for i in egl glesv1_cm glesv2
