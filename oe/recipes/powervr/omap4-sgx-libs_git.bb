@@ -24,12 +24,13 @@ do_install_virtclass-native() {
         install -m 0755 ${S}/makedevs ${D}${bindir}/
 }
 
-do_configure() {
-	install -m 0644 ${WORKDIR}/wayland-dummy.c ${S}/
+do configure()
+{
 }
 
 do_compile() {
 	${CC} ${CFLAGS} ${LDFLAGS} ${S}/wayland-dummy.c -shared -o ${S}${libdir}/libwayland-server.so.0
+	${CC} ${CFLAGS} ${LDFLAGS} ${S}/egl-wrapper.c -shared -o ${S}/libEGL.so
 }
 
 do_install() {
@@ -45,6 +46,8 @@ do_install() {
 	ln -s libGLESv2.so ${D}${libdir}/libGLESv2.so.2
 
 	cp -p ${S}${libdir}/libwayland-server.so.0 ${D}${libdir}/
+	cp -p ${S}/libEGL.so ${D}${libdir}/
+	ln -s libEGL.so ${D}${libdir}/libEGL.so.1
 
 	install -d ${D}${libdir}/pkgconfig
 	for i in egl glesv1_cm glesv2
