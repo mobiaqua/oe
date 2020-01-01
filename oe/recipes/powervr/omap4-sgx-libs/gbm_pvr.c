@@ -184,7 +184,7 @@ gbm_pvr_bo_create(struct gbm_device *gbm,
    bo->base.gbm = gbm;
    bo->base.width = width;
    bo->base.height = height;
-   bo->base.stride = ALIGN(width, 16) * 4;
+   bo->base.stride = ALIGN(width, 32) * 4;
    bo->base.format = gbm_format_canonicalize(format);
    bo->bo = omap_bo_new(pvr->omap_dev,
                         PAGE_ALIGN(bo->base.stride * bo->base.height),

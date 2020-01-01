@@ -120,7 +120,7 @@ static WSEGLError wseglCreateWindowDrawable
     drawable->handle.window = (struct gbm_pvr_surface *)nativeWindow;
     drawable->width = drawable->handle.window->base.width;
     drawable->height = drawable->handle.window->base.height;
-    drawable->stride = ALIGN(drawable->width, 16);
+    drawable->stride = ALIGN(drawable->width, 32);
 
     for (int i = 0; i < PVR_NUM_BACK_BUFFERS; i++)
     {
@@ -159,7 +159,7 @@ static WSEGLError wseglCreatePixmapDrawable(WSEGLDisplayHandle display, WSEGLCon
     drawable->handle.pixmap = (struct gbm_pvr_bo *)nativePixmap;
     drawable->width = drawable->handle.pixmap->base.width;
     drawable->height = drawable->handle.pixmap->base.height;
-    drawable->stride = ALIGN(drawable->width, 16);
+    drawable->stride = ALIGN(drawable->width, 32);
 
     if (PVR2DImportGEM(drawable->display->pvr2dContextHandle,
                        drawable->handle.pixmap->base.handle.u32,
