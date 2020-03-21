@@ -7,10 +7,11 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=751419260aa954499f7abaabaa882bbe"
 
 DEPENDS = "libxml2"
 
-SRCREV = "0e14da978ea906c7fdaf90f54f798a542e79ce8f"
-SRC_URI = "git://anongit.freedesktop.org/evtest;protocol=git"
-
-PV = "1.31+${SRCPV}"
+SRCREV = "16e5104127a620686bdddc4a9ad62881134d6c69"
+SRC_URI = "git://gitlab.freedesktop.org/libevdev/evtest.git;protocol=https \
+           file://add_missing_limits_h_include.patch \
+           file://0001-Fix-build-on-32bit-arches-with-64bit-time_t.patch \
+           "
 
 S = "${WORKDIR}/git"
 
