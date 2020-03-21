@@ -44,7 +44,7 @@ diff -ur old/iconvdata/Makefile new/iconvdata/Makefile
 -	   IBM1364 IBM1371 IBM1388 IBM1390 IBM1399 ISO_11548-1 MIK BRF	 \
 -	   MAC-CENTRALEUROPE KOI8-RU ISO8859-9E				 \
 -	   CP770 CP771 CP772 CP773 CP774
-+modules	:= IBM850 CP1250
++modules	:= IBM437 IBM850 CP1250
  
  modules.so := $(addsuffix .so, $(modules))
  
