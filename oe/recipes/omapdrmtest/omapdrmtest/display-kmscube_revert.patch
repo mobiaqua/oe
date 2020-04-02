@@ -211,14 +211,3 @@
  	if (buf_kmsc->egl_img == EGL_NO_IMAGE_KHR) {
  		ERROR("eglCreateImageKHR failed!\n");
  		goto fail;
-@@ -1185,8 +1074,8 @@ create_texture(struct display_kmscube *d
- 		goto fail;
- 	}
- 
--        glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
--        glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
- 
- 	// Update video texture / EGL Image.
-         disp_kmsc->gl.glEGLImageTargetTexture2DOES(GL_TEXTURE_EXTERNAL_OES, buf_kmsc->egl_img);
