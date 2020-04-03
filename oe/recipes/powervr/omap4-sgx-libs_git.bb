@@ -38,7 +38,7 @@ do_compile() {
 	export GBM_LIBS=`pkg-config --libs gbm`
 	${CC} ${CFLAGS} ${LDFLAGS} ${WORKDIR}/wayland-dummy.c -shared -o ${S}/libwayland-server.so.0
 	${CC} ${CFLAGS} ${LDFLAGS} ${WORKDIR}/egl-wrapper.c -shared -o ${S}/libEGL.so
-	${CC} ${CFLAGS} ${LDFLAGS} ${GBM_CFLAGS} ${GBM_LIBS} ${DRM_CFLAGS} ${DRM_LIBS} ${WORKDIR}/gbm_pvr.c \
+	${CC} ${CFLAGS} ${LDFLAGS} ${GBM_CFLAGS} ${GBM_LIBS} ${DRM_CFLAGS} ${DRM_LIBS} -lpvr2d ${WORKDIR}/gbm_pvr.c \
 		-fPIC -shared -o ${S}/gbm_pvr.so
 	${CC} ${CFLAGS} ${LDFLAGS} ${GBM_CFLAGS} ${GBM_LIBS} ${DRM_CFLAGS} ${DRM_LIBS} -lpvr2d ${WORKDIR}/pvrws_GBM.c \
 		-fPIC -shared -o ${S}/libpvrws_GBM.so

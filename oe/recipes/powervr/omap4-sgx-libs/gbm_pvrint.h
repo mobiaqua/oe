@@ -24,7 +24,7 @@
 #ifndef _GBM_PVR_INTERNAL_H_
 #define _GBM_PVR_INTERNAL_H_
 
-#include "gbmint.h"
+#include <gbmint.h>
 
 #define PVR_NUM_BACK_BUFFERS 3
 

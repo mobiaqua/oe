@@ -39,7 +39,19 @@
 #include <sys/mman.h>
 
 #include "gbm_pvrint.h"
-#include "gbmint.h"
+
+static uint32_t
+gbm_pvr_format_canonicalize(uint32_t gbm_format)
+{
+   switch (gbm_format) {
+   case GBM_BO_FORMAT_XRGB8888:
+      return GBM_FORMAT_XRGB8888;
+   case GBM_BO_FORMAT_ARGB8888:
+      return GBM_FORMAT_ARGB8888;
+   default:
+      return gbm_format;
+   }
+}
 
 static int
 gbm_pvr_is_format_supported(struct gbm_device *gbm,
@@ -51,7 +63,7 @@ gbm_pvr_is_format_supported(struct gbm_device *gbm,
    if ((usage & GBM_BO_USE_CURSOR) && (usage & GBM_BO_USE_RENDERING))
       return 0;
 
-   format = gbm_format_canonicalize(format);
+   format = gbm_pvr_format_canonicalize(format);
    switch (format) {
       case GBM_FORMAT_XRGB8888:
       case GBM_FORMAT_ARGB8888:
@@ -185,7 +197,7 @@ gbm_pvr_bo_create(struct gbm_device *gbm,
    bo->base.width = width;
    bo->base.height = height;
    bo->base.stride = ALIGN(width, 32) * 4;
-   bo->base.format = gbm_format_canonicalize(format);
+   bo->base.format = gbm_pvr_format_canonicalize(format);
    bo->bo = omap_bo_new(pvr->omap_dev,
                         PAGE_ALIGN(bo->base.stride * bo->base.height),
                         OMAP_BO_SCANOUT | OMAP_BO_WC);
@@ -271,7 +283,7 @@ gbm_pvr_surface_create(struct gbm_device *gbm,
    surf->base.gbm = gbm;
    surf->base.width = width;
    surf->base.height = height;
-   surf->base.format = gbm_format_canonicalize(format);
+   surf->base.format = gbm_pvr_format_canonicalize(format);
    surf->base.flags = flags;
    for (int i = 0; i < PVR_NUM_BACK_BUFFERS; i++) {
       surf->back_buffers[i] = gbm_pvr_bo_create(gbm, width, height, format, flags, NULL, 0);
