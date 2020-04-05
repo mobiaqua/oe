@@ -11,12 +11,11 @@ INC_PR = "r1"
 
 inherit autotools gettext
 
-#if uclibc ntpl is merged into trunk we can enable tls for armv4 again
 EXTRA_OECONF = "${@['','--disable-tls'][bb.data.getVar('ARM_ABI', d, 1) == 'oabi' and \
-		bb.data.getVar('TARGET_OS', d, 1).find('uclibc') >= 0 ]} \
-		--enable-elf-shlibs \
-		--enable-dynamic-e2fsck --disable-nls --sbindir=${base_sbindir} \
-		--disable-libuuid --disable-uuidd --disable-libblkid --disable-fsck"
+	bb.data.getVar('TARGET_OS', d, 1).find('uclibc') >= 0 ]} \
+	--enable-elf-shlibs \
+	--enable-dynamic-e2fsck --disable-nls --sbindir=${base_sbindir} \
+	--disable-libuuid --disable-uuidd --disable-libblkid --disable-fsck"
 
 PARALLEL_MAKE = ""
 
@@ -36,7 +35,7 @@ do_install_append_pn-e2fsprogs () {
 		mv ${D}${base_sbindir}/$f ${D}${base_sbindir}/$f.${PN}
 	done
 	for f in chattr; do
-		mv ${D}${bindir}/$f ${D}${bindir}/$f.${PN}
+		rm ${D}${bindir}/$f
 	done
 	fsck=$(cd ${D}${base_sbindir}/ && ls -1 fsck.ext* | sed s/[^\.]*//)
 	for e in $fsck; do
@@ -45,15 +44,6 @@ do_install_append_pn-e2fsprogs () {
 		ln -sf e2fsck.${PN} ${D}${base_sbindir}/fsck$e.${PN}
 		ln -sf mke2fs.${PN} ${D}${base_sbindir}/mkfs$e.${PN}
 	done
-}
-
-
-pkg_postinst_e2fsprogs () {
-	update-alternatives --install ${bindir}/chattr chattr chattr.${PN} 100
-}
-
-pkg_prerm_e2fsprogs () {
-	update-alternatives --remove chattr chattr.${PN}
 }
 
 
