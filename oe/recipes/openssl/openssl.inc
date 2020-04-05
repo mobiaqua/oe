@@ -3,7 +3,7 @@ HOMEPAGE = "http://www.openssl.org/"
 LICENSE = "openssl"
 SECTION = "libs/network"
 
-SRC_URI = "http://www.openssl.org/source/openssl-${PV}.tar.gz;name=src"
+SRC_URI = "https://www.openssl.org/source/old/0.9.x/openssl-${PV}.tar.gz;name=src"
 S = "${WORKDIR}/openssl-${PV}"
 
 inherit siteinfo
