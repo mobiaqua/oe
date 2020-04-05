@@ -16,8 +16,8 @@ EXTRA_OECONF_armv7a-hf="--with-cpu=neon --with-optimization=4 --enable-network=n
 
 inherit autotools
 
-SRC_URI[md5sum] = "0a535c0b501c584f43c919dfe6be9144"
-SRC_URI[sha256sum] = "b5678bfe0cd1c6d2e29561d50bbef6bbc14ed055404453d18b6f4044c7b0a7ae"
+SRC_URI[md5sum] = "294a6c30546504ec3d0deac2b2ea22be"
+SRC_URI[sha256sum] = "90306848359c793fd43b9906e52201df18775742dc3c81c06ab67a806509890a"
 
 S = "${WORKDIR}/mpg123-${PV}"
 
