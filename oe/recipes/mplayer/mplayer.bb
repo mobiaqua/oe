@@ -8,7 +8,7 @@ RDEPENDS_${PN} = "mplayer-common glibc-gconv-cp1250 ttf-dejavu-sans"
 
 LICENSE = "GPL"
 
-SRCREV = "38181"
+SRCREV = "38184"
 SRC_URI = "svn://svn.mplayerhq.hu/mplayer;module=trunk \
 	   file://makefile-nostrip-svn.patch \
 	   file://mplayer-arm-pld.patch \
