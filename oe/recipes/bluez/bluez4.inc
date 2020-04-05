@@ -13,7 +13,7 @@ RDEPENDS_${PN}-dev = "bluez-hcidump"
 ASNEEDED = ""
 
 SRC_URI = "\
-  ${KERNELORG_MIRROR}/bluetooth/bluez-${PV}.tar.gz \
+  ${KERNELORG_MIRROR}/linux/bluetooth/bluez-${PV}.tar.gz \
 "
 S = "${WORKDIR}/bluez-${PV}"
 

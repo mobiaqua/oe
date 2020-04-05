@@ -9,7 +9,7 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=eb723b61539feef013de476e68b5c50a \
                     file://src/hcidump.c;beginline=1;endline=23;md5=3bee3a162dff43a5be7470710b99fbcf"
 PR = "r1"
 
-SRC_URI = "http://www.kernel.org/pub/linux/bluetooth/bluez-hcidump-${PV}.tar.gz \
+SRC_URI = "${KERNELORG_MIRROR}/linux/bluetooth/bluez-hcidump-${PV}.tar.gz \
            file://obsolete_automake_macros.patch \
 "
 

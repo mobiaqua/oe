@@ -3,7 +3,7 @@ DESCRIPTION ?= "udev is a program which dynamically creates and removes device n
 
 LICENSE = "GPLv2+"
 
-SRC_URI = "http://kernel.org/pub/linux/utils/kernel/hotplug/udev-${PV}.tar.gz \
+SRC_URI = "${KERNELORG_MIRROR}/linux/utils/kernel/hotplug/udev-${PV}.tar.gz \
 	   file://udev.rules \
 	   file://devfs-udev.rules \
 	   file://links.conf \
