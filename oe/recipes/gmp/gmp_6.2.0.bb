@@ -9,15 +9,12 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=d32239bcb673463ab874e80d47fae504 \
 
 REVISION = ""
 SRC_URI = "https://gmplib.org/download/${BPN}/${BP}${REVISION}.tar.bz2 \
-           file://amd64.patch \
            file://use-includedir.patch \
            file://0001-Append-the-user-provided-flags-to-the-auto-detected-.patch \
            file://0001-confiure.ac-Believe-the-cflags-from-environment.patch \
-           file://patch-configfsf.guess.diff \
            "
-
-SRC_URI[md5sum] = "4c175f86e11eb32d8bf9872ca3a8e11d"
-SRC_URI[sha256sum] = "a8109865f2893f1373b0a8ed5ff7429de8db696fc451b1036bd7bdf95bbeffd6"
+SRC_URI[md5sum] = "c24161e0dd44cae78cd5f67193492a21"
+SRC_URI[sha256sum] = "f51c99cb114deb21a60075ffb494c1a210eb9d7cb729ed042ddb7de9534451ea"
 
 acpaths = ""
 
