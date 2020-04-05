@@ -12,23 +12,21 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=59530bdf33659b29e73d4adb9f9f6552 \
 		file://COPYING3.LIB;md5=6a6a8e020838b23406c81b19c1d46df6"
 inherit autotools
 
-SRC_URI = "${GNU_MIRROR}/gdb/gdb-${PV}.tar.gz \
-           file://0001-gdbserver-ctrl-c-handling.patch \
-           file://0002-make-man-install-relative-to-DESTDIR.patch \
-           file://0003-mips-linux-nat-Define-_ABIO32-if-not-defined.patch \
-           file://0004-ppc-ptrace-Define-pt_regs-uapi_pt_regs-on-GLIBC-syst.patch \
-           file://0005-Add-support-for-Renesas-SH-sh4-architecture.patch \
-           file://0006-Dont-disable-libreadline.a-when-using-disable-static.patch \
-           file://0007-use-asm-sgidefs.h.patch \
-           file://0008-Use-exorted-definitions-of-SIGRTMIN.patch \
-           file://0009-Change-order-of-CFLAGS.patch \
-           file://0010-resolve-restrict-keyword-conflict.patch \
-           file://0011-Fix-invalid-sigprocmask-call.patch \
-           file://CVE-2019-1010180.patch \
-"
-
-SRC_URI[md5sum] = "3c61672225a6a80875a5eea8cd25e2a0"
-SRC_URI[sha256sum] = "26ce655216cd03f4611518a7a1c31d80ec8e884c16715e9ba8b436822e51434b"
+SRC_URI = "${GNU_MIRROR}/gdb/gdb-${PV}.tar.xz \
+           file://0001-make-man-install-relative-to-DESTDIR.patch \
+           file://0002-mips-linux-nat-Define-_ABIO32-if-not-defined.patch \
+           file://0003-ppc-ptrace-Define-pt_regs-uapi_pt_regs-on-GLIBC-syst.patch \
+           file://0004-Add-support-for-Renesas-SH-sh4-architecture.patch \
+           file://0005-Dont-disable-libreadline.a-when-using-disable-static.patch \
+           file://0006-use-asm-sgidefs.h.patch \
+           file://0007-Use-exorted-definitions-of-SIGRTMIN.patch \
+           file://0008-Change-order-of-CFLAGS.patch \
+           file://0009-resolve-restrict-keyword-conflict.patch \
+           file://0010-Fix-invalid-sigprocmask-call.patch \
+           file://0011-gdbserver-ctrl-c-handling.patch \
+           "
+SRC_URI[md5sum] = "f7e9f6236c425097d9e5f18a6ac40655"
+SRC_URI[sha256sum] = "699e0ec832fdd2f21c8266171ea5bf44024bd05164fdf064e4d10cc4cf0d1737"
 
 export CC_FOR_BUILD = "${BUILD_CC}"
 export CXX_FOR_BUILD = "${BUILD_CXX}"
@@ -43,7 +41,7 @@ EXTRA_OEMAKE = "'SUBDIRS=intl mmalloc libiberty opcodes bfd sim gdb etc utils'"
 
 EXTRA_OECONF = "--disable-gdbtk --disable-tui --disable-x --disable-werror \
                 --with-curses --disable-multilib --with-system-readline --disable-sim \
-                --without-lzma --without-guile \
+                --without-lzma --without-guile --without-system-readline \
                 ${GDBPROPREFIX} \
                 ${@base_contains('DISTRO_FEATURES', 'multiarch', '--enable-64-bit-bfd', '', d)} \
                 --disable-rpath \
