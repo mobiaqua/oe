@@ -10,7 +10,7 @@ LIC_FILES_CHKSUM = "file://lsusb.c;endline=1;md5=7d4861d978ff5ba7cb2b319ed1d4afe
 
 DEPENDS = "libusb1 virtual/libiconv"
 
-SRC_URI = "${KERNELORG_MIRROR}/pub/linux/utils/usb/usbutils/usbutils-${PV}.tar.gz \
+SRC_URI = "${KERNELORG_MIRROR}/linux/utils/usb/usbutils/usbutils-${PV}.tar.gz \
           "
 SRC_URI[md5sum] = "be6c42294be5c940f208190d3479d50c"
 SRC_URI[sha256sum] = "e65c234cadf7c81b6b1567c440e3b9b31b44f51c27df3e45741b88848d8b37d3"

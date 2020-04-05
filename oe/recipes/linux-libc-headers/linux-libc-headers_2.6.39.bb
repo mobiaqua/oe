@@ -5,7 +5,7 @@ DEPENDS += "unifdef-native"
 PR = "r0"
 
 COMPATIBLE_TARGET_SYS = "."
-SRC_URI = "${KERNELORG_MIRROR}/pub/linux/kernel/v2.6/linux-${PV}.tar.bz2;name=kernel \
+SRC_URI = "${KERNELORG_MIRROR}/linux/kernel/v2.6/linux-${PV}.tar.bz2;name=kernel \
           "
 
 SRC_URI[kernel.md5sum] = "1aab7a741abe08d42e8eccf20de61e05"

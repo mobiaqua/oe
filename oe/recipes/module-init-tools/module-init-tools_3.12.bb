@@ -1,6 +1,6 @@
 require module-init-tools.inc
 
-SRC_URI = "${KERNELORG_MIRROR}/pub/linux/utils/kernel/module-init-tools/module-init-tools-${PV}.tar.bz2 \
+SRC_URI = "${KERNELORG_MIRROR}/linux/utils/kernel/module-init-tools/module-init-tools-${PV}.tar.bz2 \
 "
 EXTRA_OECONF += "--disable-builddir"
 
