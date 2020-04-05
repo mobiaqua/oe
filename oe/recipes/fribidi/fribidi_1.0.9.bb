@@ -10,7 +10,7 @@ SRC_URI[sha256sum] = "c5e47ea9026fb60da1944da9888b4e0a18854a0e2410bbfe7ad90a054d
 
 UPSTREAM_CHECK_URI = "https://github.com/${BPN}/${BPN}/releases"
 
-inherit lib_package pkgconfig
+inherit lib_package pkgconfig autotools
 
 CVE_PRODUCT = "gnu_fribidi"
 
