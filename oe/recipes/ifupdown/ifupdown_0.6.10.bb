@@ -7,7 +7,7 @@ SECTION = "base"
 PR = "r3"
 
 
-SRC_URI = "http://archive.debian.org/debian/pool/main/i/ifupdown/ifupdown_${PV}.tar.gz;name=ifupdown \
+SRC_URI = "https://mirrors.mediatemple.net/debian-archive/debian/pool/main/i/ifupdown/ifupdown_${PV}.tar.gz;name=ifupdown \
            file://busybox.patch \
            file://zeroconf.patch \
            file://init "
