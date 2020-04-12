@@ -11,7 +11,6 @@ LICENSE = "GPL"
 SRCREV = "38184"
 SRC_URI = "svn://svn.mplayerhq.hu/mplayer;module=trunk \
 	   file://makefile-nostrip-svn.patch \
-	   file://mplayer-arm-pld.patch \
 "
 SRC_URI_append_armv7a-hf = " \
 	file://yuv420_to_nv12.S \
