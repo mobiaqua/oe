@@ -1,22 +1,42 @@
-diff -ur old/libmpdemux/demux_lavf.c new/libmpdemux/demux_lavf.c
---- old/libmpdemux/demux_lavf.c	2011-10-14 23:54:48.000000000 +0200
-+++ new/libmpdemux/demux_lavf.c	2011-12-16 22:53:14.000000000 +0100
-@@ -54,6 +54,7 @@
+diff -upr old/libmpdemux/demux_lavf.c new/libmpdemux/demux_lavf.c
+--- old/libmpdemux/demux_lavf.c	2020-04-12 08:53:32.000000000 +0200
++++ new/libmpdemux/demux_lavf.c	2020-04-12 10:55:18.000000000 +0200
+@@ -55,6 +55,7 @@ static unsigned int opt_analyzeduration 
  static char *opt_format;
  static char *opt_cryptokey;
  static char *opt_avopt = NULL;
-+static AVBitStreamFilterContext *bsf_handle;
++static AVBSFContext *bsf_handle;
  
  const m_option_t lavfdopts_conf[] = {
  	{"probesize", &(opt_probesize), CONF_TYPE_INT, CONF_RANGE, 32, INT_MAX, NULL},
-@@ -420,6 +421,14 @@
+@@ -465,6 +466,34 @@ static void handle_stream(demuxer_t *dem
              if(demuxer->video->id != i)
                  st->discard= AVDISCARD_ALL;
              stream_id = priv->video_streams++;
-+            if (codec->codec_id == CODEC_ID_H264) {
++            if (codec->codec_id == AV_CODEC_ID_H264) {
 +                if (codec->extradata && codec->extradata_size > 0 && codec->extradata[0] == 1) {
-+                    if (!bsf_handle)
-+                        bsf_handle = av_bitstream_filter_init("h264_mp4toannexb");
++                    if (!bsf_handle) {
++                        const AVBitStreamFilter *bsf = av_bsf_get_by_name("h264_mp4toannexb");
++                        if (bsf) {
++                            if (av_bsf_alloc(bsf, &bsf_handle) >= 0) {
++                                if (avcodec_parameters_from_context(bsf_handle->par_in, codec) >= 0) {
++                                    if (av_bsf_init(bsf_handle) >= 0) {
++                                        mp_msg(MSGT_DEMUX, MSGL_FATAL, "Error init bsf\n");
++                                        av_bsf_free(&bsf_handle);
++                                        bsf_handle = NULL;
++                                    }
++                                } else {
++                                    mp_msg(MSGT_DEMUX, MSGL_FATAL, "Error copy bsf paramters\n");
++                                    av_bsf_free(&bsf_handle);
++                                    bsf_handle = NULL;
++                                }
++                            } else {
++                                mp_msg(MSGT_DEMUX, MSGL_FATAL, "Error alloc bsf filter\n");
++                            }
++                        } else {
++                            mp_msg(MSGT_DEMUX, MSGL_FATAL, "Error finding h264_mp4toannexb filter\n");
++                        }
++                    }
 +                    if (!bsf_handle)
 +                        mp_msg(MSGT_DEMUX, MSGL_FATAL, "Error enable h264_mp4toannexb filter\n");
 +                }
@@ -24,61 +44,39 @@ diff -ur old/libmpdemux/demux_lavf.c new/libmpdemux/demux_lavf.c
              break;
          }
          case AVMEDIA_TYPE_SUBTITLE:{
-@@ -544,6 +553,8 @@
-         return NULL;
+@@ -621,6 +650,8 @@ static demuxer_t* demux_open_lavf(demuxe
      }
+     av_dict_free(&opts);
  
 +    bsf_handle = NULL;
 +
      priv->avfc= avfc;
  
      if(avformat_find_stream_info(avfc, NULL) < 0){
-@@ -598,6 +609,8 @@
-     demux_packet_t *dp;
-     demux_stream_t *ds;
-     int id;
-+    AVStream *st;
-+    AVCodecContext *codec;
-     mp_msg(MSGT_DEMUX,MSGL_DBG2,"demux_lavf_fill_buffer()\n");
- 
-     demux->filepos=stream_tell(demux->stream);
-@@ -612,6 +625,8 @@
- 
-     id= pkt.stream_index;
- 
-+    st= priv->avfc->streams[id];
-+    codec= st->codec;
-     if(id==demux->audio->id){
-         // audio
-         ds=demux->audio;
-@@ -637,9 +652,17 @@
- 
-     if(pkt.destruct == av_destruct_packet && !CONFIG_MEMALIGN_HACK){
-         dp=new_demux_packet(0);
--        dp->len=pkt.size;
--        dp->buffer=pkt.data;
--        pkt.destruct= NULL;
-+        if (id == demux->video->id && bsf_handle) {
-+            if (av_bitstream_filter_filter(bsf_handle, codec, NULL, &dp->buffer, &dp->len, pkt.data, pkt.size, 0) < 0) {
+@@ -712,6 +743,16 @@ static int demux_lavf_fill_buffer(demuxe
+             if (pal && size)
+                 memcpy(((uint8_t *)sh->bih) + sh->bih->biSize, pal, FFMIN(size, 1024));
+         }
++        if (bsf_handle) {
++            if (av_bsf_send_packet(bsf_handle, &pkt) < 0) {
 +                av_free_packet(&pkt);
 +                return 0;
 +            }
-+            av_free_packet(&pkt);
-+        } else {
-+            dp->len=pkt.size;
-+            dp->buffer=pkt.data;
-+            pkt.destruct= NULL;
++            if (av_bsf_receive_packet(bsf_handle, &pkt) < 0) {
++                av_free_packet(&pkt);
++                return 0;
++            }
 +        }
-     }else{
-         dp=new_demux_packet(pkt.size);
-         memcpy(dp->buffer, pkt.data, pkt.size);
-@@ -850,6 +872,11 @@
+     } else if(id==demux->sub->id){
+         // subtitle
+         ds=demux->sub;
+@@ -941,6 +982,11 @@ static void demux_close_lavf(demuxer_t *
          av_freep(&priv->pb);
          free(priv); demuxer->priv= NULL;
      }
 +
 +    if (bsf_handle) {
-+        av_bitstream_filter_close(bsf_handle);
++        av_bsf_free(&bsf_handle);
 +        bsf_handle = NULL;
 +    }
  }

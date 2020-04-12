@@ -1,7 +1,7 @@
 /*
- * OMAP 4 ducati hardware decoding
+ * OMAP DCE decoding
  *
- * Copyright (C) 2011 Pawel Kolodziejski
+ * Copyright (C) 2020 Pawel Kolodziejski
  *
  * This file is part of MPlayer.
  *
@@ -21,27 +21,7 @@
  */
 
 
-#ifndef MPLAYER_VD_OMAP4_DCE_H
-#define MPLAYER_VD_OMAP4_DCE_H
-
-struct v4l2_buf {
-	struct v4l2_buffer buffer;
-	unsigned char *plane[3];
-	unsigned char *plane_p[3];
-	int used;
-	int to_free;
-	int locked;
-	int interlaced;
-};
-
-struct omap4_dce_priv {
-	int codec_id;
-	int (*reset_buffers)(void);
-};
-
-// FIXME: hack
-extern struct omap4_dce_priv omap4_dce_priv_t;
-
-#define ALIGN2(value, align) (((value) + ((1 << (align)) - 1)) & ~((1 << (align)) - 1))
+#ifndef MPLAYER_VD_OMAP_DRM_EGL_H
+#define MPLAYER_VD_OMAP_DRM_EGL_H
 
 #endif

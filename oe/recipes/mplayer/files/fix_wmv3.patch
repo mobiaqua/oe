@@ -1,15 +1,15 @@
-diff -ur old/libmpdemux/demux_lavf.c new/libmpdemux/demux_lavf.c
---- old/libmpdemux/demux_lavf.c	2011-12-17 11:11:28.000000000 +0100
-+++ new/libmpdemux/demux_lavf.c	2011-12-20 23:14:49.000000000 +0100
-@@ -55,6 +55,7 @@
+diff -urp old/libmpdemux/demux_lavf.c new/libmpdemux/demux_lavf.c
+--- old/libmpdemux/demux_lavf.c	2020-04-12 12:23:39.000000000 +0200
++++ new/libmpdemux/demux_lavf.c	2020-04-12 12:52:55.000000000 +0200
+@@ -56,6 +56,7 @@ static char *opt_format;
  static char *opt_cryptokey;
  static char *opt_avopt = NULL;
- static AVBitStreamFilterContext *bsf_handle;
+ static AVBSFContext *bsf_handle;
 +static int first_frame;
  
  const m_option_t lavfdopts_conf[] = {
  	{"probesize", &(opt_probesize), CONF_TYPE_INT, CONF_RANGE, 32, INT_MAX, NULL},
-@@ -215,6 +216,7 @@
+@@ -241,6 +242,7 @@ static const char * const preferred_list
      "nut",
      "nuv",
      "matroska,webm",
@@ -17,36 +17,44 @@ diff -ur old/libmpdemux/demux_lavf.c new/libmpdemux/demux_lavf.c
      "mov,mp4,m4a,3gp,3g2,mj2",
      "mpc",
      "mpc8",
-@@ -554,6 +556,7 @@
-     }
+@@ -677,6 +679,7 @@ static demuxer_t* demux_open_lavf(demuxe
+     av_dict_free(&opts);
  
      bsf_handle = NULL;
 +    first_frame = 1;
  
      priv->avfc= avfc;
  
-@@ -611,6 +614,7 @@
+@@ -732,6 +735,9 @@ static int demux_lavf_fill_buffer(demuxe
+     demux_packet_t *dp;
+     demux_stream_t *ds;
      int id;
-     AVStream *st;
-     AVCodecContext *codec;
++    AVStream *st;
++    AVCodecContext *codec;
 +    unsigned int *ptr;
+     double stream_pts = MP_NOPTS_VALUE;
      mp_msg(MSGT_DEMUX,MSGL_DBG2,"demux_lavf_fill_buffer()\n");
  
-     demux->filepos=stream_tell(demux->stream);
-@@ -651,14 +655,31 @@
+@@ -746,6 +752,8 @@ static int demux_lavf_fill_buffer(demuxe
+     priv->nb_streams_last = priv->avfc->nb_streams;
+ 
+     id= pkt.stream_index;
++    st= priv->avfc->streams[id];
++    codec= st->codec;
+ 
+     if(id==demux->audio->id){
+         // audio
+@@ -789,8 +797,28 @@ static int demux_lavf_fill_buffer(demuxe
      }
  
-     if(pkt.destruct == av_destruct_packet && !CONFIG_MEMALIGN_HACK){
--        dp=new_demux_packet(0);
-         if (id == demux->video->id && bsf_handle) {
-+            dp=new_demux_packet(0);
-             if (av_bitstream_filter_filter(bsf_handle, codec, NULL, &dp->buffer, &dp->len, pkt.data, pkt.size, 0) < 0) {
-                 av_free_packet(&pkt);
-                 return 0;
-             }
-             av_free_packet(&pkt);
-+        } else if (id == demux->video->id && codec->codec_id == CODEC_ID_WMV3
-+                    && codec->extradata && codec->extradata_size > 0 && first_frame) {
+         av_packet_merge_side_data(&pkt);
+-        dp=new_demux_packet(pkt.size);
+-        memcpy(dp->buffer, pkt.data, pkt.size);
++        if (id == demux->video->id &&
++                codec->codec_id == AV_CODEC_ID_WMV3 &&
++                codec->extradata &&
++                codec->extradata_size > 0 &&
++                first_frame) {
 +            dp=new_demux_packet(pkt.size + 36);
 +            ptr = dp->buffer;
 +            ptr[0] = 0xc5ffffff;
@@ -59,10 +67,11 @@ diff -ur old/libmpdemux/demux_lavf.c new/libmpdemux/demux_lavf.c
 +            ptr[7] = 0;
 +            ptr[8] = 0;
 +            memcpy(dp->buffer + 36, pkt.data, pkt.size);
-+            av_free_packet(&pkt);
 +            first_frame = 0;
-         } else {
-+            dp=new_demux_packet(0);
-             dp->len=pkt.size;
-             dp->buffer=pkt.data;
-             pkt.destruct= NULL;
++        } else {
++            dp=new_demux_packet(pkt.size);
++            memcpy(dp->buffer, pkt.data, pkt.size);
++        }
+         av_free_packet(&pkt);
+ 
+     if(pkt.pts != AV_NOPTS_VALUE){

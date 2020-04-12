@@ -1,0 +1,36 @@
+diff -urp old/libmpdemux/demux_lavf.c new/libmpdemux/demux_lavf.c
+--- old/libmpdemux/demux_lavf.c	2020-04-12 12:16:59.000000000 +0200
++++ new/libmpdemux/demux_lavf.c	2020-04-12 12:21:35.000000000 +0200
+@@ -494,6 +494,32 @@ static void handle_stream(demuxer_t *dem
+                         mp_msg(MSGT_DEMUX, MSGL_FATAL, "Error enable h264_mp4toannexb filter\n");
+                 }
+             }
++            if (codec->codec_id == AV_CODEC_ID_MPEG4) {
++                if (!bsf_handle) {
++                    const AVBitStreamFilter *bsf = av_bsf_get_by_name("mpeg4_unpack_bframes");
++                    if (bsf) {
++                        if (av_bsf_alloc(bsf, &bsf_handle) >= 0) {
++                            if (avcodec_parameters_from_context(bsf_handle->par_in, codec) >= 0) {
++                                if (av_bsf_init(bsf_handle) >= 0) {
++                                    mp_msg(MSGT_DEMUX, MSGL_FATAL, "Error init bsf\n");
++                                    av_bsf_free(&bsf_handle);
++                                    bsf_handle = NULL;
++                                }
++                            } else {
++                                mp_msg(MSGT_DEMUX, MSGL_FATAL, "Error copy bsf paramters\n");
++                                av_bsf_free(&bsf_handle);
++                                bsf_handle = NULL;
++                            }
++                        } else {
++                            mp_msg(MSGT_DEMUX, MSGL_FATAL, "Error alloc bsf filter\n");
++                        }
++                    } else {
++                        mp_msg(MSGT_DEMUX, MSGL_FATAL, "Error finding h264_mp4toannexb filter\n");
++                    }
++                }
++                if (!bsf_handle)
++                    mp_msg(MSGT_DEMUX, MSGL_FATAL, "Error enable h264_mp4toannexb filter\n");
++            }
+             break;
+         }
+         case AVMEDIA_TYPE_SUBTITLE:{

@@ -4,8 +4,8 @@ diff -ur old/Makefile new/Makefile
 @@ -516,6 +516,7 @@
  SRCS_MPLAYER-$(ESD)          += libao2/ao_esd.c
  SRCS_MPLAYER-$(FBDEV)        += libvo/vo_fbdev.c libvo/vo_fbdev2.c
- SRCS_MPLAYER-$(OMAPFB)       += libvo/vo_omapfb.c libvo/yuv420_to_yuv422.S
-+SRCS_MPLAYER-$(OMAP4)        += libvo/yuv420_to_nv12.S
+ SRCS_MPLAYER-$(OMAPDRMEGL)   += libvo/vo_omap_drm_egl.c libvo/yuv420_to_nv12.S
++SRCS_MPLAYER-$(OMAPDCE)      += libmpcodecs/vd_omap_dce.c
  SRCS_MPLAYER-$(FFMPEG)       += libvo/vo_png.c
  SRCS_MPLAYER-$(GGI)          += libvo/vo_ggi.c
  SRCS_MPLAYER-$(GIF)          += libvo/vo_gif89a.c
@@ -15,17 +15,17 @@ diff -ur old/configure new/configure
 @@ -705,6 +705,7 @@
  _vesa=auto
  _fbdev=auto
- _omapfb=no
-+_omap4=no
+ _omapdrmegl=no
++_omapdce=no
  _dvb=auto
  _dxr2=auto
  _dxr3=auto
 @@ -1071,6 +1072,8 @@
    --disable-fbdev)      _fbdev=no       ;;
-   --enable-omapfb)      _omapfb=yes     ;;
-   --disable-omapfb)     _omapfb=no      ;;
-+  --enable-omap4)       _omap4=yes      ;;
-+  --disable-omap4)      _omap4=no       ;;
+   --enable-omapdrmegl)  _omapdrmegl=yes ;;
+   --disable-omapdrmegl) _omapdrmegl=no  ;;
++  --enable-omapdce)     _omapdce=yes   ;;
++  --disable-omapdce)    _omapdce=no    ;;
    --enable-dvb)         _dvb=yes        ;;
    --disable-dvb)        _dvb=no         ;;
    --enable-dxr2)        _dxr2=yes       ;;
@@ -33,19 +33,19 @@ diff -ur old/configure new/configure
  
  
  
-+echocheck "omap4"
-+if test "$_omap4" = auto ; then
-+  _omap4=no
-+  linux && _omap4=yes
++echocheck "omapdce"
++if test "$_omapdce" = auto ; then
++  _omapdce=no
++  linux && _omapdce=yes
 +fi
-+if test "$_omap4" = yes ; then
-+  def_omap4='#define CONFIG_OMAP4 1'
-+  vomodules="omap4 $vomodules"
++if test "$_omapdce" = yes ; then
++  def_omapdce='#define CONFIG_OMAP_DCE 1'
++  vomodules="omapdce $vomodules"
 +else
-+  def_omap4='#undef CONFIG_OMAP4'
-+  novomodules="omap4 $novomodules"
++  def_omapdce='#undef CONFIG_OMAP_DCE'
++  novomodules="omapdce $novomodules"
 +fi
-+echores "$_omap4"
++echores "$_omapdce"
 +
 +
 +
@@ -55,40 +55,19 @@ diff -ur old/configure new/configure
 @@ -7895,6 +7914,7 @@
  FASTMEMCPY = $_fastmemcpy
  FBDEV = $_fbdev
- OMAPFB = $_omapfb
-+OMAP4 = $_omap4
+ OMAPDRMEGL = $_omapdrmegl
++OMAPDCE = $_omapdce
  FREETYPE = $_freetype
  FTP = $_ftp
  GIF = $_gif
 @@ -8440,6 +8460,7 @@
  $def_dxr3
  $def_fbdev
- $def_omapfb
-+$def_omap4
+ $def_omapdrmegl
++$def_omapdce
  $def_ggi
  $def_ggiwmh
  $def_gif
-diff -ur old/libvo/video_out.c new/libvo/video_out.c
---- old/libvo/video_out.c	2011-12-11 09:46:31.000000000 +0100
-+++ new/libvo/video_out.c	2011-12-11 23:31:05.000000000 +0100
-@@ -112,6 +112,7 @@
- extern const vo_functions_t video_out_bl;
- extern const vo_functions_t video_out_fbdev2;
- extern const vo_functions_t video_out_omapfb;
-+extern const vo_functions_t video_out_omap4_v4l2;
- extern const vo_functions_t video_out_png;
- extern const vo_functions_t video_out_ggi;
- extern const vo_functions_t video_out_aa;
-@@ -222,6 +223,9 @@
- #ifdef CONFIG_OMAPFB
-         &video_out_omapfb,
- #endif
-+#ifdef CONFIG_OMAP4
-+//        &video_out_omap4_v4l2,
-+#endif
- #ifdef CONFIG_SVGALIB
-         &video_out_svga,
- #endif
 diff -ur old/libmpcodecs/vd.c new/libmpcodecs/vd.c
 --- old/libmpcodecs/vd.c	2011-10-14 23:54:33.000000000 +0200
 +++ new/libmpcodecs/vd.c	2011-12-11 09:25:12.000000000 +0100
@@ -96,7 +75,7 @@ diff -ur old/libmpcodecs/vd.c new/libmpcodecs/vd.c
  extern const vd_functions_t mpcodecs_vd_libdv;
  extern const vd_functions_t mpcodecs_vd_lzo;
  extern const vd_functions_t mpcodecs_vd_qtvideo;
-+extern const vd_functions_t mpcodecs_vd_omap4_dce;
++extern const vd_functions_t mpcodecs_vd_omap_dce;
  
  /* Please do not add any new decoders here. If you want to implement a new
   * decoder, add it to libavcodec, except for wrappers around external
@@ -104,8 +83,8 @@ diff -ur old/libmpcodecs/vd.c new/libmpcodecs/vd.c
  #ifdef CONFIG_QTX_CODECS
      &mpcodecs_vd_qtvideo,
  #endif
-+#ifdef CONFIG_OMAP4
-+    &mpcodecs_vd_omap4_dce,
++#ifdef CONFIG_OMAP_DCE
++    &mpcodecs_vd_omap_dce,
 +#endif
      /* Please do not add any new decoders here. If you want to implement a new
       * decoder, add it to libavcodec, except for wrappers around external

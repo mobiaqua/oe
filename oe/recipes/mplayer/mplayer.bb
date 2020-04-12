@@ -3,7 +3,7 @@ SECTION = "multimedia"
 PRIORITY = "optional"
 HOMEPAGE = "http://www.mplayerhq.hu/"
 DEPENDS = "ffmpeg zlib libpng jpeg freetype fontconfig alsa-lib lzo libmpg123 ncurses virtual/kernel"
-DEPENDS_append_board-tv = " libdce"
+DEPENDS_append_board-tv = " libdce libdrm libgbm virtual/egl"
 RDEPENDS_${PN} = "mplayer-common glibc-gconv-cp1250 ttf-dejavu-sans"
 
 LICENSE = "GPL"
@@ -14,18 +14,16 @@ SRC_URI = "svn://svn.mplayerhq.hu/mplayer;module=trunk \
 	   file://mplayer-arm-pld.patch \
 "
 SRC_URI_append_armv7a-hf = " \
-	file://yuv420_to_yuv422.S \
 	file://yuv420_to_nv12.S \
-	file://vo_omapfb.c \
-	file://vo_omap4_v4l2.c \
-	file://vd_omap4_dce.c \
-	file://vd_omap4_dce.h \
-#	file://omapfb.patch \
-#	file://omap4.patch \
-	file://vo_omap4_osd.patch \
-#	file://fix_h264.patch \
-#	file://fix_wmv3.patch \
+	file://vo_omap_drm_egl.c \
+	file://vo_omap_drm_egl.h \
+	file://vd_omap_dce.c \
 	file://add-level-to-sh-video.patch \
+	file://fix_h264.patch \
+	file://fix_xvid.patch \
+	file://fix_wmv3.patch \
+	file://omap_drm_egl.patch \
+	file://omap_dce.patch \
 	"
 
 ARM_INSTRUCTION_SET = "ARM"
@@ -159,25 +157,25 @@ EXTRA_OECONF = " \
 EXTRA_OECONF_append_armv6 = " --enable-armv6"
 EXTRA_OECONF_append_armv7a-hf = " --enable-armv6 --enable-neon"
 
-#EXTRA_OECONF_append_board-tv = " --enable-omap4"
-EXTRA_OECONF_append_board-tv = " --enable-fbdev"
-EXTRA_OECONF_append_igep0030 = " --enable-omapfb"
+EXTRA_OECONF_append_board-tv = " --enable-fbdev --enable-omapdrmegl --enable-omapdce"
 
 FULL_OPTIMIZATION = "-fexpensive-optimizations -fomit-frame-pointer -frename-registers -O4 -ffast-math"
 FULL_OPTIMIZATION_armv7a-hf = "-fno-tree-vectorize -fomit-frame-pointer -O4 -frename-registers -ffast-math"
 BUILD_OPTIMIZATION = "${FULL_OPTIMIZATION}"
 
 do_configure_prepend_armv7a-hf() {
-	cp ${WORKDIR}/yuv420_to_yuv422.S ${S}/libvo
 	cp ${WORKDIR}/yuv420_to_nv12.S ${S}/libvo
-	cp ${WORKDIR}/vo_omapfb.c ${S}/libvo
-	cp ${WORKDIR}/vo_omap4_v4l2.c ${S}/libvo
-	cp ${WORKDIR}/vd_omap4_dce.c ${S}/libmpcodecs
-	cp ${WORKDIR}/vd_omap4_dce.h ${S}/libmpcodecs
-	cp ${STAGING_INCDIR}/linux/omapfb.h ${S}/libvo/omapfb.h || true
-	sed -e 's/__user//g' -i ${S}/libvo/omapfb.h || true
+	cp ${WORKDIR}/vo_omap_drm_egl.c ${S}/libvo
+	cp ${WORKDIR}/vo_omap_drm_egl.h ${S}/libvo
+	cp ${WORKDIR}/vd_omap_dce.c ${S}/libmpcodecs
 	export DCE_CFLAGS=`pkg-config --cflags libdce`
 	export DCE_LIBS=`pkg-config --libs libdce`
+	export DRM_CFLAGS=`pkg-config --cflags libdrm`
+	export DRM_LIBS=`pkg-config --libs libdrm`
+	export GBM_CFLAGS=`pkg-config --cflags gbm`
+	export GBM_LIBS=`pkg-config --libs gbm`
+	export EGL_CFLAGS=`pkg-config --cflags egl`
+	export EGL_LIBS=`pkg-config --libs egl`
 }
 
 do_configure() {
@@ -188,8 +186,8 @@ do_configure() {
 	sed -i 's|HOST_CC|BUILD_CC|' ${S}/Makefile
 
 	./configure ${EXTRA_OECONF} \
-		--extra-libs="-lmpg123 ${DCE_LIBS}" \
-		--extra-cflags="${DCE_CFLAGS}"
+		--extra-libs="-lmpg123 ${DCE_LIBS} ${DRM_LIBS} ${GBM_LIBS} ${EGL_LIBS} -lGLESv2" \
+		--extra-cflags="${DCE_CFLAGS} ${DRM_CFLAGS} ${GBM_CFLAGS} ${EGL_CFLAGS}"
 }
 
 do_compile () {

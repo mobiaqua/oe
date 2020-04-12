@@ -6,7 +6,7 @@ diff -ur old/Makefile new/Makefile
  SRCS_MPLAYER-$(DXR3)         += libvo/vo_dxr3.c
  SRCS_MPLAYER-$(ESD)          += libao2/ao_esd.c
  SRCS_MPLAYER-$(FBDEV)        += libvo/vo_fbdev.c libvo/vo_fbdev2.c
-+SRCS_MPLAYER-$(OMAPFB)       += libvo/vo_omapfb.c libvo/yuv420_to_yuv422.S
++SRCS_MPLAYER-$(OMAPDRMEGL)   += libvo/vo_omap_drm_egl.c libvo/yuv420_to_nv12.S
  SRCS_MPLAYER-$(FFMPEG)       += libvo/vo_png.c
  SRCS_MPLAYER-$(GGI)          += libvo/vo_ggi.c
  SRCS_MPLAYER-$(GIF)          += libvo/vo_gif89a.c
@@ -17,7 +17,7 @@ diff -ur old/configure new/configure
  _svga=auto
  _vesa=auto
  _fbdev=auto
-+_omapfb=no
++_omapdrmegl=no
  _dvb=auto
  _dxr2=auto
  _dxr3=auto
@@ -25,8 +25,8 @@ diff -ur old/configure new/configure
    --disable-vesa)       _vesa=no        ;;
    --enable-fbdev)       _fbdev=yes      ;;
    --disable-fbdev)      _fbdev=no       ;;
-+  --enable-omapfb)      _omapfb=yes     ;;
-+  --disable-omapfb)     _omapfb=no      ;;
++  --enable-omapdrmegl)  _omapdrmegl=yes ;;
++  --disable-omapdrmegl) _omapdrmegl=no  ;;
    --enable-dvb)         _dvb=yes        ;;
    --disable-dvb)        _dvb=no         ;;
    --enable-dxr2)        _dxr2=yes       ;;
@@ -34,19 +34,19 @@ diff -ur old/configure new/configure
  
  
  
-+echocheck "omapfb"
-+if test "$_omapfb" = auto ; then
-+  _omapfb=no
-+  linux && _omapfb=yes
++echocheck "omapdrmegl"
++if test "$_omapdrmegl" = auto ; then
++  _omapdrmegl=no
++  linux && _omapdrmegl=yes
 +fi
-+if test "$_omapfb" = yes ; then
-+  def_omapfb='#define CONFIG_OMAPFB 1'
-+  vomodules="omapfb $vomodules"
++if test "$_omapdrmegl" = yes ; then
++  def_omapdrmegl='#define CONFIG_OMAP_DRM_EGL 1'
++  vomodules="omapdrmegl $vomodules"
 +else
-+  def_omapfb='#undef CONFIG_OMAPFB'
-+  novomodules="omapfb $novomodules"
++  def_omapdrmegl='#undef CONFIG_OMAP_DRM_EGL'
++  novomodules="omapdrmegl $novomodules"
 +fi
-+echores "$_omapfb"
++echores "$_omapdrmegl"
 +
 +
 +
@@ -57,7 +57,7 @@ diff -ur old/configure new/configure
  FAAD = $_faad
  FASTMEMCPY = $_fastmemcpy
  FBDEV = $_fbdev
-+OMAPFB = $_omapfb
++OMAPDRMEGL = $_omapdrmegl
  FREETYPE = $_freetype
  FTP = $_ftp
  GIF = $_gif
@@ -65,7 +65,7 @@ diff -ur old/configure new/configure
  $def_dxr2
  $def_dxr3
  $def_fbdev
-+$def_omapfb
++$def_omapdrmegl
  $def_ggi
  $def_ggiwmh
  $def_gif
@@ -76,7 +76,7 @@ diff -ur old/libvo/video_out.c new/libvo/video_out.c
  extern const vo_functions_t video_out_zr2;
  extern const vo_functions_t video_out_bl;
  extern const vo_functions_t video_out_fbdev2;
-+extern const vo_functions_t video_out_omapfb;
++extern const vo_functions_t video_out_omap_drm_egl;
  extern const vo_functions_t video_out_png;
  extern const vo_functions_t video_out_ggi;
  extern const vo_functions_t video_out_aa;
@@ -84,8 +84,8 @@ diff -ur old/libvo/video_out.c new/libvo/video_out.c
          &video_out_fbdev,
          &video_out_fbdev2,
  #endif
-+#ifdef CONFIG_OMAPFB
-+        &video_out_omapfb,
++#ifdef CONFIG_OMAP_DRM_EGL
++        &video_out_omap_drm_egl,
 +#endif
  #ifdef CONFIG_SVGALIB
          &video_out_svga,
