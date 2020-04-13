@@ -95,9 +95,7 @@ typedef struct {
 #define ALIGN2(value, align) (((value) + ((1 << (align)) - 1)) & ~((1 << (align)) - 1))
 
 static int                         _dce;
-
 static int                         _initialized;
-static int                         _configDone;
 static int                         _fd;
 static struct omap_device          *_omapDevice;
 static struct gbm_device           *_gbmDevice;
@@ -133,6 +131,7 @@ LIBVO_EXTERN(omap_drm_egl)
 
 static int releaseVideoBuffer(DisplayVideoBuffer *handle);
 static int releaseRenderTexture(RenderTexture *texture);
+static DrmFb *getDrmFb(struct gbm_bo *gbmBo);
 
 #define EGL_STR_ERROR(value) case value: return #value;
 static const char* eglGetErrorStr(EGLint error) {
@@ -158,7 +157,50 @@ static const char* eglGetErrorStr(EGLint error) {
 #undef EGL_STR_ERROR
 
 static int preinit(const char *arg) {
-	drmModeConnectorPtr connector;
+	int modeId = -1, i, j;
+	struct gbm_bo *gbmBo;
+	DrmFb *drmFb;
+	const char *extensions;
+	drmModeConnectorPtr connector = NULL;
+	EGLint major, minor;
+	EGLint numConfig;
+	GLint shaderStatus;
+	drmModeObjectPropertiesPtr props;
+
+	const EGLint configAttribs[] = {
+		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+		EGL_RED_SIZE, 1,
+		EGL_GREEN_SIZE, 1,
+		EGL_BLUE_SIZE, 1,
+		EGL_ALPHA_SIZE, 0,
+		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+		EGL_NONE
+	};
+
+	const EGLint contextAttribs[] = {
+		EGL_CONTEXT_CLIENT_VERSION, 2,
+		EGL_NONE
+	};
+
+	static const GLchar *vertexShaderSource =
+		"attribute vec2 position;                      \n"
+		"attribute vec2 texCoord;                      \n"
+		"varying   vec2 textureCoords;                 \n"
+		"void main()                                   \n"
+		"{                                             \n"
+		"    textureCoords = texCoord;                 \n"
+		"    gl_Position = vec4(position, 0.0, 1.0);   \n"
+		"}                                             \n";
+
+	static const GLchar *fragmentShaderSource =
+		"#extension GL_OES_EGL_image_external : require               \n"
+		"precision mediump float;                                     \n"
+		"varying vec2               textureCoords;                    \n"
+		"uniform samplerExternalOES textureSampler;                   \n"
+		"void main()                                                  \n"
+		"{                                                            \n"
+		"    gl_FragColor = texture2D(textureSampler, textureCoords); \n"
+		"}                                                            \n";
 
 	_fd = drmOpen("omapdrm", NULL);
 	if (_fd < 0) {
@@ -210,9 +252,255 @@ static int preinit(const char *arg) {
 		goto fail;
 	}
 
+	for (i = 0; i < _drmResources->count_connectors; i++) {
+		connector = drmModeGetConnector(_fd, _drmResources->connectors[i]);
+		if (connector == NULL)
+			continue;
+		if (connector->connector_id == _connectorId)
+			break;
+		drmModeFreeConnector(connector);
+	}
+	if (!connector) {
+		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] preinit() Failed to find connector!\n");
+		return -1;
+	}
+
+	for (j = 0; j < connector->count_modes; j++) {
+		drmModeModeInfoPtr mode = &connector->modes[j];
+		if ((mode->vrefresh >= 60) && (mode->type & DRM_MODE_TYPE_PREFERRED)) {
+			modeId = j;
+			break;
+		}
+	}
+
+	if (modeId == -1) {
+		uint64_t highestArea = 0;
+		modeId = 0;
+		for (j = 0; j < connector->count_modes; j++) {
+			drmModeModeInfoPtr mode = &connector->modes[j];
+			const uint64_t area = mode->hdisplay * mode->vdisplay;
+			if ((mode->vrefresh >= 60) && (area > highestArea)) {
+				highestArea = area;
+				modeId = j;
+			}
+		}
+	}
+
+	_modeInfo = connector->modes[modeId];
+
+	_crtcId = -1;
+	for (i = 0; i < connector->count_encoders; i++) {
+		drmModeEncoderPtr encoder = drmModeGetEncoder(_fd, connector->encoders[i]);
+		if (encoder->encoder_id == connector->encoder_id) {
+			_crtcId = encoder->crtc_id;
+			drmModeFreeEncoder(encoder);
+			break;
+		}
+		drmModeFreeEncoder(encoder);
+	}
+	drmModeFreeConnector(connector);
+
+	if (modeId == -1 || _crtcId == -1) {
+		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] preinit() Failed to find suitable display output!\n");
+		return -1;
+	}
+
+	_planeId = -1;
+	_drmPlaneResources = drmModeGetPlaneResources(_fd);
+	for (i = 0; i < _drmPlaneResources->count_planes; i++) {
+		drmModePlane *plane = drmModeGetPlane(_fd, _drmPlaneResources->planes[i]);
+		if (!plane)
+			continue;
+		if (plane->crtc_id == 0) {
+			_planeId = plane->plane_id;
+			drmModeFreePlane(plane);
+			break;
+		}
+		drmModeFreePlane(plane);
+	}
+	if (_planeId == -1) {
+		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] preinit() Failed to find plane!\n");
+		return -1;
+	}
+
+	props = drmModeObjectGetProperties(_fd, _planeId, DRM_MODE_OBJECT_PLANE);
+	if (!props) {
+		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] preinit() Failed to find properties for plane!\n");
+		return -1;
+	}
+	for (i = 0; i < props->count_props; i++) {
+		drmModePropertyPtr prop = drmModeGetProperty(_fd, props->props[i]);
+		if (prop && strcmp(prop->name, "zorder") == 0 && drm_property_type_is(prop, DRM_MODE_PROP_RANGE)) {
+			uint64_t value = props->prop_values[i];
+			if (drmModeObjectSetProperty(_fd, _planeId, DRM_MODE_OBJECT_PLANE, props->props[i], 0)) {
+				mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] preinit() Failed to set zorder property for plane!\n");
+				return -1;
+			}
+		}
+		drmModeFreeProperty(prop);
+	}
+	drmModeFreeObjectProperties(props);
+
+	_oldCrtc = drmModeGetCrtc(_fd, _crtcId);
+
+	_fbWidth = _modeInfo.hdisplay;
+	_fbHeight = _modeInfo.vdisplay;
+
+	mp_msg(MSGT_VO, MSGL_INFO, "[omap_drm_egl] Using display HDMI output: %dx%d@%d\n", _fbWidth, _fbHeight, _modeInfo.vrefresh);
+
+	_gbmSurface = gbm_surface_create(
+	    _gbmDevice,
+	    _fbWidth,
+	    _fbHeight,
+	    GBM_FORMAT_XRGB8888,
+	    GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING
+	    );
+	if (!_gbmSurface) {
+		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] preinit() Failed to create gbm surface!\n");
+		goto fail;
+	}
+
+	_eglDisplay = eglGetDisplay((EGLNativeDisplayType)_gbmDevice);
+	if (_eglDisplay == EGL_NO_DISPLAY) {
+		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] preinit() Failed to create display!\n");
+		goto fail;
+	}
+
+	if (!eglInitialize(_eglDisplay, &major, &minor)) {
+		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] preinit() Failed to initialize egl, error: %s\n", eglGetErrorStr(eglGetError()));
+		goto fail;
+	}
+
+	mp_msg(MSGT_VO, MSGL_INFO, "[omap_drm_egl] EGL vendor version: \"%s\"\n", eglQueryString(_eglDisplay, EGL_VERSION));
+
+	if (!eglBindAPI(EGL_OPENGL_ES_API)) {
+		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] preinit() Failed to bind EGL_OPENGL_ES_API, error: %s\n", eglGetErrorStr(eglGetError()));
+		goto fail;
+	}
+
+	if (!eglChooseConfig(_eglDisplay, configAttribs, &_eglConfig, 1, &numConfig)) {
+		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] preinit() Failed to choose config, error: %s\n", eglGetErrorStr(eglGetError()));
+		goto fail;
+	}
+	if (numConfig != 1) {
+		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] preinit() More than 1 config: %d\n", numConfig);
+		goto fail;
+	}
+
+	_eglContext = eglCreateContext(_eglDisplay, _eglConfig, EGL_NO_CONTEXT, contextAttribs);
+	if (_eglContext == EGL_NO_CONTEXT) {
+		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] preinit() Failed to create context, error: %s\n", eglGetErrorStr(eglGetError()));
+		goto fail;
+	}
+
+	_eglSurface = eglCreateWindowSurface(_eglDisplay, _eglConfig, _gbmSurface, NULL);
+	if (_eglSurface == EGL_NO_SURFACE) {
+		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] preinit() Failed to create egl surface, error: %s\n", eglGetErrorStr(eglGetError()));
+		goto fail;
+	}
+
+	if (!eglMakeCurrent(_eglDisplay, _eglSurface, _eglSurface, _eglContext)) {
+		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] preinit() Failed attach rendering context to egl surface, error: %s\n", eglGetErrorStr(eglGetError()));
+		goto fail;
+	}
+
+	if (!(eglCreateImageKHR = (PFNEGLCREATEIMAGEKHRPROC)eglGetProcAddress("eglCreateImageKHR"))) {
+		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] preinit() No eglCreateImageKHR!\n");
+		goto fail;
+	}
+
+	if (!(eglDestroyImageKHR = (PFNEGLDESTROYIMAGEKHRPROC)eglGetProcAddress("eglDestroyImageKHR"))) {
+		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] preinit() No eglDestroyImageKHR!\n");
+		goto fail;
+	}
+
+	if (!(glEGLImageTargetTexture2DOES = (PFNGLEGLIMAGETARGETTEXTURE2DOESPROC)eglGetProcAddress("glEGLImageTargetTexture2DOES"))) {
+		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] preinit() No glEGLImageTargetTexture2DOES!\n");
+		goto fail;
+	}
+
+	extensions = (char *)glGetString(GL_EXTENSIONS);
+	if (!strstr(extensions, "GL_TI_image_external_raw_video")) {
+		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] preinit() No GL_TI_image_external_raw_video extension!\n");
+		goto fail;
+	}
+
+	_vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(_vertexShader, 1, &vertexShaderSource, NULL);
+	glCompileShader(_vertexShader);
+	glGetShaderiv(_vertexShader, GL_COMPILE_STATUS, &shaderStatus);
+	if (!shaderStatus) {
+		char logStr[shaderStatus];
+		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] preinit() Vertex shader compilation failed!\n");
+		glGetShaderiv(_vertexShader, GL_INFO_LOG_LENGTH, &shaderStatus);
+		if (shaderStatus > 1) {
+			glGetShaderInfoLog(_vertexShader, shaderStatus, NULL, logStr);
+			mp_msg(MSGT_VO, MSGL_FATAL, logStr);
+		}
+		goto fail;
+	}
+
+	_fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(_fragmentShader, 1, &fragmentShaderSource, NULL);
+	glCompileShader(_fragmentShader);
+	glGetShaderiv(_fragmentShader, GL_COMPILE_STATUS, &shaderStatus);
+	if (!shaderStatus) {
+		char logStr[shaderStatus];
+		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] preinit() Fragment shader compilation failed!\n");
+		glGetShaderiv(_fragmentShader, GL_INFO_LOG_LENGTH, &shaderStatus);
+		if (shaderStatus > 1) {
+			glGetShaderInfoLog(_fragmentShader, shaderStatus, NULL, logStr);
+			mp_msg(MSGT_VO, MSGL_FATAL, logStr);
+		}
+		goto fail;
+	}
+
+	_glProgram = glCreateProgram();
+
+	glAttachShader(_glProgram, _vertexShader);
+	glAttachShader(_glProgram, _fragmentShader);
+
+	glBindAttribLocation(_glProgram, 0, "position");
+	glBindAttribLocation(_glProgram, 1, "texCoord");
+
+	glLinkProgram(_glProgram);
+	glGetProgramiv(_glProgram, GL_LINK_STATUS, &shaderStatus);
+	if (!shaderStatus) {
+		char logStr[shaderStatus];
+		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] preinit() Program linking failed!\n");
+		glGetProgramiv(_glProgram, GL_INFO_LOG_LENGTH, &shaderStatus);
+		if (shaderStatus > 1) {
+			glGetProgramInfoLog(_glProgram, shaderStatus, NULL, logStr);
+			mp_msg(MSGT_VO, MSGL_FATAL, logStr);
+		}
+		goto fail;
+	}
+
+	glUseProgram(_glProgram);
+
+	glViewport(0, 0, _fbWidth, _fbHeight);
+
+	glClearColor(0.0, 0.0, 0.0, 1.0);
+	glClear(GL_COLOR_BUFFER_BIT);
+	if (!eglSwapBuffers(_eglDisplay, _eglSurface)) {
+		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] preinit() Failed to swap buffers, error: %s!\n", eglGetErrorStr(eglGetError()));
+		goto fail;
+	}
+
+	gbmBo = gbm_surface_lock_front_buffer(_gbmSurface);
+	drmFb = getDrmFb(gbmBo);
+	if (!drmFb) {
+		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] preinit() Failed get DRM fb\n");
+		goto fail;
+	}
+	if (drmModeSetCrtc(_fd, _crtcId, drmFb->fbId, 0, 0, &_connectorId, 1, &_modeInfo) < 0) {
+		gbm_surface_release_buffer(_gbmSurface, gbmBo);
+		goto fail;
+	}
+	gbm_surface_release_buffer(_gbmSurface, gbmBo);
+
 	_scaleCtx = NULL;
 	_dce = 0;
-	_configDone = 0;
 
 	_initialized = 1;
 
@@ -220,6 +508,34 @@ static int preinit(const char *arg) {
 
 fail:
 
+	if (_vertexShader) {
+		glDeleteShader(_vertexShader);
+		_vertexShader = 0;
+	}
+	if (_fragmentShader) {
+		glDeleteShader(_fragmentShader);
+		_fragmentShader = 0;
+	}
+	if (_glProgram) {
+		glDeleteProgram(_glProgram);
+		_glProgram = 0;
+	}
+	if (_eglSurface) {
+		eglDestroySurface(_eglDisplay, _eglSurface);
+		_eglSurface = NULL;
+	}
+	if (_eglContext) {
+		eglDestroyContext(_eglDisplay, _eglContext);
+		_eglContext = NULL;
+	}
+	if (_eglDisplay) {
+		eglTerminate(_eglDisplay);
+		_eglDisplay = NULL;
+	}
+	if (_gbmSurface) {
+		gbm_surface_destroy(_gbmSurface);
+		_gbmSurface = NULL;
+	}
 	if (_gbmDevice != NULL) {
 		gbm_device_destroy(_gbmDevice);
 		_gbmDevice = NULL;
@@ -453,11 +769,7 @@ static DrmFb *getDrmFb(struct gbm_bo *gbmBo) {
 	DrmFb *drmFb;
 	int ret;
 
-	if (!_initialized)
-		return NULL;
-
 	drmFb = gbm_bo_get_user_data(gbmBo);
-
 	if (drmFb)
 		return drmFb;
 
@@ -490,56 +802,8 @@ static DrmFb *getDrmFb(struct gbm_bo *gbmBo) {
 }
 
 static int config(uint32_t width, uint32_t height, uint32_t d_width, uint32_t d_height, uint32_t flags, char *title, uint32_t format) {
-	int modeId = -1, i, j;
-	struct gbm_bo *gbmBo;
-	DrmFb *drmFb;
-	const char *extensions;
-	drmModeConnectorPtr connector = NULL;
-	EGLint major, minor;
-	EGLint numConfig;
-	GLint shaderStatus;
-	drmModeObjectPropertiesPtr props;
-
-	const EGLint configAttribs[] = {
-		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
-		EGL_RED_SIZE, 1,
-		EGL_GREEN_SIZE, 1,
-		EGL_BLUE_SIZE, 1,
-		EGL_ALPHA_SIZE, 0,
-		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-		EGL_NONE
-	};
-
-	const EGLint contextAttribs[] = {
-		EGL_CONTEXT_CLIENT_VERSION, 2,
-		EGL_NONE
-	};
-
-	static const GLchar *vertexShaderSource =
-		"attribute vec2 position;                      \n"
-		"attribute vec2 texCoord;                      \n"
-		"varying   vec2 textureCoords;                 \n"
-		"void main()                                   \n"
-		"{                                             \n"
-		"    textureCoords = texCoord;                 \n"
-		"    gl_Position = vec4(position, 0.0, 1.0);   \n"
-		"}                                             \n";
-
-	static const GLchar *fragmentShaderSource =
-		"#extension GL_OES_EGL_image_external : require               \n"
-		"precision mediump float;                                     \n"
-		"varying vec2               textureCoords;                    \n"
-		"uniform samplerExternalOES textureSampler;                   \n"
-		"void main()                                                  \n"
-		"{                                                            \n"
-		"    gl_FragColor = texture2D(textureSampler, textureCoords); \n"
-		"}                                                            \n";
-
 	if (!_initialized)
 		return -1;
-
-	if (_configDone)
-		return 0;
 
 	switch (format) {
 	case IMGFMT_NV12:
@@ -553,287 +817,9 @@ static int config(uint32_t width, uint32_t height, uint32_t d_width, uint32_t d_
 		return -1;
 	}
 
-	for (i = 0; i < _drmResources->count_connectors; i++) {
-		connector = drmModeGetConnector(_fd, _drmResources->connectors[i]);
-		if (connector == NULL)
-			continue;
-		if (connector->connector_id == _connectorId)
-			break;
-		drmModeFreeConnector(connector);
-	}
-	if (!connector) {
-		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] config() Failed to find connector!\n");
-		return -1;
-	}
-
-	for (j = 0; j < connector->count_modes; j++) {
-		drmModeModeInfoPtr mode = &connector->modes[j];
-		if ((mode->vrefresh >= 25) && (mode->type & DRM_MODE_TYPE_PREFERRED)) {
-			modeId = j;
-			break;
-		}
-	}
-
-	if (modeId == -1) {
-		uint64_t highestArea = 0;
-		modeId = 0;
-		for (j = 0; j < connector->count_modes; j++) {
-			drmModeModeInfoPtr mode = &connector->modes[j];
-			const uint64_t area = mode->hdisplay * mode->vdisplay;
-			if ((mode->vrefresh >= 25) && (area > highestArea)) {
-				highestArea = area;
-				modeId = j;
-			}
-		}
-	}
-
-	_modeInfo = connector->modes[modeId];
-
-	_crtcId = -1;
-	for (i = 0; i < connector->count_encoders; i++) {
-		drmModeEncoderPtr encoder = drmModeGetEncoder(_fd, connector->encoders[i]);
-		if (encoder->encoder_id == connector->encoder_id) {
-			_crtcId = encoder->crtc_id;
-			drmModeFreeEncoder(encoder);
-			break;
-		}
-		drmModeFreeEncoder(encoder);
-	}
-	drmModeFreeConnector(connector);
-
-	if (modeId == -1 || _crtcId == -1) {
-		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] config() Failed to find suitable display output!\n");
-		return -1;
-	}
-
-	_planeId = -1;
-	_drmPlaneResources = drmModeGetPlaneResources(_fd);
-	for (i = 0; i < _drmPlaneResources->count_planes; i++) {
-		drmModePlane *plane = drmModeGetPlane(_fd, _drmPlaneResources->planes[i]);
-		if (!plane)
-			continue;
-		if (plane->crtc_id == 0) {
-			_planeId = plane->plane_id;
-			drmModeFreePlane(plane);
-			break;
-		}
-		drmModeFreePlane(plane);
-	}
-	if (_planeId == -1) {
-		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] config() Failed to find plane!\n");
-		return -1;
-	}
-
-	props = drmModeObjectGetProperties(_fd, _planeId, DRM_MODE_OBJECT_PLANE);
-	if (!props) {
-		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] config() Failed to find properties for plane!\n");
-		return -1;
-	}
-	for (i = 0; i < props->count_props; i++) {
-		drmModePropertyPtr prop = drmModeGetProperty(_fd, props->props[i]);
-		if (prop && strcmp(prop->name, "zorder") == 0 && drm_property_type_is(prop, DRM_MODE_PROP_RANGE)) {
-			uint64_t value = props->prop_values[i];
-			if (drmModeObjectSetProperty(_fd, _planeId, DRM_MODE_OBJECT_PLANE, props->props[i], 0)) {
-				mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] config() Failed to set zorder property for plane!\n");
-				return -1;
-			}
-		}
-		drmModeFreeProperty(prop);
-	}
-	drmModeFreeObjectProperties(props);
-
-	_oldCrtc = drmModeGetCrtc(_fd, _crtcId);
-
-	_fbWidth = _modeInfo.hdisplay;
-	_fbHeight = _modeInfo.vdisplay;
 	_pixelfmt = format;
 
-	mp_msg(MSGT_VO, MSGL_INFO, "[omap_drm_egl] config() Using display HDMI output: %dx%d@%d\n", _fbWidth, _fbHeight, _modeInfo.vrefresh);
-
-	_gbmSurface = gbm_surface_create(
-	    _gbmDevice,
-	    _fbWidth,
-	    _fbHeight,
-	    GBM_FORMAT_XRGB8888,
-	    GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING
-	    );
-	if (!_gbmSurface) {
-		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] config() Failed to create gbm surface!\n");
-		goto fail;
-	}
-
-	_eglDisplay = eglGetDisplay((EGLNativeDisplayType)_gbmDevice);
-	if (_eglDisplay == EGL_NO_DISPLAY) {
-		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] config() Failed to create display!\n");
-		goto fail;
-	}
-
-	if (!eglInitialize(_eglDisplay, &major, &minor)) {
-		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] config() Failed to initialize egl, error: %s\n", eglGetErrorStr(eglGetError()));
-		goto fail;
-	}
-
-	mp_msg(MSGT_VO, MSGL_INFO, "[omap_drm_egl] config() EGL vendor version: \"%s\"\n", eglQueryString(_eglDisplay, EGL_VERSION));
-
-	if (!eglBindAPI(EGL_OPENGL_ES_API)) {
-		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] config() Failed to bind EGL_OPENGL_ES_API, error: %s\n", eglGetErrorStr(eglGetError()));
-		goto fail;
-	}
-
-	if (!eglChooseConfig(_eglDisplay, configAttribs, &_eglConfig, 1, &numConfig)) {
-		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] config() Failed to choose config, error: %s\n", eglGetErrorStr(eglGetError()));
-		goto fail;
-	}
-	if (numConfig != 1) {
-		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] config() More than 1 config: %d\n", numConfig);
-		goto fail;
-	}
-
-	_eglContext = eglCreateContext(_eglDisplay, _eglConfig, EGL_NO_CONTEXT, contextAttribs);
-	if (_eglContext == EGL_NO_CONTEXT) {
-		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] config() Failed to create context, error: %s\n", eglGetErrorStr(eglGetError()));
-		goto fail;
-	}
-
-	_eglSurface = eglCreateWindowSurface(_eglDisplay, _eglConfig, _gbmSurface, NULL);
-	if (_eglSurface == EGL_NO_SURFACE) {
-		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] config() Failed to create egl surface, error: %s\n", eglGetErrorStr(eglGetError()));
-		goto fail;
-	}
-
-	if (!eglMakeCurrent(_eglDisplay, _eglSurface, _eglSurface, _eglContext)) {
-		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] config() Failed attach rendering context to egl surface, error: %s\n", eglGetErrorStr(eglGetError()));
-		goto fail;
-	}
-
-	if (!(eglCreateImageKHR = (PFNEGLCREATEIMAGEKHRPROC)eglGetProcAddress("eglCreateImageKHR"))) {
-		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] config() No eglCreateImageKHR!\n");
-		goto fail;
-	}
-
-	if (!(eglDestroyImageKHR = (PFNEGLDESTROYIMAGEKHRPROC)eglGetProcAddress("eglDestroyImageKHR"))) {
-		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] config() No eglDestroyImageKHR!\n");
-		goto fail;
-	}
-
-	if (!(glEGLImageTargetTexture2DOES = (PFNGLEGLIMAGETARGETTEXTURE2DOESPROC)eglGetProcAddress("glEGLImageTargetTexture2DOES"))) {
-		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] config() No glEGLImageTargetTexture2DOES!\n");
-		goto fail;
-	}
-
-	extensions = (char *)glGetString(GL_EXTENSIONS);
-	if (!strstr(extensions, "GL_TI_image_external_raw_video")) {
-		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] config() No GL_TI_image_external_raw_video extension!\n");
-		goto fail;
-	}
-
-	_vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(_vertexShader, 1, &vertexShaderSource, NULL);
-	glCompileShader(_vertexShader);
-	glGetShaderiv(_vertexShader, GL_COMPILE_STATUS, &shaderStatus);
-	if (!shaderStatus) {
-		char logStr[shaderStatus];
-		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] config() Vertex shader compilation failed!\n");
-		glGetShaderiv(_vertexShader, GL_INFO_LOG_LENGTH, &shaderStatus);
-		if (shaderStatus > 1) {
-			glGetShaderInfoLog(_vertexShader, shaderStatus, NULL, logStr);
-			mp_msg(MSGT_VO, MSGL_FATAL, logStr);
-		}
-		goto fail;
-	}
-
-	_fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(_fragmentShader, 1, &fragmentShaderSource, NULL);
-	glCompileShader(_fragmentShader);
-	glGetShaderiv(_fragmentShader, GL_COMPILE_STATUS, &shaderStatus);
-	if (!shaderStatus) {
-		char logStr[shaderStatus];
-		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] config() Fragment shader compilation failed!\n");
-		glGetShaderiv(_fragmentShader, GL_INFO_LOG_LENGTH, &shaderStatus);
-		if (shaderStatus > 1) {
-			glGetShaderInfoLog(_fragmentShader, shaderStatus, NULL, logStr);
-			mp_msg(MSGT_VO, MSGL_FATAL, logStr);
-		}
-		goto fail;
-	}
-
-	_glProgram = glCreateProgram();
-
-	glAttachShader(_glProgram, _vertexShader);
-	glAttachShader(_glProgram, _fragmentShader);
-
-	glBindAttribLocation(_glProgram, 0, "position");
-	glBindAttribLocation(_glProgram, 1, "texCoord");
-
-	glLinkProgram(_glProgram);
-	glGetProgramiv(_glProgram, GL_LINK_STATUS, &shaderStatus);
-	if (!shaderStatus) {
-		char logStr[shaderStatus];
-		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] config() Program linking failed!\n");
-		glGetProgramiv(_glProgram, GL_INFO_LOG_LENGTH, &shaderStatus);
-		if (shaderStatus > 1) {
-			glGetProgramInfoLog(_glProgram, shaderStatus, NULL, logStr);
-			mp_msg(MSGT_VO, MSGL_FATAL, logStr);
-		}
-		goto fail;
-	}
-
-	glUseProgram(_glProgram);
-
-	glViewport(0, 0, _fbWidth, _fbHeight);
-
-	glClearColor(0.0, 0.0, 0.0, 1.0);
-	glClear(GL_COLOR_BUFFER_BIT);
-	if (!eglSwapBuffers(_eglDisplay, _eglSurface)) {
-		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] config() Failed to swap buffers, error: %s!\n", eglGetErrorStr(eglGetError()));
-		goto fail;
-	}
-
-	gbmBo = gbm_surface_lock_front_buffer(_gbmSurface);
-	drmFb = getDrmFb(gbmBo);
-	if (drmModeSetCrtc(_fd, _crtcId, drmFb->fbId, 0, 0, &_connectorId, 1, &_modeInfo) < 0) {
-		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] config() Failed set crtc: %s\n", strerror(errno));
-		gbm_surface_release_buffer(_gbmSurface, gbmBo);
-		goto fail;
-	}
-	gbm_surface_release_buffer(_gbmSurface, gbmBo);
-
-	_configDone = 1;
-
 	return 0;
-
-fail:
-
-	if (_vertexShader) {
-		glDeleteShader(_vertexShader);
-		_vertexShader = 0;
-	}
-	if (_fragmentShader) {
-		glDeleteShader(_fragmentShader);
-		_fragmentShader = 0;
-	}
-	if (_glProgram) {
-		glDeleteProgram(_glProgram);
-		_glProgram = 0;
-	}
-	if (_eglSurface) {
-		eglDestroySurface(_eglDisplay, _eglSurface);
-		_eglSurface = NULL;
-	}
-	if (_eglContext) {
-		eglDestroyContext(_eglDisplay, _eglContext);
-		_eglContext = NULL;
-	}
-	if (_eglDisplay) {
-		eglTerminate(_eglDisplay);
-		_eglDisplay = NULL;
-	}
-	if (_gbmSurface) {
-		gbm_surface_destroy(_gbmSurface);
-		_gbmSurface = NULL;
-	}
-
-	return -1;
 }
 
 static int query_format(uint32_t format) {
