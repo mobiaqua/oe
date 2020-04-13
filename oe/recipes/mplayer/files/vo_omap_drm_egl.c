@@ -1017,7 +1017,8 @@ static uint32_t put_image(mp_image_t *mpi) {
 
 	glBindTexture(GL_TEXTURE_EXTERNAL_OES, renderTexture->glTexture);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	glFlush();
+
+	eglSwapBuffers(_eglDisplay, _eglSurface);
 
 	return VO_TRUE;
 
@@ -1037,7 +1038,6 @@ static void flip_page() {
 	struct gbm_bo *gbmBo;
 	DrmFb *drmFb;
 
-	eglSwapBuffers(_eglDisplay, _eglSurface);
 	gbmBo = gbm_surface_lock_front_buffer(_gbmSurface);
 	drmFb = getDrmFb(gbmBo);
 	if (drmModePageFlip(_fd, _crtcId, drmFb->fbId, DRM_MODE_PAGE_FLIP_EVENT, NULL)) {
