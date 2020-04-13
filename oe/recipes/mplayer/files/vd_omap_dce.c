@@ -493,6 +493,7 @@ static void uninit(sh_video_t *sh) {
 
 static int control(sh_video_t *sh, int cmd, void *arg, ...) {
 	Int32 codecError;
+	int i;
 
 	switch (cmd) {
 	case VDCTRL_QUERY_FORMAT: {
@@ -518,6 +519,12 @@ static int control(sh_video_t *sh, int cmd, void *arg, ...) {
 			codecError = VIDDEC3_process(_codecHandle, _codecInputBufs, _codecOutputBufs,
 			                             _codecInputArgs, _codecOutputArgs);
 		} while (codecError != XDM_EFAIL);
+
+		for (i = 0; i < IVIDEO2_MAX_IO_BUFFERS; i++) {
+			if (_frameBuffers[i].buffer.priv && _frameBuffers[i].locked) {
+				_frameBuffers[i].locked = 0;
+			}
+		}
 		_decoderLag = 0;
 		return CONTROL_OK;
 	}
@@ -614,6 +621,7 @@ static mp_image_t *decode(sh_video_t *sh, void *data, int len, int flags) {
 	_codecInputArgs->inputID = (XDAS_Int32)fb;
 	_codecInputArgs->numBytes = len;
 
+	_codecInputBufs->numBufs = 1;
 	_codecInputBufs->descs[0].bufSize.bytes = len;
 
 	bo = fb->buffer.bo;
