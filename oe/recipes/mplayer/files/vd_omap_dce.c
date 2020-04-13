@@ -368,6 +368,7 @@ static int init(sh_video_t *sh) {
 	_codecOutputBufs->descs[1].bufSize.bytes = _frameWidth * (_frameHeight / 2);
 
 	for (i = 0; i < IVIDEO2_MAX_IO_BUFFERS; i++) {
+		memset(&_frameBuffers[i], 0, sizeof(FrameBuffer));
 		if (getVideoBuffer(&_frameBuffers[i].buffer, IMGFMT_NV12, _frameWidth, _frameHeight) != 0) {
 			mp_msg(MSGT_DECVIDEO, MSGL_FATAL, "[vd_omap_dce] init() Failed create output buffer\n");
 			goto fail;
@@ -383,7 +384,7 @@ fail:
 	for (i = 0; i < IVIDEO2_MAX_IO_BUFFERS; i++) {
 		if (_frameBuffers[i].buffer.priv) {
 			releaseVideoBuffer(&_frameBuffers[i].buffer);
-			memset(&_frameBuffers[i].buffer, 0, sizeof(DisplayVideoBuffer));
+			memset(&_frameBuffers[i], 0, sizeof(FrameBuffer));
 		}
 	}
 	if (_inputBufBo) {
@@ -444,7 +445,7 @@ static void uninit(sh_video_t *sh) {
 	for (i = 0; i < IVIDEO2_MAX_IO_BUFFERS; i++) {
 		if (_frameBuffers[i].buffer.priv) {
 			releaseVideoBuffer(&_frameBuffers[i].buffer);
-			memset(&_frameBuffers[i].buffer, 0, sizeof(DisplayVideoBuffer));
+			memset(&_frameBuffers[i], 0, sizeof(FrameBuffer));
 		}
 	}
 	if (_inputBufBo) {
