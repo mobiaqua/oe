@@ -1015,6 +1015,10 @@ static uint32_t put_image(mp_image_t *mpi) {
 	glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
+	glDepthMask(GL_FALSE);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_BLEND);
+
 	glBindTexture(GL_TEXTURE_EXTERNAL_OES, renderTexture->glTexture);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
