@@ -141,7 +141,12 @@ static int init(sh_video_t *sh) {
 	case 0x00000004:
 	case mmioFOURCC('F','M','P','4'):
 	case mmioFOURCC('f','m','p','4'):
+	case mmioFOURCC('M','P','4','V'):
+	case mmioFOURCC('m','p','4','v'):
 	case mmioFOURCC('X','V','I','D'):
+	case mmioFOURCC('x','v','i','d'):
+	case mmioFOURCC('X','v','i','D'):
+	case mmioFOURCC('X','V','I','X'):
 	case mmioFOURCC('D','X','5','0'):
 	case mmioFOURCC('D','X','G','M'):
 		_codecId = AV_CODEC_ID_MPEG4;
