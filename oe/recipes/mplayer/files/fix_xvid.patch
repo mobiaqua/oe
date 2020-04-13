@@ -11,7 +11,7 @@ diff -urp old/libmpdemux/demux_lavf.c new/libmpdemux/demux_lavf.c
 +                    if (bsf) {
 +                        if (av_bsf_alloc(bsf, &bsf_handle) >= 0) {
 +                            if (avcodec_parameters_from_context(bsf_handle->par_in, codec) >= 0) {
-+                                if (av_bsf_init(bsf_handle) >= 0) {
++                                if (av_bsf_init(bsf_handle) < 0) {
 +                                    mp_msg(MSGT_DEMUX, MSGL_FATAL, "Error init bsf\n");
 +                                    av_bsf_free(&bsf_handle);
 +                                    bsf_handle = NULL;
