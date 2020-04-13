@@ -31,12 +31,12 @@
 
 #include "config.h"
 #include "aspect.h"
+
 #include "video_out.h"
 #include "video_out_internal.h"
 #include "sub/sub.h"
 #include "sub/eosd.h"
 #include "../mp_core.h"
-#include "vo_omap_drm_egl.h"
 #include "libavcodec/avcodec.h"
 
 #include <libdrm/omap_drmif.h>
@@ -63,6 +63,8 @@ static struct frame_info {
 int yuv420_to_nv12_convert(unsigned char *vdst[3], unsigned char *vsrc[3], unsigned char *, unsigned char *);
 void yuv420_to_nv12_open(struct frame_info *dst, struct frame_info *src);
 
+#define ALIGN2(value, align) (((value) + ((1 << (align)) - 1)) & ~((1 << (align)) - 1))
+
 static const vo_info_t info = {
 	"omap drm egl video driver",
 	"omap_drm_egl",
@@ -88,11 +90,15 @@ typedef struct {
 } DisplayHandle;
 
 typedef struct {
-	void    *priv;
-	struct  omap_bo *bo;
+	void           *priv;
+	struct omap_bo *bo;
 } DisplayVideoBuffer;
 
-#define ALIGN2(value, align) (((value) + ((1 << (align)) - 1)) & ~((1 << (align)) - 1))
+typedef struct {
+	DisplayHandle handle;
+} omap_drm_egl_priv_t;
+
+omap_drm_egl_priv_t omap_drm_egl_priv;
 
 static int                         _dce;
 static int                         _initialized;
@@ -121,17 +127,16 @@ static GLuint                      _fragmentShader;
 static GLuint                      _glProgram;
 static RenderTexture               *_renderTexture;
 static uint32_t                    _fbWidth, _fbHeight;
-static uint32_t                    _pixelfmt;
 static struct SwsContext           *_scaleCtx;
-static int                         _anistropicDVD;
-static int                         _interlaced;
 static int                         _flipDone;
+static int                         _dstWidth, _dstHeight;
 
 LIBVO_EXTERN(omap_drm_egl)
 
-static int releaseVideoBuffer(DisplayVideoBuffer *handle);
+int releaseVideoBuffer(DisplayVideoBuffer *handle);
 static int releaseRenderTexture(RenderTexture *texture);
 static DrmFb *getDrmFb(struct gbm_bo *gbmBo);
+int getVideoBuffer(DisplayVideoBuffer *handle, uint32_t pixelfmt, int width, int height);
 
 #define EGL_STR_ERROR(value) case value: return #value;
 static const char* eglGetErrorStr(EGLint error) {
@@ -499,6 +504,8 @@ static int preinit(const char *arg) {
 	}
 	gbm_surface_release_buffer(_gbmSurface, gbmBo);
 
+	omap_drm_egl_priv.handle.handle = _fd;
+
 	_scaleCtx = NULL;
 	_dce = 0;
 
@@ -642,7 +649,7 @@ static int getHandle(DisplayHandle *handle) {
 	return 0;
 }
 
-static int getVideoBuffer(DisplayVideoBuffer *handle, uint32_t pixelfmt, int width, int height) {
+int getVideoBuffer(DisplayVideoBuffer *handle, uint32_t pixelfmt, int width, int height) {
 	RenderTexture *renderTexture;
 	uint32_t fourcc;
 	uint32_t stride;
@@ -736,7 +743,7 @@ static int releaseRenderTexture(RenderTexture *texture) {
 	return 0;
 }
 
-static int releaseVideoBuffer(DisplayVideoBuffer *handle) {
+int releaseVideoBuffer(DisplayVideoBuffer *handle) {
 	RenderTexture *renderTexture;
 
 	if (!_initialized || handle == NULL)
@@ -817,7 +824,8 @@ static int config(uint32_t width, uint32_t height, uint32_t d_width, uint32_t d_
 		return -1;
 	}
 
-	_pixelfmt = format;
+	_dstWidth = d_width;
+	_dstHeight = d_width;
 
 	return 0;
 }
@@ -825,27 +833,23 @@ static int config(uint32_t width, uint32_t height, uint32_t d_width, uint32_t d_
 static int query_format(uint32_t format) {
 	if (format == IMGFMT_YV12 || format == IMGFMT_NV12)
 		return VFCAP_CSP_SUPPORTED | VFCAP_CSP_SUPPORTED_BY_HW | VFCAP_OSD | VFCAP_EOSD | VFCAP_EOSD_UNSCALED |
-		       VFCAP_FLIP | VFCAP_HWSCALE_UP | VFCAP_HWSCALE_DOWN | VFCAP_ACCEPT_STRIDE | VOCAP_NOSLICES;
+		       VFCAP_FLIP | VFCAP_HWSCALE_UP | VFCAP_HWSCALE_DOWN | VOCAP_NOSLICES;
 
 	return 0;
 }
 
 static uint32_t get_image(mp_image_t *mpi) {
 	if (!_dce) {
+		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] Error: get_image() only for hardware decoding\n");
 		return VO_NOTIMPL;
 	}
-
-	// todo
-	return VO_FALSE;
-}
-
-static uint32_t put_image(mp_image_t *mpi) {
-	if (!_dce) {
-		return VO_NOTIMPL;
+	if (mpi->type == MP_IMGTYPE_TEMP) {
+		mpi->flags |= MP_IMGFLAG_DIRECT | MP_IMGFLAG_DRAW_CALLBACK;
+		return VO_TRUE;
+	} else {
+		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] Error: get_image() only for MP_IMGTYPE_TEMP\n");
+		return VO_FALSE;
 	}
-
-	// todo
-	return VO_FALSE;
 }
 
 static int draw_frame(uint8_t *src[]) {
@@ -853,14 +857,19 @@ static int draw_frame(uint8_t *src[]) {
 	return VO_FALSE;
 }
 
-static int draw_slice(uint8_t *frame_data[], int frame_stride[], int frame_width, int frame_height, int frame_x, int frame_y) {
+static int draw_slice(uint8_t *image[], int stride[], int w,int h,int x,int y) {
+	// empty
+	return VO_FALSE;
+}
+
+static uint32_t put_image(mp_image_t *mpi) {
 	RenderTexture *renderTexture;
 	uint32_t fourcc;
 	uint32_t stride;
 	uint32_t fbSize;
 	float x, y;
 	float cropLeft, cropRight, cropTop, cropBottom;
-	int frame_dx, frame_dy, frame_dw, frame_dh;
+	int frame_width, frame_height;
 	GLfloat coords[] = {
 		0.0f,  1.0f,
 		1.0f,  1.0f,
@@ -872,17 +881,15 @@ static int draw_slice(uint8_t *frame_data[], int frame_stride[], int frame_width
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	// todo
-	frame_dx = frame_dy = 0;
-	frame_dw = frame_width;
-	frame_dh = frame_height;
+	frame_width = mpi->width;
+	frame_height = mpi->height;
 
-	if (_anistropicDVD) {
+	if ((mpi->flags & 0x8000) || (mpi->w == 720 && (mpi->h == 576 || mpi->h == 480))) { // hack: anisotropic
 		x = 1;
 		y = 1;
 	} else {
-		x = (float)(frame_dw) / _fbWidth;
-		y = (float)(frame_dh) / _fbHeight;
+		x = (float)(mpi->w) / _fbWidth;
+		y = (float)(mpi->h) / _fbHeight;
 		if (x > y) {
 			y /= x;
 			x = 1;
@@ -901,10 +908,10 @@ static int draw_slice(uint8_t *frame_data[], int frame_stride[], int frame_width
 	position[6] =  x;
 	position[7] =  y;
 
-	cropLeft = (float)(frame_dx) / frame_width;
-	cropRight = (float)(frame_dw) / frame_width;
-	cropTop = (float)(frame_dy) / frame_height;
-	cropBottom = (float)(frame_dh) / frame_height;
+	cropLeft = (float)(mpi->x) / frame_width;
+	cropRight = (float)(mpi->w) / frame_width;
+	cropTop = (float)(mpi->y) / frame_height;
+	cropBottom = (float)(mpi->h) / frame_height;
 	coords[0] = coords[4] = cropLeft;
 	coords[2] = coords[6] = cropRight;
 	coords[5] = coords[7] = cropTop;
@@ -917,10 +924,10 @@ static int draw_slice(uint8_t *frame_data[], int frame_stride[], int frame_width
 	glEnableVertexAttribArray(1);
 
 	if (_dce) {
-		DisplayVideoBuffer *db = (DisplayVideoBuffer *)(frame_data[0]);
+		DisplayVideoBuffer *db = mpi->priv;
 		renderTexture = (RenderTexture *)db->priv;
 	} else if (!_renderTexture) {
-		_renderTexture = renderTexture = getRenderTexture(_pixelfmt, frame_width, frame_height);
+		_renderTexture = renderTexture = getRenderTexture(mpi->imgfmt, frame_width, frame_height);
 		if (!_renderTexture) {
 			goto fail;
 		}
@@ -936,10 +943,10 @@ static int draw_slice(uint8_t *frame_data[], int frame_stride[], int frame_width
 		uint8_t *dst;
 
 		dst = omap_bo_map(renderTexture->bo);
-		if (_pixelfmt == IMGFMT_YV12 && (ALIGN2(frame_width, 5) == frame_width)) {
-			srcPtr[0] = frame_data[0];
-			srcPtr[1] = frame_data[1];
-			srcPtr[2] = frame_data[2];
+		if (mpi->imgfmt == IMGFMT_YV12 && (ALIGN2(frame_width, 5) == frame_width)) {
+			srcPtr[0] = mpi->planes[0];
+			srcPtr[1] = mpi->planes[1];
+			srcPtr[2] = mpi->planes[2];
 			dstPtr[0] = dst;
 			dstPtr[1] = dst + frame_width * frame_height;
 			dstPtr[2] = 0;
@@ -950,8 +957,8 @@ static int draw_slice(uint8_t *frame_data[], int frame_stride[], int frame_width
 			yuv420_frame_info.dy = 0;
 			yuv420_frame_info.dw = frame_width;
 			yuv420_frame_info.dh = frame_height;
-			yuv420_frame_info.y_stride = frame_stride[0];
-			yuv420_frame_info.uv_stride = frame_stride[1];
+			yuv420_frame_info.y_stride = mpi->stride[0];
+			yuv420_frame_info.uv_stride = mpi->stride[1];
 
 			nv12_frame_info.w = frame_width;
 			nv12_frame_info.h = frame_height;
@@ -967,15 +974,15 @@ static int draw_slice(uint8_t *frame_data[], int frame_stride[], int frame_width
 			omap_bo_cpu_prep(renderTexture->bo, OMAP_GEM_WRITE);
 			yuv420_to_nv12_convert(dstPtr, srcPtr, NULL, NULL);
 			omap_bo_cpu_fini(renderTexture->bo, OMAP_GEM_WRITE);
-		} else if (_pixelfmt == IMGFMT_YV12) {
-			srcPtr[0] = frame_data[0];
-			srcPtr[1] = frame_data[1];
-			srcPtr[2] = frame_data[2];
-			srcPtr[3] = frame_data[3];
-			srcStride[0] = frame_stride[0];
-			srcStride[1] = frame_stride[1];
-			srcStride[2] = frame_stride[2];
-			srcStride[3] = frame_stride[3];
+		} else if (mpi->imgfmt == IMGFMT_YV12) {
+			srcPtr[0] = mpi->planes[0];
+			srcPtr[1] = mpi->planes[1];
+			srcPtr[2] = mpi->planes[2];
+			srcPtr[3] = mpi->planes[3];
+			srcStride[0] = mpi->stride[0];
+			srcStride[1] = mpi->stride[1];
+			srcStride[2] = mpi->stride[2];
+			srcStride[3] = mpi->stride[3];
 			dstPtr[0] = dst;
 			dstPtr[1] = dst + frame_width * frame_height;
 			dstPtr[2] = NULL;
