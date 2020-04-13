@@ -367,6 +367,15 @@ static int init(sh_video_t *sh) {
 	_codecOutputBufs->descs[1].buf = (XDAS_Int8 *)(_frameWidth * _frameHeight);
 	_codecOutputBufs->descs[1].bufSize.bytes = _frameWidth * (_frameHeight / 2);
 
+	for (i = 0; i < IVIDEO2_MAX_IO_BUFFERS; i++) {
+		if (getVideoBuffer(&_frameBuffers[i].buffer, IMGFMT_NV12, _frameWidth, _frameHeight) != 0) {
+			mp_msg(MSGT_DECVIDEO, MSGL_FATAL, "[vd_omap_dce] init() Failed create output buffer\n");
+			goto fail;
+		}
+		_frameBuffers[i].index = i;
+		_frameBuffers[i].locked = 0;
+	}
+
 	return mpcodecs_config_vo(sh, _frameWidth, _frameHeight, IMGFMT_NV12);
 
 fail:
@@ -542,15 +551,7 @@ static FrameBuffer *getBuffer(void) {
 
 	for (i = 0; i < IVIDEO2_MAX_IO_BUFFERS; i++) {
 		if (_frameBuffers[i].buffer.priv && !_frameBuffers[i].locked) {
-			return &_frameBuffers[i];
-		}
-		if (!_frameBuffers[i].buffer.priv && !_frameBuffers[i].locked) {
-			if (getVideoBuffer(&_frameBuffers[i].buffer, IMGFMT_NV12, _frameWidth, _frameHeight) != 0) {
-				mp_msg(MSGT_DECVIDEO, MSGL_FATAL, "[vd_omap_dce] getBuffer() Failed create output buffer\n");
-				return NULL;
-			}
-			_frameBuffers[i].index = i;
-			_frameBuffers[i].locked = 0;
+			_frameBuffers[i].locked = 1;
 			return &_frameBuffers[i];
 		}
 	}
@@ -614,7 +615,6 @@ static mp_image_t *decode(sh_video_t *sh, void *data, int len, int flags) {
 		mp_msg(MSGT_DECVIDEO, MSGL_FATAL, "[vd_omap_dce] decode() Failed get video buffer\n");
 		return NULL;
 	}
-	lockBuffer(fb);
 
 	memcpy(_inputBufPtr, data, len);
 
