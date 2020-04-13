@@ -1,0 +1,78 @@
+diff -urp old/libmpdemux/demuxer.c new/libmpdemux/demuxer.c
+--- old/libmpdemux/demuxer.c	2020-04-12 16:00:44.000000000 +0200
++++ new/libmpdemux/demuxer.c	2020-04-13 15:59:53.000000000 +0200
+@@ -123,74 +123,8 @@ extern const demuxer_desc_t demuxer_desc
+  * libraries and demuxers requiring binary support. */
+ 
+ const demuxer_desc_t *const demuxer_list[] = {
+-    &demuxer_desc_rawaudio,
+-    &demuxer_desc_rawvideo,
+-#ifdef CONFIG_TV
+-    &demuxer_desc_tv,
+-#endif
+-    &demuxer_desc_mf,
+-#ifdef CONFIG_FFMPEG
+     &demuxer_desc_lavf_preferred,
+-#endif
+-    &demuxer_desc_avi,
+-    &demuxer_desc_y4m,
+-    &demuxer_desc_asf,
+-    &demuxer_desc_nsv,
+-    &demuxer_desc_real,
+-    &demuxer_desc_smjpeg,
+-    &demuxer_desc_matroska,
+-    &demuxer_desc_realaudio,
+-    &demuxer_desc_vqf,
+-    &demuxer_desc_mov,
+-    &demuxer_desc_vivo,
+-    &demuxer_desc_fli,
+-    &demuxer_desc_film,
+-    &demuxer_desc_roq,
+-#ifdef CONFIG_GIF
+-    &demuxer_desc_gif,
+-#endif
+-#ifdef CONFIG_OGGVORBIS
+-    &demuxer_desc_ogg,
+-#endif
+-#ifdef CONFIG_WIN32DLL
+-    &demuxer_desc_avs,
+-#endif
+-    &demuxer_desc_pva,
+-    &demuxer_desc_mpeg_ts,
+-    &demuxer_desc_lmlm4,
+-    &demuxer_desc_mpeg_ps,
+-    &demuxer_desc_mpeg_pes,
+-    &demuxer_desc_mpeg_es,
+-    &demuxer_desc_mpeg_gxf,
+-    &demuxer_desc_mpeg4_es,
+-    &demuxer_desc_h264_es,
+-    &demuxer_desc_audio,
+-    &demuxer_desc_mpeg_ty,
+-#ifdef CONFIG_LIVE555
+-    &demuxer_desc_rtp,
+-#endif
+-#ifdef CONFIG_LIBNEMESI
+-    &demuxer_desc_rtp_nemesi,
+-#endif
+-#ifdef CONFIG_FFMPEG
+     &demuxer_desc_lavf,
+-#endif
+-#ifdef CONFIG_MUSEPACK
+-    &demuxer_desc_mpc,
+-#endif
+-#ifdef CONFIG_LIBDV095
+-    &demuxer_desc_rawdv,
+-#endif
+-    &demuxer_desc_aac,
+-#ifdef CONFIG_LIBNUT
+-    &demuxer_desc_nut,
+-#endif
+-#ifdef CONFIG_XMMS
+-    &demuxer_desc_xmms,
+-#endif
+-#ifdef CONFIG_MNG
+-    &demuxer_desc_mng,
+-#endif
+     /* Please do not add any new demuxers here. If you want to implement a new
+      * demuxer, add it to libavformat, except for wrappers around external
+      * libraries and demuxers requiring binary support. */

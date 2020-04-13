@@ -15,9 +15,9 @@ SRC_URI = "svn://svn.mplayerhq.hu/mplayer;module=trunk \
 SRC_URI_append_armv7a-hf = " \
 	file://yuv420_to_nv12.S \
 	file://vo_omap_drm_egl.c \
-	file://vo_omap_drm_egl.h \
 	file://vd_omap_dce.c \
 	file://add-level-to-sh-video.patch \
+	file://force_ffmpeg_demuxer.patch \
 	file://fix_h264.patch \
 	file://fix_xvid.patch \
 	file://fix_wmv3.patch \
