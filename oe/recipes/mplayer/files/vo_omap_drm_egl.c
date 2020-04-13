@@ -190,13 +190,13 @@ static int preinit(const char *arg) {
 	};
 
 	static const GLchar *vertexShaderSource =
-		"attribute vec2 position;                      \n"
+		"attribute vec4 position;                      \n"
 		"attribute vec2 texCoord;                      \n"
 		"varying   vec2 textureCoords;                 \n"
 		"void main()                                   \n"
 		"{                                             \n"
 		"    textureCoords = texCoord;                 \n"
-		"    gl_Position = vec4(position, 0.0, 1.0);   \n"
+		"    gl_Position = position                ;   \n"
 		"}                                             \n";
 
 	static const GLchar *fragmentShaderSource =
