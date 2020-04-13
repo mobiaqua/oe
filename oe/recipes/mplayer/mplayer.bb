@@ -165,7 +165,6 @@ BUILD_OPTIMIZATION = "${FULL_OPTIMIZATION}"
 do_configure_prepend_armv7a-hf() {
 	cp ${WORKDIR}/yuv420_to_nv12.S ${S}/libvo
 	cp ${WORKDIR}/vo_omap_drm_egl.c ${S}/libvo
-	cp ${WORKDIR}/vo_omap_drm_egl.h ${S}/libvo
 	cp ${WORKDIR}/vd_omap_dce.c ${S}/libmpcodecs
 	export DCE_CFLAGS=`pkg-config --cflags libdce`
 	export DCE_LIBS=`pkg-config --libs libdce`
