@@ -885,7 +885,7 @@ static uint32_t put_image(mp_image_t *mpi) {
 	frame_width = mpi->width;
 	frame_height = mpi->height;
 
-	if ((mpi->flags & 0x8000) || (mpi->w == 720 && (mpi->h == 576 || mpi->h == 480))) { // hack: anisotropic
+	if ((mpi->flags & 0x800000) || (mpi->w == 720 && (mpi->h == 576 || mpi->h == 480))) { // hack: anisotropic
 		x = 1;
 		y = 1;
 	} else {

@@ -674,7 +674,7 @@ static mp_image_t *decode(sh_video_t *sh, void *data, int len, int flags) {
 	mpi->priv = (void *)_codecOutputArgs->outputID[foundIndex];
 
 	if (_codecId == AV_CODEC_ID_MPEG2VIDEO && _frameWidth == 720 && (_frameHeight == 576 || _frameHeight == 480)) {
-		mpi->flags |= 0x8000;
+		mpi->flags |= 0x800000;
 	}
 	if (_codecOutputArgs->displayBufs.bufDesc[0].contentType == IVIDEO_INTERLACED) {
 		mpi->flags |= MP_IMGFIELD_INTERLACED;
