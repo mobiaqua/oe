@@ -68,6 +68,7 @@ typedef struct {
 typedef struct {
 	void           *priv;
 	struct omap_bo *bo;
+	uint32_t       boHandle;
 } DisplayVideoBuffer;
 
 typedef struct {
@@ -601,7 +602,6 @@ static void unlockBuffer(FrameBuffer *fb) {
 static mp_image_t *decode(sh_video_t *sh, void *data, int len, int flags) {
 	mp_image_t *mpi;
 	FrameBuffer *fb;
-	struct omap_bo *bo;
 	Int32 codecError;
 	int foundIndex = -1;
 	int i;
@@ -630,8 +630,7 @@ static mp_image_t *decode(sh_video_t *sh, void *data, int len, int flags) {
 	_codecInputBufs->numBufs = 1;
 	_codecInputBufs->descs[0].bufSize.bytes = len;
 
-	bo = fb->buffer.bo;
-	_codecOutputBufs->descs[0].buf = (XDAS_Int8 *)omap_bo_handle(bo);
+	_codecOutputBufs->descs[0].buf = (XDAS_Int8 *)fb->buffer.boHandle;
 
 	memset(_codecOutputArgs->outputID, 0, sizeof(_codecOutputArgs->outputID));
 	memset(_codecOutputArgs->freeBufID, 0, sizeof(_codecOutputArgs->freeBufID));

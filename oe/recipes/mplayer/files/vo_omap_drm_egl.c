@@ -81,6 +81,7 @@ typedef struct {
 typedef struct {
 	struct          omap_bo *bo;
 	int             dmabuf;
+	void            *mapPtr;
 	EGLImageKHR     image;
 	GLuint          glTexture;
 } RenderTexture;
@@ -92,6 +93,7 @@ typedef struct {
 typedef struct {
 	void           *priv;
 	struct omap_bo *bo;
+	uint32_t       boHandle;
 } DisplayVideoBuffer;
 
 typedef struct {
@@ -671,6 +673,8 @@ int getVideoBuffer(DisplayVideoBuffer *handle, uint32_t pixelfmt, int width, int
 	}
 
 	handle->bo = renderTexture->bo = omap_bo_new(_omapDevice, fbSize, OMAP_BO_WC);
+	handle->boHandle = omap_bo_handle(handle->bo);
+	renderTexture->mapPtr = omap_bo_map(handle->bo);
 	renderTexture->dmabuf = omap_bo_dmabuf(renderTexture->bo);
 	{
 		EGLint attr[] = {
@@ -878,9 +882,6 @@ static uint32_t put_image(mp_image_t *mpi) {
 	};
 	GLfloat position[8];
 
-	glClearColor(0.0, 0.0, 0.0, 1.0);
-	glClear(GL_COLOR_BUFFER_BIT);
-
 	frame_width = mpi->width;
 	frame_height = mpi->height;
 
@@ -942,7 +943,7 @@ static uint32_t put_image(mp_image_t *mpi) {
 		int dstStride[4] = {};
 		uint8_t *dst;
 
-		dst = omap_bo_map(renderTexture->bo);
+		dst = renderTexture->mapPtr;
 		if (mpi->imgfmt == IMGFMT_YV12 && (ALIGN2(frame_width, 5) == frame_width)) {
 			srcPtr[0] = mpi->planes[0];
 			srcPtr[1] = mpi->planes[1];
@@ -1016,6 +1017,7 @@ static uint32_t put_image(mp_image_t *mpi) {
 
 	glBindTexture(GL_TEXTURE_EXTERNAL_OES, renderTexture->glTexture);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glFlush();
 
 	return VO_TRUE;
 
