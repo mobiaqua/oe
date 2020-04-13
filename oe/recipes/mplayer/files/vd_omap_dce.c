@@ -380,15 +380,15 @@ static int init(sh_video_t *sh) {
 
 fail:
 
-	if (_inputBufBo) {
-		omap_bo_del(_inputBufBo);
-		_inputBufBo = NULL;
-	}
 	for (i = 0; i < IVIDEO2_MAX_IO_BUFFERS; i++) {
 		if (_frameBuffers[i].buffer.priv) {
 			releaseVideoBuffer(&_frameBuffers[i].buffer);
 			memset(&_frameBuffers[i].buffer, 0, sizeof(DisplayVideoBuffer));
 		}
+	}
+	if (_inputBufBo) {
+		omap_bo_del(_inputBufBo);
+		_inputBufBo = NULL;
 	}
 
 	if (_codecHandle) {
@@ -441,15 +441,15 @@ fail:
 static void uninit(sh_video_t *sh) {
 	int i;
 
-	if (_inputBufBo) {
-		omap_bo_del(_inputBufBo);
-		_inputBufBo = NULL;
-	}
 	for (i = 0; i < IVIDEO2_MAX_IO_BUFFERS; i++) {
 		if (_frameBuffers[i].buffer.priv) {
 			releaseVideoBuffer(&_frameBuffers[i].buffer);
 			memset(&_frameBuffers[i].buffer, 0, sizeof(DisplayVideoBuffer));
 		}
+	}
+	if (_inputBufBo) {
+		omap_bo_del(_inputBufBo);
+		_inputBufBo = NULL;
 	}
 
 	if (_codecHandle && _codecDynParams && _codecParams) {
