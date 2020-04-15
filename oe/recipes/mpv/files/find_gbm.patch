@@ -1,0 +1,12 @@
+diff -urp old/wscript new/wscript
+--- old/wscript	2020-04-15 14:41:24.000000000 +0200
++++ new/wscript	2020-04-15 14:38:14.000000000 +0200
+@@ -293,7 +293,7 @@ iconv support use --disable-iconv.",
+     }, {
+         'name': 'gbm.h',
+         'desc': 'gbm.h',
+-        'func': check_cc(header_name=['stdio.h', 'gbm.h']),
++        'func': check_cc(header_name=['stdio.h', 'gbm/gbm.h']),
+     }, {
+         'name': 'glibc-thread-name',
+         'desc': 'GLIBC API for setting thread name',

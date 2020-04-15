@@ -9,6 +9,7 @@ LICENSE = "GPLv2+"
 SRCREV = "ad2cda343b1d6001f430867e0c3f502ff27c8675"
 SRC_URI = "git://github.com/mpv-player/mpv.git;protocol=git;name=mpv \
            http://www.freehackers.org/~tnagy/release/waf-2.0.9;name=waf;downloadfilename=waf;subdir=git \
+           file://find_gbm.patch \
           "
 SRC_URI[waf.md5sum] = "3bc28bcd4868999798a6d2675211e23f"
 SRC_URI[waf.sha256sum] = "2a8e0816f023995e557f79ea8940d322bec18f286917c8f9a6fa2dc3875dfa48"
@@ -25,7 +26,6 @@ EXTRA_OECONF = " \
     --confdir=${sysconfdir} \
     --datadir=${datadir} \
     --disable-manpage-build \
-    --disable-gl \
     --disable-libsmbclient \
     --disable-libbluray \
     --disable-dvdnav \
@@ -39,7 +39,8 @@ EXTRA_OECONF = " \
     --disable-libarchive \
     --disable-vaapi \
     --disable-vdpau \
-    --disable-gbm \
+    --enable-gl \
+    --enable-gbm \
     --enable-drm \
     --enable-libass \
     --enable-lua \
