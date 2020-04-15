@@ -199,7 +199,8 @@ static WSEGLError wseglSwapDrawable(WSEGLDrawableHandle _drawable, unsigned long
     WSEGL_UNUSED(data);
     struct GBMDrawable *drawable = (struct GBMDrawable *)_drawable;
 
-    if (drawable->type == GBM_DRAWABLE_WINDOW) {
+    if (drawable->type == GBM_DRAWABLE_WINDOW)
+    {
         if (++drawable->handle.window->current_back_buffer >= PVR_NUM_BACK_BUFFERS)
         {
             drawable->handle.window->current_back_buffer = 0;
@@ -264,9 +265,8 @@ static WSEGLError wseglGetDrawableParameters(WSEGLDrawableHandle _drawable,
     sourceIdx = renderIdx = 0;
     if (drawable->type == GBM_DRAWABLE_WINDOW)
     {
-        int current = drawable->handle.window->current_back_buffer;
-        sourceIdx = current % PVR_NUM_BACK_BUFFERS;
-        renderIdx = (current + 1) % PVR_NUM_BACK_BUFFERS;
+        renderIdx = drawable->handle.window->current_back_buffer;
+        sourceIdx = (drawable->handle.window->current_back_buffer + PVR_NUM_BACK_BUFFERS - 1) % PVR_NUM_BACK_BUFFERS;
     }
 
     source = drawable->backBuffers[sourceIdx].pvr2dMemInfo;
