@@ -1082,8 +1082,8 @@ static void flip_page() {
 	eglSwapBuffers(_eglDisplay, _eglSurface);
 
 	// eglWaitGL should wait, but it seems not
-	// added 5-7ms to wait for HW finished
-	usleep(7 * 1000);
+	// added 5-9ms to wait for HW finished
+	usleep(9 * 1000);
 
 	drmFb = getDrmFb(gbmBo);
 
