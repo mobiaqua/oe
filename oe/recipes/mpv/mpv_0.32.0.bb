@@ -10,6 +10,8 @@ SRCREV = "ad2cda343b1d6001f430867e0c3f502ff27c8675"
 SRC_URI = "git://github.com/mpv-player/mpv.git;protocol=git;name=mpv \
            http://www.freehackers.org/~tnagy/release/waf-2.0.9;name=waf;downloadfilename=waf;subdir=git \
            file://find_gbm.patch \
+           file://fix_glesv2.patch \
+           file://skip_orig_drm_egl.patch \
           "
 SRC_URI[waf.md5sum] = "3bc28bcd4868999798a6d2675211e23f"
 SRC_URI[waf.sha256sum] = "2a8e0816f023995e557f79ea8940d322bec18f286917c8f9a6fa2dc3875dfa48"

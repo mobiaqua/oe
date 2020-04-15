@@ -1,0 +1,12 @@
+diff -urp old/wscript new/wscript
+--- old/wscript	2020-04-15 14:43:03.000000000 +0200
++++ new/wscript	2020-04-15 15:06:20.000000000 +0200
+@@ -665,7 +665,7 @@ video_output_features = [
+         'desc': 'OpenGL DRM EGL Backend',
+         'deps': 'drm && gbm',
+         'groups': [ 'gl' ],
+-        'func': check_pkg_config('egl'),
++        'func': check_pkg_config('egl', 'glesv2'),
+     } , {
+         'name': '--gl-wayland',
+         'desc': 'OpenGL Wayland Backend',

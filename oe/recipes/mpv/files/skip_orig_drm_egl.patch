@@ -1,0 +1,24 @@
+diff -urp old/wscript_build.py new/wscript_build.py
+--- old/wscript_build.py	2020-04-15 14:32:43.000000000 +0200
++++ new/wscript_build.py	2020-04-15 15:02:20.000000000 +0200
+@@ -473,7 +473,7 @@ def build(ctx):
+         ( "video/out/opengl/context_android.c",  "egl-android" ),
+         ( "video/out/opengl/context_angle.c",    "egl-angle-win32" ),
+         ( "video/out/opengl/context_cocoa.c",    "gl-cocoa" ),
+-        ( "video/out/opengl/context_drm_egl.c",  "egl-drm" ),
++#        ( "video/out/opengl/context_drm_egl.c",  "egl-drm" ),
+         ( "video/out/opengl/context_dxinterop.c","gl-dxinterop" ),
+         ( "video/out/opengl/context_glx.c",      "gl-x11" ),
+         ( "video/out/opengl/context_rpi.c",      "rpi" ),
+diff -urp old/video/out/gpu/context.c new/video/out/gpu/context.c
+--- old/video/out/gpu/context.c	2020-04-15 14:32:43.000000000 +0200
++++ new/video/out/gpu/context.c	2020-04-15 15:13:49.000000000 +0200
+@@ -88,7 +88,7 @@ static const struct ra_ctx_fns *contexts
+     &ra_ctx_glx,
+ #endif
+ #if HAVE_EGL_DRM
+-    &ra_ctx_drm_egl,
++    //&ra_ctx_drm_egl,
+ #endif
+ 
+ // Vulkan contexts:
