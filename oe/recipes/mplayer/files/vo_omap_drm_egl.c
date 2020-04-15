@@ -130,7 +130,7 @@ static GLuint                      _glProgram;
 static RenderTexture               *_renderTexture;
 static uint32_t                    _fbWidth, _fbHeight;
 static struct SwsContext           *_scaleCtx;
-static int                         _flipDone;
+static int                         _flipPending;
 static int                         _dstWidth, _dstHeight;
 
 LIBVO_EXTERN(omap_drm_egl)
@@ -489,12 +489,18 @@ static int preinit(const char *arg) {
 
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
+
+	gbmBo = gbm_surface_lock_front_buffer(_gbmSurface);
+
+	eglWaitGL();
 	if (!eglSwapBuffers(_eglDisplay, _eglSurface)) {
 		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] preinit() Failed to swap buffers, error: %s!\n", eglGetErrorStr(eglGetError()));
 		goto fail;
 	}
+	// eglWaitGL should wait, but it seems not
+	// added 40ms
+	usleep(40 * 1000);
 
-	gbmBo = gbm_surface_lock_front_buffer(_gbmSurface);
 	drmFb = getDrmFb(gbmBo);
 	if (!drmFb) {
 		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] preinit() Failed get DRM fb\n");
@@ -510,6 +516,7 @@ static int preinit(const char *arg) {
 
 	_scaleCtx = NULL;
 	_dce = 0;
+	_flipPending = 0;
 
 	_initialized = 1;
 
@@ -1022,7 +1029,7 @@ static uint32_t put_image(mp_image_t *mpi) {
 	glBindTexture(GL_TEXTURE_EXTERNAL_OES, renderTexture->glTexture);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-	eglSwapBuffers(_eglDisplay, _eglSurface);
+	glFlush();
 
 	return VO_TRUE;
 
@@ -1035,22 +1042,14 @@ static void draw_osd(void) {
 }
 
 static void pageFlipHandler(int fd, unsigned int frame, unsigned int sec, unsigned int usec, void *data) {
-	_flipDone = 1;
+	_flipPending = 0;
 }
 
 static void flip_page() {
 	struct gbm_bo *gbmBo;
 	DrmFb *drmFb;
 
-	gbmBo = gbm_surface_lock_front_buffer(_gbmSurface);
-	drmFb = getDrmFb(gbmBo);
-	if (drmModePageFlip(_fd, _crtcId, drmFb->fbId, DRM_MODE_PAGE_FLIP_EVENT, NULL)) {
-		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] flip() Can not flip buffer! %s\n", strerror(errno));
-		goto fail;
-	}
-
-	_flipDone = 0;
-	while (!_flipDone) {
+	while (_flipPending) {
 		int result;
 		fd_set fds = {};
 		drmEventContext drmEvent = {};
@@ -1074,9 +1073,28 @@ static void flip_page() {
 			}
 		}
 		drmHandleEvent(_fd, &drmEventContext);
+		break;
+	}
+
+	gbmBo = gbm_surface_lock_front_buffer(_gbmSurface);
+
+	eglWaitGL();
+	eglSwapBuffers(_eglDisplay, _eglSurface);
+
+	// eglWaitGL should wait, but it seems not
+	// added 5-7ms to wait for HW finished
+	usleep(7 * 1000);
+
+	drmFb = getDrmFb(gbmBo);
+
+	if (drmModePageFlip(_fd, _crtcId, drmFb->fbId, DRM_MODE_PAGE_FLIP_EVENT, NULL)) {
+		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] flip() Can not flip buffer! %s\n", strerror(errno));
+		goto fail;
 	}
 
 	gbm_surface_release_buffer(_gbmSurface, gbmBo);
+
+	_flipPending = 1;
 
 	return;
 
@@ -1112,6 +1130,7 @@ static int control(uint32_t request, void *data) {
 			r->w = _fbWidth;
 			r->h = _fbHeight;
 		}
+		// todo
 		return VO_TRUE;
 	case VOCTRL_DRAW_EOSD:
 		if (!data)
