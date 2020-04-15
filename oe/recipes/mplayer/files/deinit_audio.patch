@@ -1,0 +1,36 @@
+diff -urp old/mplayer.c new/mplayer.c
+--- old/mplayer.c	2020-04-12 08:53:25.000000000 +0200
++++ new/mplayer.c	2020-04-15 12:57:38.000000000 +0200
+@@ -612,6 +612,16 @@ void uninit_player(unsigned int mask)
+         mpctx->stream = NULL;
+     }
+ 
++    if (mask & INITIALIZED_AO) {
++        initialized_flags &= ~INITIALIZED_AO;
++        current_module     = "uninit_ao";
++        if (mpctx->edl_muted)
++            mixer_mute(&mpctx->mixer);
++        if (mpctx->audio_out)
++            mpctx->audio_out->uninit(mpctx->eof ? 0 : 1);
++        mpctx->audio_out = NULL;
++    }
++
+     if (mask & INITIALIZED_VO) {
+         initialized_flags &= ~INITIALIZED_VO;
+         current_module     = "uninit_vo";
+@@ -667,15 +677,6 @@ void uninit_player(unsigned int mask)
+         vo_vobsub = NULL;
+     }
+ 
+-    if (mask & INITIALIZED_AO) {
+-        initialized_flags &= ~INITIALIZED_AO;
+-        current_module     = "uninit_ao";
+-        if (mpctx->edl_muted)
+-            mixer_mute(&mpctx->mixer);
+-        if (mpctx->audio_out)
+-            mpctx->audio_out->uninit(mpctx->eof ? 0 : 1);
+-        mpctx->audio_out = NULL;
+-    }
+ 
+ #ifdef CONFIG_GUI
+     if (mask & INITIALIZED_GUI) {

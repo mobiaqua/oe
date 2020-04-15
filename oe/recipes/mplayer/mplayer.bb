@@ -18,6 +18,7 @@ SRC_URI_append_armv7a-hf = " \
 	file://vd_omap_dce.c \
 	file://add-level-to-sh-video.patch \
 	file://force_ffmpeg_demuxer.patch \
+	file://deinit_audio.patch \
 	file://fix_h264.patch \
 	file://fix_xvid.patch \
 	file://fix_wmv3.patch \
