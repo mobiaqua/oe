@@ -46,6 +46,7 @@ EXTRA_OECONF += " --with-udev-prefix= \
                   --sbindir=${base_sbindir} \
                   --libexecdir=${base_libdir}/udev \
                   --with-rootlibdir=${base_libdir} \
+                  --disable-extras \
 "
 
 INITSCRIPT_NAME = "udev"
