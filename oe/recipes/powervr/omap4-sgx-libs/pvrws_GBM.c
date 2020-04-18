@@ -96,8 +96,6 @@ static WSEGLError wseglCloseDisplay(WSEGLDisplayHandle _display)
     return WSEGL_SUCCESS;
 }
 
-extern PVR2DERROR PVR2DImportGEM(PVR2DCONTEXTHANDLE context, PVR2D_ULONG bo, PVR2DMEMINFO **memInfo);
-
 /* Create the WSEGL drawable version of a native window */
 static WSEGLError wseglCreateWindowDrawable
     (WSEGLDisplayHandle display, WSEGLConfig *config,
