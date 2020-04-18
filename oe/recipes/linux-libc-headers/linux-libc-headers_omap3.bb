@@ -4,14 +4,19 @@ INHIBIT_DEFAULT_DEPS = "1"
 DEPENDS += "unifdef-native"
 PR = "r0"
 
+COMPATIBLE_MACHINE = "igep0030"
+
 COMPATIBLE_TARGET_SYS = "."
-SRC_URI = "${KERNELORG_MIRROR}/linux/kernel/v2.6/linux-${PV}.tar.bz2;name=kernel \
-          "
 
-SRC_URI[kernel.md5sum] = "1aab7a741abe08d42e8eccf20de61e05"
-SRC_URI[kernel.sha256sum] = "584d17f2a3ee18a9501d7ff36907639e538cfdba4529978b8550c461d45c61f6"
+FILESPATHPKG =. "linux-omap3:"
 
-S = "${WORKDIR}/linux-${PV}"
+SRCREV = "df5d3177e220f3a06e42837be913ca7529c897f8"
+
+SRC_URI = "git://git.isee.biz/pub/scm/linux-omap-2.6.git;protocol=git;branch=linux-2.6.37.y \
+           file://patch_2.6.37.6.patch \
+"
+
+S = "${WORKDIR}/git"
 
 do_configure() {
 	cd ${S}
