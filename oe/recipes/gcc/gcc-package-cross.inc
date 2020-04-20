@@ -43,13 +43,6 @@ GROUP ( libgcc_s.so.1 libgcc.a )" > ${D}${target_libdir}/libgcc_s.so
 		fi
 	done
 
-	# Manually run the target stripper since we won't get it run by
-	# the packaging.
-	${TARGET_PREFIX}strip ${D}${target_libdir}/libstdc++.so.* || true
-	${TARGET_PREFIX}strip ${D}${target_libdir}/libg2c.so.* || true
-	${TARGET_PREFIX}strip ${D}${target_base_libdir}/libgcc_s.so.* || true
-	${TARGET_PREFIX}strip ${D}${target_libdir}/libgfortran*.so* || true
-
 	# Link gfortran to g77 to satisfy not-so-smart configure or hard coded g77
 	# gfortran is fully backwards compatible. This is a safe and practical solution.
 	if [ -f ${D}${TOOLCHAIN_PATH}/bin/${TARGET_PREFIX}gfortran ]; then
