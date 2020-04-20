@@ -76,7 +76,6 @@ do_install() {
 
 
 INSANE_SKIP = True
-INHIBIT_PACKAGE_STRIP = "1"
 PACKAGE_STRIP = "no"
 
 PACKAGES = "${PN}"

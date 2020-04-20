@@ -30,5 +30,4 @@ do_install() {
 FILES_${PN} += "${sysconfdir} ${base_libdir}/firmware/"
 
 INSANE_SKIP = True
-INHIBIT_PACKAGE_STRIP = "1"
 PACKAGE_STRIP = "no"
