@@ -19,11 +19,13 @@ SRC_URI = "git://github.com/mobiaqua/pvr-omap4.git;protocol=git \
 
 COMPATIBLE_MACHINE = "board-tv"
 PROVIDES += "virtual/egl"
-DEPENDS = "libdrm libgbm"
+DEPENDS = "libdrm libgbm pkgconfig-native"
 
 DEFAULT_PREFERENCE = "10"
 
 S = "${WORKDIR}/git"
+
+DEBUG_BUILD = "${@['no','yes'][bb.data.getVar('BUILD_DEBUG', d, 1) == '1']}"
 
 do_configure() {
 	install -d ${D}${includedir}
@@ -36,12 +38,28 @@ do_compile() {
 	export DRM_LIBS=`pkg-config --libs libdrm`
 	export GBM_CFLAGS=`pkg-config --cflags gbm`
 	export GBM_LIBS=`pkg-config --libs gbm`
-	${CC} ${CFLAGS} ${LDFLAGS} ${WORKDIR}/wayland-dummy.c -shared -o ${S}/libwayland-server.so.0
-	${CC} ${CFLAGS} ${LDFLAGS} ${WORKDIR}/egl-wrapper.c -shared -o ${S}/libEGL.so
-	${CC} ${CFLAGS} ${LDFLAGS} ${GBM_CFLAGS} ${GBM_LIBS} ${DRM_CFLAGS} ${DRM_LIBS} -lpvr2d ${WORKDIR}/gbm_pvr.c \
-		-fPIC -shared -o ${S}/gbm_pvr.so
-	${CC} ${CFLAGS} ${LDFLAGS} ${GBM_CFLAGS} ${GBM_LIBS} ${DRM_CFLAGS} ${DRM_LIBS} -lpvr2d ${WORKDIR}/pvrws_GBM.c \
+	${CC} ${CFLAGS} ${LDFLAGS} -g ${WORKDIR}/wayland-dummy.c -shared -o ${S}/libwayland-server.so.0
+	${CC} ${CFLAGS} ${LDFLAGS} -g ${WORKDIR}/egl-wrapper.c -shared -o ${S}/libEGL.so
+
+	if [ "${DEBUG_BUILD}" = "yes" ]; then
+		${CC} ${CFLAGS} ${LDFLAGS} ${GBM_CFLAGS} ${GBM_LIBS} ${DRM_CFLAGS} ${DRM_LIBS} -O0 -g3 -lpvr2d ${WORKDIR}/gbm_pvr.c \
+			-fPIC -shared -o ${S}/gbm_pvr.so
+		${CC} ${CFLAGS} ${LDFLAGS} ${GBM_CFLAGS} ${GBM_LIBS} ${DRM_CFLAGS} ${DRM_LIBS} -O0 -g3 -lpvr2d ${WORKDIR}/pvrws_GBM.c \
+			-fPIC -shared -o ${S}/libpvrws_GBM.so
+	else
+		install -d ${S}/.debug
+		${CC} ${CFLAGS} ${LDFLAGS} ${GBM_CFLAGS} ${GBM_LIBS} ${DRM_CFLAGS} ${DRM_LIBS} -g -lpvr2d ${WORKDIR}/gbm_pvr.c \
+			-fPIC -shared -o ${S}/gbm_pvr.so
+		${OBJCOPY} --only-keep-debug ${S}/gbm_pvr.so ${S}/.debug/gbm_pvr.so
+		${OBJCOPY} --strip-debug ${S}/gbm_pvr.so
+		${OBJCOPY} --add-gnu-debuglink ${S}/.debug/gbm_pvr.so ${S}/gbm_pvr.so
+
+		${CC} ${CFLAGS} ${LDFLAGS} ${GBM_CFLAGS} ${GBM_LIBS} ${DRM_CFLAGS} ${DRM_LIBS} -g -lpvr2d ${WORKDIR}/pvrws_GBM.c \
 		-fPIC -shared -o ${S}/libpvrws_GBM.so
+		${OBJCOPY} --only-keep-debug ${S}/libpvrws_GBM.so ${S}/.debug/libpvrws_GBM.so
+		${OBJCOPY} --strip-debug ${S}/libpvrws_GBM.so
+		${OBJCOPY} --add-gnu-debuglink ${S}/.debug/libpvrws_GBM.so ${S}/libpvrws_GBM.so
+	fi
 }
 
 do_install() {
@@ -64,6 +82,13 @@ do_install() {
 	install -d ${D}${libdir}/gbm
 	install -m 0666 ${S}/gbm_pvr.so ${D}${libdir}/gbm/gbm_pvr.so
 
+	if [ "${DEBUG_BUILD}" = "no" ]; then
+		install -d ${D}${libdir}/.debug
+		install -m 0666 ${S}/.debug/libpvrws_GBM.so ${D}${libdir}/.debug/
+		install -d ${D}${libdir}/gbm/.debug
+		install -m 0666 ${S}/.debug/gbm_pvr.so ${D}${libdir}/gbm/.debug/
+	fi
+
 	install -d ${D}${libdir}/pkgconfig
 	for i in egl glesv1_cm glesv2
 	do
@@ -72,12 +97,30 @@ do_install() {
 
 	install -d ${D}/usr/share/doc/${PN}
 	install -m 0666 ${WORKDIR}/LICENSE.txt ${D}/usr/share/doc/${PN}
+
+	install -d ${D}${includedir}
+	cp -pPr ${WORKDIR}/includes/* ${D}${includedir}
 }
 
+do_rm_work() {
+	if [ "${DEBUG_BUILD}" == "no" ]; then
+		cd ${WORKDIR}
+		for dir in *
+		do
+			if [ `basename ${dir}` = "temp" ]; then
+				echo "Not removing temp"
+			else
+				echo "Removing $dir" ; rm -rf $dir
+			fi
+		done
+	fi
+}
 
 INSANE_SKIP = True
 PACKAGE_STRIP = "no"
 
-PACKAGES = "${PN}"
+PACKAGES = "${PN} ${PN}-dev ${PN}-dbg"
 
-FILES_${PN} = "${bindir} ${libdir} ${datadir} ${includedir} /usr/share/doc/"
+FILES_${PN} = "${bindir} ${libdir}/*.so* ${libdir}/gbm/*.so* /usr/share/doc/"
+FILES_${PN}-dev = "${libdir}/pkgconfig ${includedir}"
+FILES_${PN}-dbg = "${libdir}/.debug ${libdir}/gbm/.debug"

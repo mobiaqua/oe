@@ -300,6 +300,12 @@ setup() {
 	else
 		echo " -  JTAG adapter is NOT defined"
 	fi
+	if [ "$2" = "-debug" ]; then
+		BUILD_DEBUG="1"
+	else
+		BUILD_DEBUG="0"
+	fi
+
 	mkdir -p ${OE_BASE}/build-${DISTRO}/conf
 
 	BBF="\${OE_BASE}/oe/recipes/*/*.bb"
@@ -315,6 +321,7 @@ MACHINE = \"${MACHINE}\"
 TARGET_OS = \"linux-gnueabi\"
 DISTRO = \"${DISTRO}\"
 INHERIT = \"rm_work\"
+BUILD_DEBUG = \"${BUILD_DEBUG}\"
 IMAGE_KEEPROOTFS = \"1\"
 CACHE = \"${OE_BASE}/build-${DISTRO}/cache/oe-cache.\${USER}\"
 ASSUME_PROVIDED += \" git-native perl-native python-native desktop-file-utils-native \
@@ -373,7 +380,7 @@ ERROR=
 
 [ "$ERROR" != "1" ] && [ -z "$BASH_VERSION" ] && error "Script NOT running in 'bash' shell"
 
-[ "x$0" = "x./setup.sh" ] && error "Script must run via sourcing like '. setup.sh'"
+[ "x$0" = "x./setup.sh" ] && error "Script must run via sourcing like '. setup.sh [-debug]'"
 
 [ "$ERROR" != "1" ] && [ $EUID -eq 0 ] && error "Script running with superuser privileges! Aborting."
 
@@ -383,4 +390,4 @@ ERROR=
 
 [ "$ERROR" != "1" ] && prepare_tools; [ "$?" != "0" ] && error "Please install missing tools"
 
-[ "$ERROR" != "1" ] && setup $1
+[ "$ERROR" != "1" ] && setup $1 $2
