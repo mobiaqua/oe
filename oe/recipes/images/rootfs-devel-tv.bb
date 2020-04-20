@@ -1,8 +1,9 @@
 require rootfs-release-tv.bb
 
 require common-debug-tools.inc
+require tv-debug.inc
 
-INSTALL_PKGS += "mpv mplayer"
+INSTALL_PKGS += "omapdrmtest kmscube mpv mplayer"
 DEPENDS += ""
 RDEPENDS += ""
 RRECOMMENDS += ""

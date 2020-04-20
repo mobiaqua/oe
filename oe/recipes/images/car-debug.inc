@@ -1,4 +1,4 @@
 
-INSTALL_PKGS += "evtest"
+INSTALL_PKGS += ""
 RRECOMMENDS += ""
 RDEPENDS += ""
