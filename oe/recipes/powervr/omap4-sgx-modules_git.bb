@@ -25,15 +25,17 @@ S = "${WORKDIR}/git/sgx"
 
 inherit module
 
+DEBUG = release
+
 MACHINE_KERNEL_PR_append = "a"
 
-MAKE_TARGETS = "-C eurasiacon/build/linux2/omap4430_linux BUILD=release W=1 V=1 SUPPORT_V4L2_GFX=0"
+MAKE_TARGETS = "-C eurasiacon/build/linux2/omap4430_linux BUILD=${DEBUG} W=1 V=1 SUPPORT_V4L2_GFX=0"
 
 INITSCRIPT_NAME = "pvr-init.sh"
 
 do_install() {
 	mkdir -p ${D}/lib/modules/${KERNEL_VERSION}/kernel/drivers/gpu/pvr
-	cp eurasiacon/binary2_omap4430_linux_release/target/kbuild/*.ko ${D}/lib/modules/${KERNEL_VERSION}/kernel/drivers/gpu/pvr
+	cp eurasiacon/binary2_omap4430_linux_${DEBUG}/target/kbuild/*.ko ${D}/lib/modules/${KERNEL_VERSION}/kernel/drivers/gpu/pvr
 
 	install -d ${D}${sysconfdir}/init.d
 	install -m 0755 ${WORKDIR}/rc.pvr ${D}${sysconfdir}/init.d/${INITSCRIPT_NAME}
