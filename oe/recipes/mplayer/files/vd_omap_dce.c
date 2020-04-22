@@ -44,6 +44,7 @@
 #include "vd_internal.h"
 #include "dec_video.h"
 #include "../mp_core.h"
+#include "osdep/timer.h"
 #include "../libmpdemux/parse_es.h"
 #include "../libmpdemux/mpeg_hdr.h"
 #include "../libvo/video_out.h"
@@ -635,6 +636,7 @@ static mp_image_t *decode(sh_video_t *sh, void *data, int len, int flags) {
 	memset(_codecOutputArgs->outputID, 0, sizeof(_codecOutputArgs->outputID));
 	memset(_codecOutputArgs->freeBufID, 0, sizeof(_codecOutputArgs->freeBufID));
 
+	//int old = GetTimerMS();
 	codecError = VIDDEC3_process(_codecHandle, _codecInputBufs, _codecOutputBufs, _codecInputArgs, _codecOutputArgs);
 	if (codecError != VIDDEC3_EOK) {
 		mp_msg(MSGT_DECVIDEO, MSGL_ERR, "[vd_omap_dce] decode() VIDDEC3_process() status: %d, extendedError: %08x\n",
@@ -644,6 +646,7 @@ static mp_image_t *decode(sh_video_t *sh, void *data, int len, int flags) {
 			return NULL;
 		}
 	}
+	//printf("time: %d\n", GetTimerMS() - old);
 
 	if (_codecOutputArgs->outBufsInUseFlag) {
 		mp_msg(MSGT_DECVIDEO, MSGL_ERR, "[vd_omap_dce] decode() VIDDEC3_process() status: outBufsInUseFlag\n");

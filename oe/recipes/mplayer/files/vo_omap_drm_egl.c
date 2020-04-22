@@ -37,6 +37,7 @@
 #include "sub/sub.h"
 #include "sub/eosd.h"
 #include "../mp_core.h"
+#include "osdep/timer.h"
 #include "libavcodec/avcodec.h"
 
 #include <libdrm/omap_drmif.h>
@@ -492,7 +493,6 @@ static int preinit(const char *arg) {
 
 	gbmBo = gbm_surface_lock_front_buffer(_gbmSurface);
 
-	eglWaitGL();
 	if (!eglSwapBuffers(_eglDisplay, _eglSurface)) {
 		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] preinit() Failed to swap buffers, error: %s!\n", eglGetErrorStr(eglGetError()));
 		goto fail;
@@ -1078,8 +1078,9 @@ static void flip_page() {
 
 	gbmBo = gbm_surface_lock_front_buffer(_gbmSurface);
 
-	eglWaitGL();
+	//int old = GetTimerMS();
 	eglSwapBuffers(_eglDisplay, _eglSurface);
+	//printf("time: %d              \n", GetTimerMS() - old);
 
 	// eglWaitGL should wait, but it seems not
 	// added 5-9ms to wait for HW finished
