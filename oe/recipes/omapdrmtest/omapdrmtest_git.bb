@@ -25,6 +25,7 @@ FLAGS="-lm -lavcodec"
 EXTRA_OECONF = "LDFLAGS='${FLAGS}' --disable-x11"
 
 DEBUG_BUILD = "${@['no','yes'][bb.data.getVar('BUILD_DEBUG', d, 1) == '1']}"
+CFLAGS_append = "${@['',' -O0 -g3'][bb.data.getVar('BUILD_DEBUG', d, 1) == '1']}"
 
 do_rm_work() {
         if [ "${DEBUG_BUILD}" == "no" ]; then
