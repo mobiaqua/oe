@@ -19,7 +19,7 @@ SRC_URI = "git://github.com/mobiaqua/pvr-omap4-dkms.git;protocol=git \
            file://0002-Revert-No-more-__devinitdata-in-v3.8.patch;striplevel=2 \
            file://0003-Revert-Hack-include-paths-to-fix-compilation-with-v3.patch;striplevel=2 \
            file://0004-Revert-Fix-use-of-VM_RESERVED-for-kernel-3.7.patch;striplevel=2 \
-           file://use_gp_timer_10.patch;striplevel=2 \
+           file://dont-use-gp-timer.patch;striplevel=2 \
           "
 
 S = "${WORKDIR}/git/sgx"
