@@ -144,12 +144,7 @@ do_configure_prepend() {
 do_configure() {
         mkdir -p ${B}
         cd ${B}
-        #MobiAqua: on mac os x with llvm compiler use clang instead
-        if gcc --version | grep llvm-gcc > /dev/null ; then
-                ${S}/configure ${EXTRA_OECONF} --host-cc=clang
-        else
-                ${S}/configure ${EXTRA_OECONF}
-        fi
+        ${S}/configure ${EXTRA_OECONF}
         sed -i -e s:Os:O4:g ${B}/config.h
 }
 
