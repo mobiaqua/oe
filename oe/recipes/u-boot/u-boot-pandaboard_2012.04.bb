@@ -29,6 +29,7 @@ SRC_URI = "git://git.linaro.org/boot/u-boot-linaro-stable.git;protocol=git \
 	   file://boot-panda-label.script \
 	   file://boot-panda-sdcard.script \
 	   file://boot-panda-nfs.script \
+	   file://boot-panda-nfs2.script \
 	  "
 
 S = "${WORKDIR}/git"
@@ -53,6 +54,13 @@ do_configure () {
 
 	sed -i -e s,NFS_IP,${MA_NFS_IP},g ${WORKDIR}/boot-panda-nfs.script
 	sed -i -e s,NFS_PATH,${MA_NFS_PATH},g ${WORKDIR}/boot-panda-nfs.script
+
+	sed -i -e s,NFS_IP,${MA_NFS_IP},g ${WORKDIR}/boot-panda-nfs2.script
+	sed -i -e s,NFS_PATH,${MA_NFS_PATH},g ${WORKDIR}/boot-panda-nfs2.script
+	sed -i -e s,TARGET_IP,${MA_TARGET_IP},g ${WORKDIR}/boot-panda-nfs2.script
+	sed -i -e s,GATEWAY_IP,${MA_GATEWAY_IP},g ${WORKDIR}/boot-panda-nfs2.script
+	sed -i -e s,TARGET_MAC,${MA_TARGET_MAC},g ${WORKDIR}/boot-panda-nfs2.script
+
 	sed -i -e s,TARGET_MAC,${MA_TARGET_MAC},g ${WORKDIR}/boot-panda-nfs.script
 	sed -i -e s,TARGET_MAC,${MA_TARGET_MAC},g ${WORKDIR}/boot-panda-label.script
 	sed -i -e s,TARGET_MAC,${MA_TARGET_MAC},g ${WORKDIR}/boot-panda-sdcard.script
@@ -73,6 +81,7 @@ do_install () {
 	install -m 0644 ${WORKDIR}/boot-panda-sdcard.script ${D}/boot/uEnv-sdcard.txt
 	install -m 0644 ${WORKDIR}/boot-panda-label.script ${D}/boot/uEnv-label.txt
 	install -m 0644 ${WORKDIR}/boot-panda-nfs.script ${D}/boot/uEnv-nfs.txt
+	install -m 0644 ${WORKDIR}/boot-panda-nfs2.script ${D}/boot/uEnv-nfs2.txt
 	ln -sf uEnv-label.txt ${D}/boot/uEnv.txt
 	install -m 0644 ${S}/MLO ${D}/boot/${MLO_IMAGE}
 	ln -sf ${MLO_IMAGE} ${D}/boot/${MLO_SYMLINK}
@@ -100,6 +109,7 @@ do_deploy () {
 	install -m 0644 ${D}/boot/uEnv-label.txt ${DEPLOY_DIR_IMAGE}
 	install -m 0644 ${D}/boot/uEnv-sdcard.txt ${DEPLOY_DIR_IMAGE}
 	install -m 0644 ${D}/boot/uEnv-nfs.txt ${DEPLOY_DIR_IMAGE}
+	install -m 0644 ${D}/boot/uEnv-nfs2.txt ${DEPLOY_DIR_IMAGE}
 	rm -f uEnv.txt
 	ln -sf uEnv-label.txt uEnv.txt
 	package_stagefile_shell ${DEPLOY_DIR_IMAGE}/uEnv.txt
