@@ -303,7 +303,9 @@ gbm_pvr_surface_lock_front_buffer(struct gbm_surface *_surf)
 {
    struct gbm_pvr_surface *surf = gbm_pvr_surface(_surf);
 
-   return surf->back_buffers[surf->current_back_buffer];
+   int index = (surf->current_back_buffer + 1) % PVR_NUM_BACK_BUFFERS;
+
+   return surf->back_buffers[index];
 }
 
 static void

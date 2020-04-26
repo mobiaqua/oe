@@ -29,7 +29,7 @@
 static int refCount = 0;
 
 static WSEGLCaps const wseglDisplayCaps[] = {
-    { WSEGL_CAP_WINDOWS_USE_HW_SYNC, 1 },
+    { WSEGL_CAP_WINDOWS_USE_HW_SYNC, 0 },
     { WSEGL_CAP_MIN_SWAP_INTERVAL, 1 },
     { WSEGL_CAP_MAX_SWAP_INTERVAL, 1 },
     { WSEGL_NO_CAPS, 0 }
@@ -199,10 +199,8 @@ static WSEGLError wseglSwapDrawable(WSEGLDrawableHandle _drawable, unsigned long
 
     if (drawable->type == GBM_DRAWABLE_WINDOW)
     {
-        if (++drawable->handle.window->current_back_buffer >= PVR_NUM_BACK_BUFFERS)
-        {
-            drawable->handle.window->current_back_buffer = 0;
-        }
+        drawable->handle.window->current_back_buffer =
+            (drawable->handle.window->current_back_buffer + 1) % PVR_NUM_BACK_BUFFERS;
     }
     else
         return WSEGL_BAD_DRAWABLE;
@@ -264,7 +262,7 @@ static WSEGLError wseglGetDrawableParameters(WSEGLDrawableHandle _drawable,
     if (drawable->type == GBM_DRAWABLE_WINDOW)
     {
         renderIdx = drawable->handle.window->current_back_buffer;
-        sourceIdx = (drawable->handle.window->current_back_buffer + PVR_NUM_BACK_BUFFERS - 1) % PVR_NUM_BACK_BUFFERS;
+        sourceIdx = (drawable->handle.window->current_back_buffer + 1) % PVR_NUM_BACK_BUFFERS;
     }
 
     source = drawable->backBuffers[sourceIdx].pvr2dMemInfo;
