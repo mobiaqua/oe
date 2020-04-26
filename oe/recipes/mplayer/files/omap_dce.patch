@@ -24,8 +24,8 @@ diff -ur old/configure new/configure
    --disable-fbdev)      _fbdev=no       ;;
    --enable-omapdrmegl)  _omapdrmegl=yes ;;
    --disable-omapdrmegl) _omapdrmegl=no  ;;
-+  --enable-omapdce)     _omapdce=yes   ;;
-+  --disable-omapdce)    _omapdce=no    ;;
++  --enable-omapdce)     _omapdce=yes    ;;
++  --disable-omapdce)    _omapdce=no     ;;
    --enable-dvb)         _dvb=yes        ;;
    --disable-dvb)        _dvb=no         ;;
    --enable-dxr2)        _dxr2=yes       ;;

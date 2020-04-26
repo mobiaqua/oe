@@ -101,9 +101,11 @@ typedef struct {
 
 typedef struct {
 	DisplayHandle handle;
-} omap_drm_egl_priv_t;
+	int (*getVideoBuffer)(DisplayVideoBuffer *handle, uint32_t pixelfmt, int width, int height);
+	int (*releaseVideoBuffer)(DisplayVideoBuffer *handle);
+} omap_dce_share_t;
 
-omap_drm_egl_priv_t omap_drm_egl_priv;
+omap_dce_share_t omap_dce_share;
 
 static int                         _dce;
 static int                         _initialized;
@@ -139,10 +141,11 @@ static uint32_t                    _primaryFbId;
 
 LIBVO_EXTERN(omap_drm_egl)
 
-int releaseVideoBuffer(DisplayVideoBuffer *handle);
+static RenderTexture *getRenderTexture(uint32_t pixelfmt, int width, int height);
 static int releaseRenderTexture(RenderTexture *texture);
 static DrmFb *getDrmFb(struct gbm_bo *gbmBo);
-int getVideoBuffer(DisplayVideoBuffer *handle, uint32_t pixelfmt, int width, int height);
+static int getVideoBuffer(DisplayVideoBuffer *handle, uint32_t pixelfmt, int width, int height);
+static int releaseVideoBuffer(DisplayVideoBuffer *handle);
 
 #define EGL_STR_ERROR(value) case value: return #value;
 static const char* eglGetErrorStr(EGLint error) {
@@ -514,7 +517,9 @@ static int preinit(const char *arg) {
 		goto fail;
 	}
 
-	omap_drm_egl_priv.handle.handle = _fd;
+	omap_dce_share.handle.handle = _fd;
+	omap_dce_share.getVideoBuffer = &getVideoBuffer;
+	omap_dce_share.releaseVideoBuffer = &releaseVideoBuffer;
 
 	_scaleCtx = NULL;
 	_dce = 0;
@@ -677,7 +682,7 @@ static int getHandle(DisplayHandle *handle) {
 	return 0;
 }
 
-int getVideoBuffer(DisplayVideoBuffer *handle, uint32_t pixelfmt, int width, int height) {
+static int getVideoBuffer(DisplayVideoBuffer *handle, uint32_t pixelfmt, int width, int height) {
 	RenderTexture *renderTexture;
 	uint32_t fourcc;
 	uint32_t stride;
@@ -780,7 +785,7 @@ static int releaseRenderTexture(RenderTexture *texture) {
 	return 0;
 }
 
-int releaseVideoBuffer(DisplayVideoBuffer *handle) {
+static int releaseVideoBuffer(DisplayVideoBuffer *handle) {
 	RenderTexture *renderTexture;
 
 	if (!_initialized || handle == NULL)
