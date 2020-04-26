@@ -70,6 +70,7 @@ typedef struct {
 	void           *priv;
 	struct omap_bo *bo;
 	uint32_t       boHandle;
+	int            locked;
 } DisplayVideoBuffer;
 
 typedef struct {
@@ -78,7 +79,6 @@ typedef struct {
 	uint32_t pixelfmt; // pixel format of decoded video frame
 	uint32_t width, height; // target aligned width and height
 	uint32_t dx, dy, dw, dh; // border of decoded frame data
-	int      hw;
 	int      interlaced;
 	int      anistropicDVD;
 } VideoFrame;
@@ -559,8 +559,10 @@ static FrameBuffer *getBuffer(void) {
 
 	for (i = 0; i < IVIDEO2_MAX_IO_BUFFERS; i++) {
 		if (_frameBuffers[i].buffer.priv && !_frameBuffers[i].locked) {
-			_frameBuffers[i].locked = 1;
-			return &_frameBuffers[i];
+			if (!_frameBuffers[i].buffer.locked) {
+				_frameBuffers[i].locked = 1;
+				return &_frameBuffers[i];
+			}
 		}
 	}
 
@@ -667,6 +669,8 @@ static mp_image_t *decode(sh_video_t *sh, void *data, int len, int flags) {
 
 	r = &_codecOutputArgs->displayBufs.bufDesc[0].activeFrameRegion;
 
+	fb = (FrameBuffer *)_codecOutputArgs->outputID[foundIndex];
+
 	mpi->imgfmt = IMGFMT_NV12;
 	mpi->width = _frameWidth;
 	mpi->height = _frameHeight;
@@ -674,7 +678,7 @@ static mp_image_t *decode(sh_video_t *sh, void *data, int len, int flags) {
 	mpi->y = r->topLeft.y;
 	mpi->w = r->bottomRight.x - r->topLeft.x;
 	mpi->h = r->bottomRight.y - r->topLeft.y;
-	mpi->priv = (void *)_codecOutputArgs->outputID[foundIndex];
+	mpi->priv = (void *)&fb->buffer;
 
 	if (_codecId == AV_CODEC_ID_MPEG2VIDEO && _frameWidth == 720 && (_frameHeight == 576 || _frameHeight == 480)) {
 		mpi->flags |= 0x800000;

@@ -80,22 +80,24 @@ typedef struct {
 } DrmFb;
 
 typedef struct {
-	struct          omap_bo *bo;
-	int             dmabuf;
-	void            *mapPtr;
-	EGLImageKHR     image;
-	GLuint          glTexture;
+	void           *priv;
+	struct omap_bo *bo;
+	uint32_t       boHandle;
+	int            locked;
+} DisplayVideoBuffer;
+
+typedef struct {
+	struct             omap_bo *bo;
+	int                dmabuf;
+	void               *mapPtr;
+	EGLImageKHR        image;
+	GLuint             glTexture;
+	DisplayVideoBuffer *db;
 } RenderTexture;
 
 typedef struct {
 	int     handle;
 } DisplayHandle;
-
-typedef struct {
-	void           *priv;
-	struct omap_bo *bo;
-	uint32_t       boHandle;
-} DisplayVideoBuffer;
 
 typedef struct {
 	DisplayHandle handle;
@@ -131,8 +133,9 @@ static GLuint                      _glProgram;
 static RenderTexture               *_renderTexture;
 static uint32_t                    _fbWidth, _fbHeight;
 static struct SwsContext           *_scaleCtx;
-static int                         _flipPending;
 static int                         _dstWidth, _dstHeight;
+static struct omap_bo              *_primaryFbBo;
+static uint32_t                    _primaryFbId;
 
 LIBVO_EXTERN(omap_drm_egl)
 
@@ -166,6 +169,7 @@ static const char* eglGetErrorStr(EGLint error) {
 
 static int preinit(const char *arg) {
 	int modeId = -1, i, j;
+	uint32_t handles[4] = { 0 }, pitches[4] = { 0 }, offsets[4] = { 0 };
 	struct gbm_bo *gbmBo;
 	DrmFb *drmFb;
 	const char *extensions;
@@ -349,8 +353,6 @@ static int preinit(const char *arg) {
 	}
 	drmModeFreeObjectProperties(props);
 
-	_oldCrtc = drmModeGetCrtc(_fd, _crtcId);
-
 	_fbWidth = _modeInfo.hdisplay;
 	_fbHeight = _modeInfo.vdisplay;
 
@@ -491,32 +493,31 @@ static int preinit(const char *arg) {
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	gbmBo = gbm_surface_lock_front_buffer(_gbmSurface);
+	_primaryFbBo = omap_bo_new(_omapDevice, _modeInfo.hdisplay * _modeInfo.vdisplay * 4, OMAP_BO_WC | OMAP_BO_SCANOUT);
+	if (!_primaryFbBo) {
+		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] preinit() Failed allocate buffer!\n");
+		goto fail;
+	}
+	handles[0] = omap_bo_handle(_primaryFbBo);
+	pitches[0] = _modeInfo.hdisplay * 4;
+	if (drmModeAddFB2(_fd, _modeInfo.hdisplay, _modeInfo.vdisplay, DRM_FORMAT_ARGB8888,
+			handles, pitches, offsets, &_primaryFbId, 0) < 0) {
+		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] preinit() Failed add primary buffer: %s\n", strerror(errno));
+		goto fail;
+	}
+	omap_bo_cpu_prep(_primaryFbBo, OMAP_GEM_WRITE);
+	memset(omap_bo_map(_primaryFbBo), 0, omap_bo_size(_primaryFbBo));
+	omap_bo_cpu_fini(_primaryFbBo, OMAP_GEM_WRITE);
 
-	if (!eglSwapBuffers(_eglDisplay, _eglSurface)) {
-		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] preinit() Failed to swap buffers, error: %s!\n", eglGetErrorStr(eglGetError()));
+	_oldCrtc = drmModeGetCrtc(_fd, _crtcId);
+	if (drmModeSetCrtc(_fd, _crtcId, _primaryFbId, 0, 0, &_connectorId, 1, &_modeInfo) < 0) {
 		goto fail;
 	}
-	// eglWaitGL should wait, but it seems not
-	// added 40ms
-	usleep(40 * 1000);
-
-	drmFb = getDrmFb(gbmBo);
-	if (!drmFb) {
-		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] preinit() Failed get DRM fb\n");
-		goto fail;
-	}
-	if (drmModeSetCrtc(_fd, _crtcId, drmFb->fbId, 0, 0, &_connectorId, 1, &_modeInfo) < 0) {
-		gbm_surface_release_buffer(_gbmSurface, gbmBo);
-		goto fail;
-	}
-	gbm_surface_release_buffer(_gbmSurface, gbmBo);
 
 	omap_drm_egl_priv.handle.handle = _fd;
 
 	_scaleCtx = NULL;
 	_dce = 0;
-	_flipPending = 0;
 
 	_initialized = 1;
 
@@ -555,6 +556,15 @@ fail:
 	if (_gbmDevice != NULL) {
 		gbm_device_destroy(_gbmDevice);
 		_gbmDevice = NULL;
+	}
+
+	if (_primaryFbId) {
+		drmModeRmFB(_fd, _primaryFbId);
+		_primaryFbId = 0;
+	}
+	if (_primaryFbBo) {
+		omap_bo_del(_primaryFbBo);
+		_primaryFbBo = NULL;
 	}
 
 	if (_drmPlaneResources != NULL) {
@@ -634,6 +644,15 @@ static void uninit(void) {
 		_oldCrtc = NULL;
 	}
 
+	if (_primaryFbId) {
+		drmModeRmFB(_fd, _primaryFbId);
+		_primaryFbId = 0;
+	}
+	if (_primaryFbBo) {
+		omap_bo_del(_primaryFbBo);
+		_primaryFbBo = NULL;
+	}
+
 	if (_drmPlaneResources)
 		drmModeFreePlaneResources(_drmPlaneResources);
 
@@ -679,6 +698,7 @@ int getVideoBuffer(DisplayVideoBuffer *handle, uint32_t pixelfmt, int width, int
 		return -1;
 	}
 
+	handle->locked = 0;
 	handle->bo = renderTexture->bo = omap_bo_new(_omapDevice, fbSize, OMAP_BO_WC);
 	handle->boHandle = omap_bo_handle(handle->bo);
 	renderTexture->mapPtr = omap_bo_map(handle->bo);
@@ -713,6 +733,7 @@ int getVideoBuffer(DisplayVideoBuffer *handle, uint32_t pixelfmt, int width, int
 		goto fail;
 	}
 
+	renderTexture->db = handle;
 	handle->priv = renderTexture;
 
 	return 0;
@@ -727,11 +748,16 @@ fail:
 
 static RenderTexture *getRenderTexture(uint32_t pixelfmt, int width, int height) {
 	DisplayVideoBuffer buffer;
+	RenderTexture *renderTexture;
 
 	if (getVideoBuffer(&buffer, pixelfmt, width, height) != 0) {
 		return NULL;
 	}
-	return (RenderTexture *)buffer.priv;
+
+	renderTexture = (RenderTexture *)buffer.priv;
+	renderTexture->db = NULL;
+
+	return renderTexture;
 }
 
 static int releaseRenderTexture(RenderTexture *texture) {
@@ -898,7 +924,7 @@ static uint32_t put_image(mp_image_t *mpi) {
 	} else {
 		x = (float)(mpi->w) / _fbWidth;
 		y = (float)(mpi->h) / _fbHeight;
-		if (x > y) {
+		if (x >= y) {
 			y /= x;
 			x = 1;
 		} else {
@@ -917,9 +943,9 @@ static uint32_t put_image(mp_image_t *mpi) {
 	position[7] =  y;
 
 	cropLeft = (float)(mpi->x) / frame_width;
-	cropRight = (float)(mpi->w) / frame_width;
+	cropRight = (float)(mpi->w + mpi->x) / frame_width;
 	cropTop = (float)(mpi->y) / frame_height;
-	cropBottom = (float)(mpi->h) / frame_height;
+	cropBottom = (float)(mpi->h + mpi->y) / frame_height;
 	coords[0] = coords[4] = cropLeft;
 	coords[2] = coords[6] = cropRight;
 	coords[5] = coords[7] = cropTop;
@@ -1041,61 +1067,27 @@ static void draw_osd(void) {
 	// todo
 }
 
-static void pageFlipHandler(int fd, unsigned int frame, unsigned int sec, unsigned int usec, void *data) {
-	_flipPending = 0;
-}
-
 static void flip_page() {
 	struct gbm_bo *gbmBo;
 	DrmFb *drmFb;
-
-	while (_flipPending) {
-		int result;
-		fd_set fds = {};
-		drmEventContext drmEvent = {};
-		drmEventContext drmEventContext = {};
-		struct timeval timeout = {
-			.tv_sec = 3,
-			.tv_usec = 0,
-		};
-
-		FD_SET(_fd, &fds);
-		drmEventContext.version = DRM_EVENT_CONTEXT_VERSION;
-		drmEventContext.page_flip_handler = pageFlipHandler;
-
-		result = select(_fd + 1, &fds, NULL, NULL, &timeout);
-		if (result <= 0) {
-			if (errno == EAGAIN) {
-				continue;
-			} else {
-				mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] flip() Timeout on flip buffer!\n");
-				goto fail;
-			}
-		}
-		drmHandleEvent(_fd, &drmEventContext);
-		break;
-	}
-
-	gbmBo = gbm_surface_lock_front_buffer(_gbmSurface);
 
 	//int old = GetTimerMS();
 	eglSwapBuffers(_eglDisplay, _eglSurface);
 	//printf("time: %d              \n", GetTimerMS() - old);
 
-	// eglWaitGL should wait, but it seems not
-	// added 5-9ms to wait for HW finished
-	usleep(9 * 1000);
-
+	gbmBo = gbm_surface_lock_front_buffer(_gbmSurface);
 	drmFb = getDrmFb(gbmBo);
 
-	if (drmModePageFlip(_fd, _crtcId, drmFb->fbId, DRM_MODE_PAGE_FLIP_EVENT, NULL)) {
-		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] flip() Can not flip buffer! %s\n", strerror(errno));
+	if (drmModeSetPlane(_fd, _planeId, _crtcId,
+			drmFb->fbId, 0,
+			0, 0, _modeInfo.hdisplay, _modeInfo.vdisplay,
+			0, 0, _modeInfo.hdisplay << 16, _modeInfo.vdisplay << 16
+			)) {
+		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] flip() Failed set plane! %s\n", strerror(errno));
 		goto fail;
 	}
 
 	gbm_surface_release_buffer(_gbmSurface, gbmBo);
-
-	_flipPending = 1;
 
 	return;
 
