@@ -1,0 +1,83 @@
+diff -urp old/Makefile new/Makefile
+--- old/Makefile	2020-04-24 16:52:02.000000000 +0200
++++ new/Makefile	2020-04-26 23:38:02.000000000 +0200
+@@ -461,6 +461,7 @@ SRCS_MPLAYER-$(DXR2)         += libao2/a
+ SRCS_MPLAYER-$(DXR3)         += libvo/vo_dxr3.c
+ SRCS_MPLAYER-$(ESD)          += libao2/ao_esd.c
+ SRCS_MPLAYER-$(FBDEV)        += libvo/vo_fbdev.c libvo/vo_fbdev2.c
++SRCS_MPLAYER-$(OMAPDRM)      += libvo/vo_omap_drm.c libvo/yuv420_to_nv12.S
+ SRCS_MPLAYER-$(OMAPDRMEGL)   += libvo/vo_omap_drm_egl.c libvo/yuv420_to_nv12.S
+ SRCS_MPLAYER-$(OMAPDCE)      += libmpcodecs/vd_omap_dce.c
+ SRCS_MPLAYER-$(FFMPEG)       += libvo/vo_png.c
+diff -urp old/configure new/configure
+--- old/configure	2020-04-26 23:39:41.000000000 +0200
++++ new/configure	2020-04-26 23:40:55.000000000 +0200
+@@ -711,6 +711,7 @@ _caca=auto
+ _svga=auto
+ _vesa=auto
+ _fbdev=auto
++_omapdrm=no
+ _omapdrmegl=no
+ _omapdce=no
+ _dvb=auto
+@@ -1088,6 +1089,8 @@ for ac_option do
+   --disable-vesa)       _vesa=no        ;;
+   --enable-fbdev)       _fbdev=yes      ;;
+   --disable-fbdev)      _fbdev=no       ;;
++  --enable-omapdrm)     _omapdrm=yes    ;;
++  --disable-omapdrm)    _omapdrm=no     ;;
+   --enable-omapdrmegl)  _omapdrmegl=yes ;;
+   --disable-omapdrmegl) _omapdrmegl=no  ;;
+   --enable-omapdce)     _omapdce=yes    ;;
+@@ -5249,6 +5252,22 @@ echores "$_fbdev"
+ 
+ 
+ 
++echocheck "omapdrm"
++if test "$_omapdrm" = auto ; then
++  _omapdrm=no
++  linux && _omapdrm=yes
++fi
++if test "$_omapdrm" = yes ; then
++  def_omapdrmegl='#define CONFIG_OMAP_DRM 1'
++  vomodules="omapdrm $vomodules"
++else
++  def_omapdrmegl='#undef CONFIG_OMAP_DRM'
++  novomodules="omapdrm $novomodules"
++fi
++echores "$_omapdrm"
++
++
++
+ echocheck "omapdrmegl"
+ if test "$_omapdrmegl" = auto ; then
+   _omapdrmegl=no
+@@ -8602,6 +8621,7 @@ FAAC=$_faac
+ FAAD = $_faad
+ FASTMEMCPY = $_fastmemcpy
+ FBDEV = $_fbdev
++OMAPDRM = $_omapdrm
+ OMAPDRMEGL = $_omapdrmegl
+ OMAPDCE = $_omapdce
+ FREETYPE = $_freetype
+diff -urp old/libvo/video_out.c new/libvo/video_out.c
+--- old/libvo/video_out.c	2020-04-24 16:52:02.000000000 +0200
++++ new/libvo/video_out.c	2020-04-26 23:42:17.000000000 +0200
+@@ -118,6 +118,7 @@ extern const vo_functions_t video_out_zr
+ extern const vo_functions_t video_out_zr2;
+ extern const vo_functions_t video_out_bl;
+ extern const vo_functions_t video_out_fbdev2;
++extern const vo_functions_t video_out_omap_drm;
+ extern const vo_functions_t video_out_omap_drm_egl;
+ extern const vo_functions_t video_out_png;
+ extern const vo_functions_t video_out_ggi;
+@@ -227,6 +228,9 @@ const vo_functions_t* const video_out_dr
+         &video_out_fbdev,
+         &video_out_fbdev2,
+ #endif
++#ifdef CONFIG_OMAP_DRM
++        &video_out_omap_drm,
++#endif
+ #ifdef CONFIG_OMAP_DRM_EGL
+         &video_out_omap_drm_egl,
+ #endif

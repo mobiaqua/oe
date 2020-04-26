@@ -14,6 +14,7 @@ SRC_URI = "svn://svn.mplayerhq.hu/mplayer;module=trunk \
 "
 SRC_URI_append_armv7a-hf = " \
 	file://yuv420_to_nv12.S \
+	file://vo_omap_drm.c \
 	file://vo_omap_drm_egl.c \
 	file://vd_omap_dce.c \
 	file://add-level-to-sh-video.patch \
@@ -24,6 +25,7 @@ SRC_URI_append_armv7a-hf = " \
 	file://fix_wmv3.patch \
 	file://omap_drm_egl.patch \
 	file://omap_dce.patch \
+	file://omap_drm.patch \
 	"
 
 ARM_INSTRUCTION_SET = "ARM"
@@ -157,7 +159,7 @@ EXTRA_OECONF = " \
 EXTRA_OECONF_append_armv6 = " --enable-armv6"
 EXTRA_OECONF_append_armv7a-hf = " --enable-armv6 --enable-neon"
 
-EXTRA_OECONF_append_board-tv = " --enable-fbdev --enable-omapdrmegl --enable-omapdce"
+EXTRA_OECONF_append_board-tv = " --enable-fbdev --enable-omapdrm --enable-omapdrmegl --enable-omapdce"
 
 FULL_OPTIMIZATION = "-fexpensive-optimizations -fomit-frame-pointer -frename-registers -O4 -ffast-math"
 FULL_OPTIMIZATION_armv7a-hf = "-fno-tree-vectorize -fomit-frame-pointer -O4 -frename-registers -ffast-math"
@@ -165,6 +167,7 @@ BUILD_OPTIMIZATION = "${FULL_OPTIMIZATION}"
 
 do_configure_prepend_armv7a-hf() {
 	cp ${WORKDIR}/yuv420_to_nv12.S ${S}/libvo
+	cp ${WORKDIR}/vo_omap_drm.c ${S}/libvo
 	cp ${WORKDIR}/vo_omap_drm_egl.c ${S}/libvo
 	cp ${WORKDIR}/vd_omap_dce.c ${S}/libmpcodecs
 	export DCE_CFLAGS=`pkg-config --cflags libdce`
