@@ -39,10 +39,10 @@ diff -urp old/configure new/configure
 +  linux && _omapdrm=yes
 +fi
 +if test "$_omapdrm" = yes ; then
-+  def_omapdrmegl='#define CONFIG_OMAP_DRM 1'
++  def_omapdrm='#define CONFIG_OMAP_DRM 1'
 +  vomodules="omapdrm $vomodules"
 +else
-+  def_omapdrmegl='#undef CONFIG_OMAP_DRM'
++  def_omapdrm='#undef CONFIG_OMAP_DRM'
 +  novomodules="omapdrm $novomodules"
 +fi
 +echores "$_omapdrm"
