@@ -101,11 +101,11 @@ typedef struct {
 
 typedef struct {
 	DisplayHandle handle;
-	int (*getVideoBuffer)(DisplayVideoBuffer *handle, uint32_t pixelfmt, int width, int height);
-	int (*releaseVideoBuffer)(DisplayVideoBuffer *handle);
+	int (*getDisplayVideoBuffer)(DisplayVideoBuffer *handle, uint32_t pixelfmt, int width, int height);
+	int (*releaseDisplayVideoBuffer)(DisplayVideoBuffer *handle);
 } omap_dce_share_t;
 
-omap_dce_share_t omap_dce_share;
+extern omap_dce_share_t omap_dce_share;
 
 static int                         _dce;
 static int                         _initialized;
@@ -133,9 +133,7 @@ static GLuint                      _vertexShader;
 static GLuint                      _fragmentShader;
 static GLuint                      _glProgram;
 static RenderTexture               *_renderTexture;
-static uint32_t                    _fbWidth, _fbHeight;
 static struct SwsContext           *_scaleCtx;
-static int                         _dstWidth, _dstHeight;
 static struct omap_bo              *_primaryFbBo;
 static uint32_t                    _primaryFbId;
 
@@ -144,8 +142,8 @@ LIBVO_EXTERN(omap_drm_egl)
 static RenderTexture *getRenderTexture(uint32_t pixelfmt, int width, int height);
 static int releaseRenderTexture(RenderTexture *texture);
 static DrmFb *getDrmFb(struct gbm_bo *gbmBo);
-static int getVideoBuffer(DisplayVideoBuffer *handle, uint32_t pixelfmt, int width, int height);
-static int releaseVideoBuffer(DisplayVideoBuffer *handle);
+static int getDisplayVideoBuffer(DisplayVideoBuffer *handle, uint32_t pixelfmt, int width, int height);
+static int releaseDisplayVideoBuffer(DisplayVideoBuffer *handle);
 
 #define EGL_STR_ERROR(value) case value: return #value;
 static const char* eglGetErrorStr(EGLint error) {
@@ -261,25 +259,6 @@ static int preinit(const char *arg) {
 		goto fail;
 	}
 
-	_gbmDevice = gbm_create_device(_fd);
-	if (!_gbmDevice) {
-		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] preinit() Failed to create gbm device!\n");
-		goto fail;
-	}
-
-	for (i = 0; i < _drmResources->count_connectors; i++) {
-		connector = drmModeGetConnector(_fd, _drmResources->connectors[i]);
-		if (connector == NULL)
-			continue;
-		if (connector->connector_id == _connectorId)
-			break;
-		drmModeFreeConnector(connector);
-	}
-	if (!connector) {
-		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] preinit() Failed to find connector!\n");
-		return -1;
-	}
-
 	for (j = 0; j < connector->count_modes; j++) {
 		drmModeModeInfoPtr mode = &connector->modes[j];
 		if ((mode->vrefresh >= 60) && (mode->type & DRM_MODE_TYPE_PREFERRED)) {
@@ -356,15 +335,19 @@ static int preinit(const char *arg) {
 	}
 	drmModeFreeObjectProperties(props);
 
-	_fbWidth = _modeInfo.hdisplay;
-	_fbHeight = _modeInfo.vdisplay;
+	mp_msg(MSGT_VO, MSGL_INFO, "[omap_drm_egl] Using display HDMI output: %dx%d@%d\n",
+		_modeInfo.hdisplay, _modeInfo.vdisplay, _modeInfo.vrefresh);
 
-	mp_msg(MSGT_VO, MSGL_INFO, "[omap_drm_egl] Using display HDMI output: %dx%d@%d\n", _fbWidth, _fbHeight, _modeInfo.vrefresh);
+	_gbmDevice = gbm_create_device(_fd);
+	if (!_gbmDevice) {
+		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] preinit() Failed to create gbm device!\n");
+		goto fail;
+	}
 
 	_gbmSurface = gbm_surface_create(
 	    _gbmDevice,
-	    _fbWidth,
-	    _fbHeight,
+	    _modeInfo.hdisplay,
+	    _modeInfo.vdisplay,
 	    GBM_FORMAT_XRGB8888,
 	    GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING
 	    );
@@ -491,7 +474,7 @@ static int preinit(const char *arg) {
 
 	glUseProgram(_glProgram);
 
-	glViewport(0, 0, _fbWidth, _fbHeight);
+	glViewport(0, 0, _modeInfo.hdisplay, _modeInfo.vdisplay);
 
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -518,8 +501,8 @@ static int preinit(const char *arg) {
 	}
 
 	omap_dce_share.handle.handle = _fd;
-	omap_dce_share.getVideoBuffer = &getVideoBuffer;
-	omap_dce_share.releaseVideoBuffer = &releaseVideoBuffer;
+	omap_dce_share.getDisplayVideoBuffer = &getDisplayVideoBuffer;
+	omap_dce_share.releaseDisplayVideoBuffer = &releaseDisplayVideoBuffer;
 
 	_scaleCtx = NULL;
 	_dce = 0;
@@ -682,7 +665,7 @@ static int getHandle(DisplayHandle *handle) {
 	return 0;
 }
 
-static int getVideoBuffer(DisplayVideoBuffer *handle, uint32_t pixelfmt, int width, int height) {
+static int getDisplayVideoBuffer(DisplayVideoBuffer *handle, uint32_t pixelfmt, int width, int height) {
 	RenderTexture *renderTexture;
 	uint32_t fourcc;
 	uint32_t stride;
@@ -699,7 +682,7 @@ static int getVideoBuffer(DisplayVideoBuffer *handle, uint32_t pixelfmt, int wid
 		stride = width;
 		fbSize = width * height * 3 / 2;
 	} else {
-		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] getVideoBuffer() Can not handle pixel format!\n");
+		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] getDisplayVideoBuffer() Can not handle pixel format!\n");
 		return -1;
 	}
 
@@ -720,7 +703,7 @@ static int getVideoBuffer(DisplayVideoBuffer *handle, uint32_t pixelfmt, int wid
 		};
 		renderTexture->image = eglCreateImageKHR(_eglDisplay, EGL_NO_CONTEXT, EGL_RAW_VIDEO_TI_DMABUF, (EGLClientBuffer)renderTexture->dmabuf, attr);
 		if (renderTexture->image == EGL_NO_IMAGE_KHR) {
-			mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] getVideoBuffer() failed to bind texture, error: %s\n", eglGetErrorStr(eglGetError()));
+			mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] getDisplayVideoBuffer() failed to bind texture, error: %s\n", eglGetErrorStr(eglGetError()));
 			goto fail;
 		}
 	}
@@ -728,13 +711,13 @@ static int getVideoBuffer(DisplayVideoBuffer *handle, uint32_t pixelfmt, int wid
 	glGenTextures(1, &renderTexture->glTexture);
 	glBindTexture(GL_TEXTURE_EXTERNAL_OES, renderTexture->glTexture);
 	if (glGetError() != GL_NO_ERROR) {
-		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] getVideoBuffer() failed to bind texture, error: %s\n", eglGetErrorStr(eglGetError()));
+		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] getDisplayVideoBuffer() failed to bind texture, error: %s\n", eglGetErrorStr(eglGetError()));
 		goto fail;
 	}
 
 	glEGLImageTargetTexture2DOES(GL_TEXTURE_EXTERNAL_OES, renderTexture->image);
 	if (glGetError() != GL_NO_ERROR) {
-		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] getVideoBuffer() failed update texture, error: %s\n", eglGetErrorStr(eglGetError()));
+		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] getDisplayVideoBuffer() failed update texture, error: %s\n", eglGetErrorStr(eglGetError()));
 		goto fail;
 	}
 
@@ -755,7 +738,7 @@ static RenderTexture *getRenderTexture(uint32_t pixelfmt, int width, int height)
 	DisplayVideoBuffer buffer;
 	RenderTexture *renderTexture;
 
-	if (getVideoBuffer(&buffer, pixelfmt, width, height) != 0) {
+	if (getDisplayVideoBuffer(&buffer, pixelfmt, width, height) != 0) {
 		return NULL;
 	}
 
@@ -785,7 +768,7 @@ static int releaseRenderTexture(RenderTexture *texture) {
 	return 0;
 }
 
-static int releaseVideoBuffer(DisplayVideoBuffer *handle) {
+static int releaseDisplayVideoBuffer(DisplayVideoBuffer *handle) {
 	RenderTexture *renderTexture;
 
 	if (!_initialized || handle == NULL)
@@ -866,9 +849,6 @@ static int config(uint32_t width, uint32_t height, uint32_t d_width, uint32_t d_
 		return -1;
 	}
 
-	_dstWidth = d_width;
-	_dstHeight = d_width;
-
 	return 0;
 }
 
@@ -927,8 +907,8 @@ static uint32_t put_image(mp_image_t *mpi) {
 		x = 1;
 		y = 1;
 	} else {
-		x = (float)(mpi->w) / _fbWidth;
-		y = (float)(mpi->h) / _fbHeight;
+		x = (float)(mpi->w) / _modeInfo.hdisplay;
+		y = (float)(mpi->h) / _modeInfo.vdisplay;
 		if (x >= y) {
 			y /= x;
 			x = 1;
@@ -1112,8 +1092,8 @@ static int control(uint32_t request, void *data) {
 	case VOCTRL_FULLSCREEN:
 		return VO_TRUE;
 	case VOCTRL_UPDATE_SCREENINFO:
-		vo_screenwidth = _fbWidth;
-		vo_screenheight = _fbHeight;
+		vo_screenwidth = _modeInfo.hdisplay;
+		vo_screenheight = _modeInfo.vdisplay;
 		aspect_save_screenres(vo_screenwidth, vo_screenheight);
 		return VO_TRUE;
 	case VOCTRL_GET_IMAGE:
@@ -1123,10 +1103,10 @@ static int control(uint32_t request, void *data) {
 	case VOCTRL_GET_EOSD_RES: {
 			struct mp_eosd_settings *r = data;
 			r->mt = r->mb = r->ml = r->mr = 0;
-			r->srcw = _fbWidth;
-			r->srch = _fbHeight;
-			r->w = _fbWidth;
-			r->h = _fbHeight;
+			r->srcw = _modeInfo.hdisplay;
+			r->srch = _modeInfo.vdisplay;
+			r->w = _modeInfo.hdisplay;
+			r->h = _modeInfo.vdisplay;
 		}
 		// todo
 		return VO_TRUE;

@@ -91,8 +91,8 @@ typedef struct {
 
 typedef struct {
 	DisplayHandle handle;
-	int (*getVideoBuffer)(DisplayVideoBuffer *handle, uint32_t pixelfmt, int width, int height);
-	int (*releaseVideoBuffer)(DisplayVideoBuffer *handle);
+	int (*getDisplayVideoBuffer)(DisplayVideoBuffer *handle, uint32_t pixelfmt, int width, int height);
+	int (*releaseDisplayVideoBuffer)(DisplayVideoBuffer *handle);
 } omap_dce_share_t;
 
 omap_dce_share_t omap_dce_share;
@@ -375,7 +375,7 @@ static int init(sh_video_t *sh) {
 
 	for (i = 0; i < IVIDEO2_MAX_IO_BUFFERS; i++) {
 		memset(&_frameBuffers[i], 0, sizeof(FrameBuffer));
-		if (omap_dce_share.getVideoBuffer(&_frameBuffers[i].buffer, IMGFMT_NV12, _frameWidth, _frameHeight) != 0) {
+		if (omap_dce_share.getDisplayVideoBuffer(&_frameBuffers[i].buffer, IMGFMT_NV12, _frameWidth, _frameHeight) != 0) {
 			mp_msg(MSGT_DECVIDEO, MSGL_FATAL, "[vd_omap_dce] init() Failed create output buffer\n");
 			goto fail;
 		}
@@ -389,7 +389,7 @@ fail:
 
 	for (i = 0; i < IVIDEO2_MAX_IO_BUFFERS; i++) {
 		if (_frameBuffers[i].buffer.priv) {
-			omap_dce_share.releaseVideoBuffer(&_frameBuffers[i].buffer);
+			omap_dce_share.releaseDisplayVideoBuffer(&_frameBuffers[i].buffer);
 			memset(&_frameBuffers[i], 0, sizeof(FrameBuffer));
 		}
 	}
@@ -450,7 +450,7 @@ static void uninit(sh_video_t *sh) {
 
 	for (i = 0; i < IVIDEO2_MAX_IO_BUFFERS; i++) {
 		if (_frameBuffers[i].buffer.priv) {
-			omap_dce_share.releaseVideoBuffer(&_frameBuffers[i].buffer);
+			omap_dce_share.releaseDisplayVideoBuffer(&_frameBuffers[i].buffer);
 			memset(&_frameBuffers[i], 0, sizeof(FrameBuffer));
 		}
 	}

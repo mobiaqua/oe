@@ -69,12 +69,6 @@ static const vo_info_t info = {
 };
 
 typedef struct {
-	int             fd;
-	struct gbm_bo   *gbmBo;
-	uint32_t        fbId;
-} DrmFb;
-
-typedef struct {
 	void           *priv;
 	struct omap_bo *bo;
 	uint32_t       boHandle;
@@ -87,11 +81,12 @@ typedef struct {
 
 typedef struct {
 	DisplayHandle handle;
-	int (*getVideoBuffer)(DisplayVideoBuffer *handle, uint32_t pixelfmt, int width, int height);
-	int (*releaseVideoBuffer)(DisplayVideoBuffer *handle);
-} omap_drm_priv_t;
+	int (*getDisplayVideoBuffer)(DisplayVideoBuffer *handle, uint32_t pixelfmt, int width, int height);
+	int (*releaseDisplayVideoBuffer)(DisplayVideoBuffer *handle);
+} omap_dce_share_t;
 
-extern omap_drm_priv_t omap_drm_priv;
+extern omap_dce_share_t omap_dce_share;
+
 
 static int                         _dce;
 static int                         _initialized;
@@ -107,15 +102,13 @@ static uint32_t                    _crtcId;
 static int                         _planeId;
 
 static struct SwsContext           *_scaleCtx;
-static uint32_t                    _fbWidth, _fbHeight;
-static int                         _dstWidth, _dstHeight;
 static struct omap_bo              *_primaryFbBo;
 static uint32_t                    _primaryFbId;
 
 LIBVO_EXTERN(omap_drm)
 
-static int getVideoBuffer(DisplayVideoBuffer *handle, uint32_t pixelfmt, int width, int height);
-static int releaseVideoBuffer(DisplayVideoBuffer *handle);
+static int getDisplayVideoBuffer(DisplayVideoBuffer *handle, uint32_t pixelfmt, int width, int height);
+static int releaseDisplayVideoBuffer(DisplayVideoBuffer *handle);
 
 static int preinit(const char *arg) {
 	return -1;
@@ -211,8 +204,8 @@ static int control(uint32_t request, void *data) {
 	case VOCTRL_FULLSCREEN:
 		return VO_TRUE;
 	case VOCTRL_UPDATE_SCREENINFO:
-		vo_screenwidth = _fbWidth;
-		vo_screenheight = _fbHeight;
+		vo_screenwidth = _modeInfo.hdisplay;
+		vo_screenheight = _modeInfo.vdisplay;
 		aspect_save_screenres(vo_screenwidth, vo_screenheight);
 		return VO_TRUE;
 	case VOCTRL_GET_IMAGE:
@@ -222,10 +215,10 @@ static int control(uint32_t request, void *data) {
 	case VOCTRL_GET_EOSD_RES: {
 			struct mp_eosd_settings *r = data;
 			r->mt = r->mb = r->ml = r->mr = 0;
-			r->srcw = _fbWidth;
-			r->srch = _fbHeight;
-			r->w = _fbWidth;
-			r->h = _fbHeight;
+			r->srcw = _modeInfo.hdisplay;
+			r->srch = _modeInfo.vdisplay;
+			r->w = _modeInfo.hdisplay;
+			r->h = _modeInfo.vdisplay;
 		}
 		// todo
 		return VO_TRUE;
