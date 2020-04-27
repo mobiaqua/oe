@@ -239,6 +239,7 @@ static int preinit(const char *arg) {
 		goto fail;
 	}
 
+	_connectorId = -1;
 	for (int i = 0; i < _drmResources->count_connectors; i++) {
 		connector = drmModeGetConnector(_fd, _drmResources->connectors[i]);
 		if (connector == NULL)
@@ -249,9 +250,9 @@ static int preinit(const char *arg) {
 		}
 		if (connector->connector_type == DRM_MODE_CONNECTOR_HDMIA || connector->connector_type == DRM_MODE_CONNECTOR_HDMIB) {
 			_connectorId = connector->connector_id;
-			drmModeFreeConnector(connector);
 			break;
 		}
+		drmModeFreeConnector(connector);
 	}
 
 	if (_connectorId == -1) {
@@ -269,7 +270,6 @@ static int preinit(const char *arg) {
 
 	if (modeId == -1) {
 		uint64_t highestArea = 0;
-		modeId = 0;
 		for (j = 0; j < connector->count_modes; j++) {
 			drmModeModeInfoPtr mode = &connector->modes[j];
 			const uint64_t area = mode->hdisplay * mode->vdisplay;
@@ -279,8 +279,6 @@ static int preinit(const char *arg) {
 			}
 		}
 	}
-
-	_modeInfo = connector->modes[modeId];
 
 	_crtcId = -1;
 	for (i = 0; i < connector->count_encoders; i++) {
@@ -292,12 +290,16 @@ static int preinit(const char *arg) {
 		}
 		drmModeFreeEncoder(encoder);
 	}
-	drmModeFreeConnector(connector);
 
 	if (modeId == -1 || _crtcId == -1) {
 		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] preinit() Failed to find suitable display output!\n");
+		drmModeFreeConnector(connector);
 		return -1;
 	}
+
+	_modeInfo = connector->modes[modeId];
+
+	drmModeFreeConnector(connector);
 
 	_planeId = -1;
 	_drmPlaneResources = drmModeGetPlaneResources(_fd);
