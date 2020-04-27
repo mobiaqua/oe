@@ -60,6 +60,14 @@ diff -urp old/configure new/configure
  OMAPDRMEGL = $_omapdrmegl
  OMAPDCE = $_omapdce
  FREETYPE = $_freetype
+@@ -8419,6 +8439,7 @@
+ $def_dxr2
+ $def_dxr3
+ $def_fbdev
++$def_omapdrm
+ $def_omapdrmegl
+ $def_ggi
+ $def_ggiwmh
 diff -urp old/libvo/video_out.c new/libvo/video_out.c
 --- old/libvo/video_out.c	2020-04-24 16:52:02.000000000 +0200
 +++ new/libvo/video_out.c	2020-04-26 23:42:17.000000000 +0200
