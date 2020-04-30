@@ -379,6 +379,9 @@ static int init(sh_video_t *sh) {
 	if (_codecId == AV_CODEC_ID_MPEG4 || _codecId == AV_CODEC_ID_VC1 || _codecId == AV_CODEC_ID_WMV3) {
 		_codecDynParams->lateAcquireArg = -1;
 	}
+	if (_codecId == AV_CODEC_ID_H264) {
+		((IH264VDEC_DynamicParams *)_codecDynParams)->deblockFilterMode = IH264VDEC_DEBLOCK_DEFAULT;
+	}
 
 	_codecStatus->size = sizeof(VIDDEC3_Status);
 	_codecInputArgs->size = sizeof(VIDDEC3_InArgs);
