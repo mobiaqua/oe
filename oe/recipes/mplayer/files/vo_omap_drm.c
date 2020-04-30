@@ -795,7 +795,7 @@ static void flip_page() {
 		_videoBuffers[_currentVideoBuffer]->db->locked = 0;
 	}
 
-
+/*
 	if (drmModeSetPlane(_fd, _osdPlaneId, _crtcId,
 			_osdBuffers[_currentOSDBuffer].fbId, 0,
 			0, 0, _modeInfo.hdisplay, _modeInfo.vdisplay,
@@ -803,7 +803,7 @@ static void flip_page() {
 			)) {
 		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm] Error: flip() Failed set plane: %s\n", strerror(errno));
 		goto fail;
-	}
+	}*/
 /*	if (++_currentOSDBuffer >= NUM_OSD_FB)
 		_currentOSDBuffer = 0;*/
 
