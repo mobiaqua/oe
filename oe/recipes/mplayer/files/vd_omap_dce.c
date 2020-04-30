@@ -112,7 +112,8 @@ static int                        _frameHeight;
 static void                       *_inputBufPtr;
 static int                        _inputBufSize;
 static struct omap_bo             *_inputBufBo;
-static FrameBuffer                _frameBuffers[IVIDEO2_MAX_IO_BUFFERS];
+static int                        _numFrameBuffers;
+static FrameBuffer                **_frameBuffers;
 static unsigned int               _codecId;
 static int                        _decoderLag;
 
@@ -121,6 +122,7 @@ static int init(sh_video_t *sh) {
 	DisplayHandle displayHandle;
 	Int32 codecError;
 	int i;
+	int dpbSizeInFrames = 0;
 	_codecId = AV_CODEC_ID_NONE;
 	_decoderLag = 0;
 
@@ -200,12 +202,49 @@ static int init(sh_video_t *sh) {
 		goto fail;
 	}
 
+	_numFrameBuffers = 3;
+
 	switch (_codecId) {
-	case AV_CODEC_ID_H264:
+	case AV_CODEC_ID_H264: {
+		int maxDpb;
+
 		_codecParams = (VIDDEC3_Params *)dce_alloc(sizeof(IH264VDEC_Params));
-		break;
+
+		switch (sh->level) {
+			case 30:
+				maxDpb = 8100;
+				break;
+			case 31:
+				maxDpb = 18100;
+				break;
+			case 32:
+				maxDpb = 20480;
+				break;
+			case 40:
+			case 41:
+				maxDpb = 32768;
+				break;
+			case 42:
+				maxDpb = 34816;
+				break;
+			case 50:
+				maxDpb = 110400;
+				break;
+			case 51:
+			case 52:
+				maxDpb = 184320;
+				break;
+			default:
+				mp_msg(MSGT_DECVIDEO, MSGL_FATAL, "[vd_omap_dce] init() Not supported profile level: %d\n", sh->level);
+				goto fail;
+			}
+			dpbSizeInFrames = FFMIN(16, maxDpb / ((sh->disp_w / 16) * (sh->disp_h / 16)));
+			_numFrameBuffers = IVIDEO2_MAX_IO_BUFFERS;
+			break;
+		}
 	case AV_CODEC_ID_MPEG4:
 		_codecParams = (VIDDEC3_Params *)dce_alloc(sizeof(IMPEG4VDEC_Params));
+		_numFrameBuffers = 4;
 		break;
 	case AV_CODEC_ID_MPEG1VIDEO:
 	case AV_CODEC_ID_MPEG2VIDEO:
@@ -214,6 +253,7 @@ static int init(sh_video_t *sh) {
 	case AV_CODEC_ID_WMV3:
 	case AV_CODEC_ID_VC1:
 		_codecParams = (VIDDEC3_Params *)dce_alloc(sizeof(IVC1VDEC_Params));
+		_numFrameBuffers = 4;
 		break;
 	default:
 		mp_msg(MSGT_DECVIDEO, MSGL_FATAL, "[vd_omap_dce] init() Unsupported codec %d\n", _codecId);
@@ -224,6 +264,8 @@ static int init(sh_video_t *sh) {
 		mp_msg(MSGT_DECVIDEO, MSGL_FATAL, "[vd_omap_dce] init() Error allocation with dce_alloc()\n");
 		goto fail;
 	}
+
+	_numFrameBuffers += 2; // for display buffering
 
 	_codecParams->maxWidth = _frameWidth;
 	_codecParams->maxHeight = _frameHeight;
@@ -248,7 +290,7 @@ static int init(sh_video_t *sh) {
 		_frameWidth = ALIGN2(_frameWidth + (32 * 2), 7);
 		_frameHeight = _frameHeight + 4 * 24;
 		_codecParams->size = sizeof(IH264VDEC_Params);
-		((IH264VDEC_Params *)_codecParams)->dpbSizeInFrames = IH264VDEC_DPB_NUMFRAMES_AUTO;
+		((IH264VDEC_Params *)_codecParams)->dpbSizeInFrames = dpbSizeInFrames;//IH264VDEC_DPB_NUMFRAMES_AUTO;
 		((IH264VDEC_Params *)_codecParams)->pConstantMemory = 0;
 		((IH264VDEC_Params *)_codecParams)->bitStreamFormat = IH264VDEC_BYTE_STREAM_FORMAT;
 		((IH264VDEC_Params *)_codecParams)->errConcealmentMode = IH264VDEC_NO_CONCEALMENT; // IH264VDEC_APPLY_CONCEALMENT
@@ -373,26 +415,34 @@ static int init(sh_video_t *sh) {
 	_codecOutputBufs->descs[1].buf = (XDAS_Int8 *)(_frameWidth * _frameHeight);
 	_codecOutputBufs->descs[1].bufSize.bytes = _frameWidth * (_frameHeight / 2);
 
-	for (i = 0; i < IVIDEO2_MAX_IO_BUFFERS; i++) {
-		memset(&_frameBuffers[i], 0, sizeof(FrameBuffer));
-		if (omap_dce_share.getDisplayVideoBuffer(&_frameBuffers[i].buffer, IMGFMT_NV12, _frameWidth, _frameHeight) != 0) {
+	_frameBuffers = (FrameBuffer **)calloc(_numFrameBuffers, sizeof(FrameBuffer *));
+	for (i = 0; i < _numFrameBuffers; i++) {
+		_frameBuffers[i] = (FrameBuffer *)calloc(1, sizeof(FrameBuffer));
+		if (omap_dce_share.getDisplayVideoBuffer(&_frameBuffers[i]->buffer, IMGFMT_NV12, _frameWidth, _frameHeight) != 0) {
 			mp_msg(MSGT_DECVIDEO, MSGL_FATAL, "[vd_omap_dce] init() Failed create output buffer\n");
 			goto fail;
 		}
-		_frameBuffers[i].index = i;
-		_frameBuffers[i].locked = 0;
+		_frameBuffers[i]->index = i;
+		_frameBuffers[i]->locked = 0;
 	}
 
 	return mpcodecs_config_vo(sh, _frameWidth, _frameHeight, IMGFMT_NV12);
 
 fail:
 
-	for (i = 0; i < IVIDEO2_MAX_IO_BUFFERS; i++) {
-		if (_frameBuffers[i].buffer.priv) {
-			omap_dce_share.releaseDisplayVideoBuffer(&_frameBuffers[i].buffer);
-			memset(&_frameBuffers[i], 0, sizeof(FrameBuffer));
+	if (_frameBuffers) {
+		for (i = 0; i < _numFrameBuffers; i++) {
+			if (_frameBuffers[i]) {
+				if (_frameBuffers[i]->buffer.priv) {
+					omap_dce_share.releaseDisplayVideoBuffer(&_frameBuffers[i]->buffer);
+				}
+				free(_frameBuffers[i]);
+			}
 		}
+		free(_frameBuffers);
+		_frameBuffers = NULL;
 	}
+
 	if (_inputBufBo) {
 		omap_bo_del(_inputBufBo);
 		_inputBufBo = NULL;
@@ -448,12 +498,19 @@ fail:
 static void uninit(sh_video_t *sh) {
 	int i;
 
-	for (i = 0; i < IVIDEO2_MAX_IO_BUFFERS; i++) {
-		if (_frameBuffers[i].buffer.priv) {
-			omap_dce_share.releaseDisplayVideoBuffer(&_frameBuffers[i].buffer);
-			memset(&_frameBuffers[i], 0, sizeof(FrameBuffer));
+	if (_frameBuffers) {
+		for (i = 0; i < _numFrameBuffers; i++) {
+			if (_frameBuffers[i]) {
+				if (_frameBuffers[i]->buffer.priv) {
+					omap_dce_share.releaseDisplayVideoBuffer(&_frameBuffers[i]->buffer);
+				}
+				free(_frameBuffers[i]);
+			}
 		}
+		free(_frameBuffers);
+		_frameBuffers = NULL;
 	}
+
 	if (_inputBufBo) {
 		omap_bo_del(_inputBufBo);
 		_inputBufBo = NULL;
@@ -536,9 +593,9 @@ static int control(sh_video_t *sh, int cmd, void *arg, ...) {
 			                             _codecInputArgs, _codecOutputArgs);
 		} while (codecError != XDM_EFAIL);
 
-		for (i = 0; i < IVIDEO2_MAX_IO_BUFFERS; i++) {
-			if (_frameBuffers[i].buffer.priv && _frameBuffers[i].locked) {
-				_frameBuffers[i].locked = 0;
+		for (i = 0; i < _numFrameBuffers; i++) {
+			if (_frameBuffers[i]->buffer.priv && _frameBuffers[i]->locked) {
+				_frameBuffers[i]->locked = 0;
 			}
 		}
 		_decoderLag = 0;
@@ -556,11 +613,11 @@ static int control(sh_video_t *sh, int cmd, void *arg, ...) {
 static FrameBuffer *getBuffer(void) {
 	int i;
 
-	for (i = 0; i < IVIDEO2_MAX_IO_BUFFERS; i++) {
-		if (_frameBuffers[i].buffer.priv && !_frameBuffers[i].locked) {
-			if (!_frameBuffers[i].buffer.locked) {
-				_frameBuffers[i].locked = 1;
-				return &_frameBuffers[i];
+	for (i = 0; i < _numFrameBuffers; i++) {
+		if (_frameBuffers[i]->buffer.priv && !_frameBuffers[i]->locked) {
+			if (!_frameBuffers[i]->buffer.locked) {
+				_frameBuffers[i]->locked = 1;
+				return _frameBuffers[i];
 			}
 		}
 	}
@@ -570,17 +627,17 @@ static FrameBuffer *getBuffer(void) {
 }
 
 static void lockBuffer(FrameBuffer *fb) {
-	if (_frameBuffers[fb->index].locked) {
+	if (_frameBuffers[fb->index]->locked) {
 		mp_msg(MSGT_DECVIDEO, MSGL_FATAL, "[vd_omap_dce] lockBuffer() Already locked frame buffer at index: %d\n", fb->index);
 		return;
 	}
 
-	if (!_frameBuffers[fb->index].buffer.priv) {
+	if (!_frameBuffers[fb->index]->buffer.priv) {
 		mp_msg(MSGT_DECVIDEO, MSGL_FATAL, "[vd_omap_dce] lockBuffer() Missing frame buffer at index: %d\n", fb->index);
 		return;
 	}
 
-	_frameBuffers[fb->index].locked = 1;
+	_frameBuffers[fb->index]->locked = 1;
 }
 
 static void unlockBuffer(FrameBuffer *fb) {
@@ -588,17 +645,17 @@ static void unlockBuffer(FrameBuffer *fb) {
 		return;
 	}
 
-	if (!_frameBuffers[fb->index].locked) {
+	if (!_frameBuffers[fb->index]->locked) {
 		mp_msg(MSGT_DECVIDEO, MSGL_FATAL, "[vd_omap_dce] unlockBuffer() Already unlocked frame buffer at index: %d\n", fb->index);
 		return;
 	}
 
-	if (!_frameBuffers[fb->index].buffer.priv) {
+	if (!_frameBuffers[fb->index]->buffer.priv) {
 		mp_msg(MSGT_DECVIDEO, MSGL_FATAL, "[vd_omap_dce] unlockBuffer() Missing frame buffer at index: %d\n", fb->index);
 		return;
 	}
 
-	_frameBuffers[fb->index].locked = 0;
+	_frameBuffers[fb->index]->locked = 0;
 }
 
 static mp_image_t *decode(sh_video_t *sh, void *data, int len, int flags) {
