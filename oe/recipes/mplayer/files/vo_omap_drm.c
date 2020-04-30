@@ -132,6 +132,12 @@ struct omap_bo                     *_primaryFbBo;
 uint32_t                           _primaryFbId;
 OSDBuffer                          _osdBuffers[NUM_OSD_FB];
 VideoBuffer                        *_videoBuffers[NUM_VIDEO_FB];
+int                                _lastOsdX;
+int                                _lastOsdY;
+int                                _lastOsdW;
+int                                _lastOsdH;
+int                                _lastOsd;
+int                                _osdChanged;
 
 int                                _currentOSDBuffer;
 int                                _currentVideoBuffer;
@@ -371,6 +377,8 @@ static int preinit(const char *arg) {
 	_dce = 0;
 	_currentOSDBuffer = 0;
 	_currentVideoBuffer = 0;
+	_lastOsd = 0;
+	_osdChanged = 0;
 
 	_initialized = 1;
 
@@ -766,8 +774,49 @@ fail:
 	return VO_FALSE;
 }
 
+static void draw_alpha(int x0,int y0, int w,int h, unsigned char* src, unsigned char *srca, int srcstride) {
+	int x, y;
+	int dststride;
+	uint8_t *dstbase;
+
+	_lastOsdX = x0;
+	_lastOsdY = y0;
+	_lastOsdW = w;
+	_lastOsdH = h;
+
+	dststride = _osdBuffers[_currentOSDBuffer].stride;
+	dstbase = ((uint8_t *)_osdBuffers[_currentOSDBuffer].ptr) + (y0 * _osdBuffers[_currentOSDBuffer].stride) + (x0 * 4);
+
+	omap_bo_cpu_prep(_osdBuffers[_currentOSDBuffer].bo, OMAP_GEM_WRITE);
+
+	for (y = 0; y < h; y++) {
+		for (x = 0; x < w; x++) {
+			if (srca[x]) {
+				dstbase[4 * x + 0] = ((dstbase[4 * x + 0] * srca[x]) >> 8) + src[x];
+				dstbase[4 * x + 1] = ((dstbase[4 * x + 1] * srca[x]) >> 8) + src[x];
+				dstbase[4 * x + 2] = ((dstbase[4 * x + 2] * srca[x]) >> 8) + src[x];
+				dstbase[4 * x + 3] = 255;
+			}
+		}
+		src += srcstride;
+		srca += srcstride;
+		dstbase += dststride;
+	}
+
+	omap_bo_cpu_fini(_osdBuffers[_currentOSDBuffer].bo, OMAP_GEM_WRITE);
+}
+
 static void draw_osd(void) {
-	// todo
+	_osdChanged = vo_osd_changed(0);
+	if (_osdChanged) {
+//		if (_lastOsd) {
+			omap_bo_cpu_prep(_osdBuffers[_currentOSDBuffer].bo, OMAP_GEM_WRITE);
+			memset(_osdBuffers[_currentOSDBuffer].ptr, 0, _osdBuffers[_currentOSDBuffer].size);
+			omap_bo_cpu_fini(_osdBuffers[_currentOSDBuffer].bo, OMAP_GEM_WRITE);
+//		}
+
+		vo_draw_text(_modeInfo.hdisplay, _modeInfo.vdisplay - 20, draw_alpha);
+	}
 }
 
 static void flip_page() {
@@ -795,17 +844,19 @@ static void flip_page() {
 		_videoBuffers[_currentVideoBuffer]->db->locked = 0;
 	}
 
-/*
-	if (drmModeSetPlane(_fd, _osdPlaneId, _crtcId,
-			_osdBuffers[_currentOSDBuffer].fbId, 0,
-			0, 0, _modeInfo.hdisplay, _modeInfo.vdisplay,
-			0, 0, _modeInfo.hdisplay << 16, _modeInfo.vdisplay << 16
-			)) {
-		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm] Error: flip() Failed set plane: %s\n", strerror(errno));
-		goto fail;
-	}*/
-/*	if (++_currentOSDBuffer >= NUM_OSD_FB)
-		_currentOSDBuffer = 0;*/
+	if (_osdChanged) {
+		if (drmModeSetPlane(_fd, _osdPlaneId, _crtcId,
+				_osdBuffers[_currentOSDBuffer].fbId, 0,
+				0, 0, _modeInfo.hdisplay, _modeInfo.vdisplay,
+				0, 0, _modeInfo.hdisplay << 16, _modeInfo.vdisplay << 16
+				)) {
+			mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm] Error: flip() Failed set plane: %s\n", strerror(errno));
+			goto fail;
+		}
+//		if (++_currentOSDBuffer >= NUM_OSD_FB)
+//			_currentOSDBuffer = 0;
+		_osdChanged = 0;
+	}
 
 	return;
 
@@ -833,22 +884,7 @@ static int control(uint32_t request, void *data) {
 		return get_image(data);
 	case VOCTRL_DRAW_IMAGE:
 		return put_image(data);
-	case VOCTRL_GET_EOSD_RES: {
-			struct mp_eosd_settings *r = data;
-			r->mt = r->mb = r->ml = r->mr = 0;
-			r->srcw = _modeInfo.hdisplay;
-			r->srch = _modeInfo.vdisplay;
-			r->w = _modeInfo.hdisplay;
-			r->h = _modeInfo.vdisplay;
-		}
-		// todo
-		return VO_TRUE;
-	case VOCTRL_DRAW_EOSD:
-		if (!data)
-			return VO_FALSE;
-		// todo
-		return VO_TRUE;
-	}
 
 	return VO_NOTIMPL;
+	}
 }
