@@ -237,6 +237,10 @@ static int preinit(const char *arg) {
 	drmModeFreeConnector(connector);
 
 	_drmPlaneResources = drmModeGetPlaneResources(_fd);
+	if (!_drmPlaneResources) {
+		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm] preinit() Failed to plane resources!\n");
+		return -1;
+	}
 	_osdPlaneId = -1;
 	for (i = 0; i < _drmPlaneResources->count_planes; i++) {
 		drmModePlane *plane = drmModeGetPlane(_fd, _drmPlaneResources->planes[i]);
