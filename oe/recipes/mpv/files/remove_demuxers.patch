@@ -1,0 +1,22 @@
+diff -urp old/demux/demux.c new/demux/demux.c
+--- old/demux/demux.c	2020-05-02 11:15:43.000000000 +0200
++++ new/demux/demux.c	2020-05-02 11:17:00.000000000 +0200
+@@ -65,18 +65,7 @@ extern const demuxer_desc_t demuxer_desc
+ extern const demuxer_desc_t demuxer_desc_timeline;
+ 
+ static const demuxer_desc_t *const demuxer_list[] = {
+-    &demuxer_desc_disc,
+-    &demuxer_desc_edl,
+-    &demuxer_desc_cue,
+-    &demuxer_desc_rawaudio,
+-    &demuxer_desc_rawvideo,
+-    &demuxer_desc_matroska,
+-#if HAVE_LIBARCHIVE
+-    &demuxer_desc_libarchive,
+-#endif
+     &demuxer_desc_lavf,
+-    &demuxer_desc_mf,
+-    &demuxer_desc_playlist,
+     &demuxer_desc_null,
+     NULL
+ };

@@ -1,0 +1,45 @@
+diff -urp old/video/out/vo.c new/video/out/vo.c
+--- old/video/out/vo.c	2020-05-02 11:22:09.000000000 +0200
++++ new/video/out/vo.c	2020-05-02 11:19:48.000000000 +0200
+@@ -56,6 +56,7 @@ extern const struct vo_driver video_out_
+ extern const struct vo_driver video_out_image;
+ extern const struct vo_driver video_out_lavc;
+ extern const struct vo_driver video_out_caca;
++extern const struct vo_driver video_out_omapdrm;
+ extern const struct vo_driver video_out_drm;
+ extern const struct vo_driver video_out_direct3d;
+ extern const struct vo_driver video_out_sdl;
+@@ -67,6 +68,7 @@ extern const struct vo_driver video_out_
+ const struct vo_driver *const video_out_drivers[] =
+ {
+     &video_out_libmpv,
++    &video_out_omapdrm,
+     &video_out_null,
+     NULL
+ };
+diff -urp old/wscript new/wscript
+--- old/wscript	2020-05-01 23:11:46.000000000 +0200
++++ new/wscript	2020-05-01 23:20:41.000000000 +0200
+@@ -590,6 +590,10 @@ video_output_features = [
+         'deps': 'vt.h',
+         'func': check_pkg_config('libdrm', '>= 2.4.74'),
+     }, {
++        'name': '--omap-drm',
++        'desc': 'OMAP DRM',
++        'func': check_pkg_config('libdrm', '>= 2.4.74'),
++    }, {
+         'name': '--drmprime',
+         'desc': 'DRM Prime ffmpeg support',
+         'func': check_statement('libavutil/pixfmt.h',
+diff -urp old/wscript_build.py new/wscript_build.py
+--- old/wscript_build.py	2020-05-01 23:11:45.000000000 +0200
++++ new/wscript_build.py	2020-05-01 23:36:54.000000000 +0200
+@@ -497,6 +497,8 @@ def build(ctx):
+         ( "video/out/vo.c" ),
+         ( "video/out/vo_caca.c",                 "caca" ),
+         ( "video/out/vo_direct3d.c",             "direct3d" ),
++        ( "video/out/yuv420_to_nv12.S",          "omap-drm" ),
++        ( "video/out/vo_omap_drm.c",             "omap-drm" ),
+         ( "video/out/vo_drm.c",                  "drm" ),
+         ( "video/out/vo_gpu.c" ),
+         ( "video/out/vo_image.c" ),

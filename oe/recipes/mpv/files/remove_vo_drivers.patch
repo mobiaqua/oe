@@ -1,0 +1,49 @@
+diff -urp old/video/out/vo.c new/video/out/vo.c
+--- old/video/out/vo.c	2020-05-02 11:11:40.000000000 +0200
++++ new/video/out/vo.c	2020-05-02 11:13:06.000000000 +0200
+@@ -67,45 +67,7 @@ extern const struct vo_driver video_out_
+ const struct vo_driver *const video_out_drivers[] =
+ {
+     &video_out_libmpv,
+-#if HAVE_ANDROID
+-    &video_out_mediacodec_embed,
+-#endif
+-    &video_out_gpu,
+-#if HAVE_VDPAU
+-    &video_out_vdpau,
+-#endif
+-#if HAVE_DIRECT3D
+-    &video_out_direct3d,
+-#endif
+-#if HAVE_WAYLAND && HAVE_MEMFD_CREATE
+-    &video_out_wlshm,
+-#endif
+-#if HAVE_XV
+-    &video_out_xv,
+-#endif
+-#if HAVE_SDL2_VIDEO
+-    &video_out_sdl,
+-#endif
+-#if HAVE_VAAPI_X11 && HAVE_GPL
+-    &video_out_vaapi,
+-#endif
+-#if HAVE_X11
+-    &video_out_x11,
+-#endif
+     &video_out_null,
+-    // should not be auto-selected
+-    &video_out_image,
+-    &video_out_tct,
+-#if HAVE_CACA
+-    &video_out_caca,
+-#endif
+-#if HAVE_DRM
+-    &video_out_drm,
+-#endif
+-#if HAVE_RPI_MMAL
+-    &video_out_rpi,
+-#endif
+-    &video_out_lavc,
+     NULL
+ };
+ 
