@@ -6,6 +6,7 @@ SRC_URI = "\
   \
   file://tmpdir.patch \
   file://add-configurable-reply-timeouts.patch \
+  file://no-x11.patch \
   file://dbus-1.init \
 "
 
