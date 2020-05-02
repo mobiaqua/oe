@@ -12,6 +12,8 @@ SRC_URI = "git://github.com/mpv-player/mpv.git;protocol=git;name=mpv \
            file://yuv420_to_nv12.S \
            file://vo_omap_drm.c \
            file://waf_enable_asm.patch \
+           file://add-level-to-sh.patch \
+           file://visible_dimensions.patch \
            file://silence-config-option.patch \
            file://remove_vo_drivers.patch \
            file://remove_demuxers.patch \

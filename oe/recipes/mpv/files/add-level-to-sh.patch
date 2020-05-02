@@ -1,0 +1,23 @@
+diff -urp old/demux/demux_lavf.c new/demux/demux_lavf.c
+--- old/demux/demux_lavf.c	2020-05-02 12:05:00.000000000 +0200
++++ new/demux/demux_lavf.c	2020-05-03 00:04:55.000000000 +0200
+@@ -713,6 +713,8 @@ static void handle_new_stream(demuxer_t 
+         // This also applies to vfw-muxed mkv, but we can't detect these easily.
+         sh->codec->avi_dts = matches_avinputformat_name(priv, "avi");
+ 
++        sh->level = codec->level;
++
+         break;
+     }
+     case AVMEDIA_TYPE_SUBTITLE: {
+diff -urp old/demux/stheader.h new/demux/stheader.h
+--- old/demux/stheader.h	2020-05-02 12:05:00.000000000 +0200
++++ new/demux/stheader.h	2020-05-02 23:59:59.000000000 +0200
+@@ -50,6 +50,7 @@ struct sh_stream {
+     bool hearing_impaired_track;// container flag
+     bool still_image;           // video stream contains still images
+     int hls_bitrate;
++    int level;
+ 
+     struct mp_tags *tags;
+ 

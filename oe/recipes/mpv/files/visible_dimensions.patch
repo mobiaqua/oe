@@ -1,0 +1,12 @@
+diff -urp old/video/mp_image.h new/video/mp_image.h
+--- old/video/mp_image.h	2020-05-03 00:20:10.000000000 +0200
++++ new/video/mp_image.h	2020-05-03 00:20:25.000000000 +0200
+@@ -70,7 +70,7 @@ struct mp_image_params {
+  *   image data. mp_image_make_writeable() will do that copy if required.
+  */
+ typedef struct mp_image {
+-    int w, h;  // visible dimensions (redundant with params.w/h)
++    int x, y, w, h;  // visible dimensions (redundant with params.w/h)
+ 
+     struct mp_image_params params;
+ 
