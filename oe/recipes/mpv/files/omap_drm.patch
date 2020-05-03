@@ -21,16 +21,17 @@ diff -urp old/wscript new/wscript
 --- old/wscript	2020-05-01 23:11:46.000000000 +0200
 +++ new/wscript	2020-05-01 23:20:41.000000000 +0200
 @@ -590,6 +590,10 @@ video_output_features = [
-         'deps': 'vt.h',
+         'deps': 'vt.h || consio.h',
          'func': check_pkg_config('libdrm', '>= 2.4.74'),
      }, {
 +        'name': '--omap-drm',
 +        'desc': 'OMAP DRM',
 +        'func': check_pkg_config('libdrm', '>= 2.4.74'),
 +    }, {
-         'name': '--drmprime',
-         'desc': 'DRM Prime ffmpeg support',
-         'func': check_statement('libavutil/pixfmt.h',
+         'name': '--gbm',
+         'desc': 'GBM',
+         'deps': 'gbm.h',
+         'func': check_pkg_config('gbm'),
 diff -urp old/wscript_build.py new/wscript_build.py
 --- old/wscript_build.py	2020-05-01 23:11:45.000000000 +0200
 +++ new/wscript_build.py	2020-05-01 23:36:54.000000000 +0200

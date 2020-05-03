@@ -6,7 +6,10 @@ DEPENDS = "zlib ffmpeg jpeg libdrm libass lua"
 
 LICENSE = "GPLv2+"
 
-SRCREV = "ad2cda343b1d6001f430867e0c3f502ff27c8675"
+PV = "0.32+git${SRCPV}"
+PR = "r1"
+
+SRCREV = "cae2ffb6eb52f56167aeabf40caa28ecb3ca498b"
 SRC_URI = "git://github.com/mpv-player/mpv.git;protocol=git;name=mpv \
            http://www.freehackers.org/~tnagy/release/waf-2.0.9;name=waf;downloadfilename=waf;subdir=git \
            file://yuv420_to_nv12.S \
@@ -35,7 +38,6 @@ EXTRA_OECONF = " \
     --confdir=${sysconfdir} \
     --datadir=${datadir} \
     --disable-manpage-build \
-    --disable-libsmbclient \
     --disable-libbluray \
     --disable-dvdnav \
     --disable-cdda \
@@ -49,11 +51,9 @@ EXTRA_OECONF = " \
     --disable-vaapi \
     --disable-vdpau \
     --disable-drm \
-    --disable-drmprime \
     --disable-gl \
     --enable-gbm \
     --enable-omap-drm \
-    --enable-libass \
     --enable-lua \
 "
 
