@@ -137,6 +137,7 @@ EXTRA_OECONF = " \
 	--disable-dvb \
 	--disable-yuv4mpeg \
 	--disable-vcd \
+	--disable-postproc \
 	\
 	--enable-alsa \
 	--disable-ossaudio \
