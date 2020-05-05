@@ -65,7 +65,8 @@ EXTRA_OECONF = " \
 	--disable-cdparanoia \
 	--enable-freetype \
 	--disable-menu \
-	--enable-sortsub \
+	--disable-ass \
+	--disable-sortsub \
 	--disable-fribidi \
 	--disable-enca \
 	--disable-ftp \
