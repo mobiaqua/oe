@@ -116,6 +116,7 @@ static int                        _numFrameBuffers;
 static FrameBuffer                **_frameBuffers;
 static unsigned int               _codecId;
 static int                        _decoderLag;
+static mp_image_t                 *_mpi;
 
 static int init(sh_video_t *sh) {
 	Engine_Error engineError;
@@ -132,52 +133,52 @@ static int init(sh_video_t *sh) {
 	switch (sh->format) {
 	case 0x10000005:
 	case 0x00000005:
-	case mmioFOURCC('H','2','6','4'):
-	case mmioFOURCC('h','2','6','4'):
-	case mmioFOURCC('X','2','6','4'):
-	case mmioFOURCC('x','2','6','4'):
-	case mmioFOURCC('A','V','C','1'):
-	case mmioFOURCC('a','v','c','1'):
+	case MKTAG('H','2','6','4'):
+	case MKTAG('h','2','6','4'):
+	case MKTAG('X','2','6','4'):
+	case MKTAG('x','2','6','4'):
+	case MKTAG('A','V','C','1'):
+	case MKTAG('a','v','c','1'):
 		_codecId = AV_CODEC_ID_H264;
 		break;
 	case 0x10000004:
 	case 0x00000004:
-	case mmioFOURCC('F','M','P','4'):
-	case mmioFOURCC('f','m','p','4'):
-	case mmioFOURCC('M','P','4','V'):
-	case mmioFOURCC('m','p','4','v'):
-	case mmioFOURCC('X','V','I','D'):
-	case mmioFOURCC('x','v','i','d'):
-	case mmioFOURCC('X','v','i','D'):
-	case mmioFOURCC('X','V','I','X'):
-	case mmioFOURCC('D','X','5','0'):
-	case mmioFOURCC('D','X','G','M'):
+	case MKTAG('F','M','P','4'):
+	case MKTAG('f','m','p','4'):
+	case MKTAG('M','P','4','V'):
+	case MKTAG('m','p','4','v'):
+	case MKTAG('X','V','I','D'):
+	case MKTAG('x','v','i','d'):
+	case MKTAG('X','v','i','D'):
+	case MKTAG('X','V','I','X'):
+	case MKTAG('D','X','5','0'):
+	case MKTAG('D','X','G','M'):
 		_codecId = AV_CODEC_ID_MPEG4;
 		break;
 	case 0x10000002:
 	case 0x00000002:
-	case mmioFOURCC('m','p','g','2'):
-	case mmioFOURCC('M','P','G','2'):
-	case mmioFOURCC('M','7','0','1'):
-	case mmioFOURCC('m','2','v','1'):
-	case mmioFOURCC('m','2','2','v'):
-	case mmioFOURCC('m','p','g','v'):
+	case MKTAG('m','p','g','2'):
+	case MKTAG('M','P','G','2'):
+	case MKTAG('M','7','0','1'):
+	case MKTAG('m','2','v','1'):
+	case MKTAG('m','2','2','v'):
+	case MKTAG('m','p','g','v'):
 		_codecId = AV_CODEC_ID_MPEG2VIDEO;
 		break;
 	case 0x10000001:
 	case 0x00000001:
-	case mmioFOURCC('m','p','g','1'):
-	case mmioFOURCC('M','P','G','1'):
-	case mmioFOURCC('m','1','v','1'):
+	case MKTAG('m','p','g','1'):
+	case MKTAG('M','P','G','1'):
+	case MKTAG('m','1','v','1'):
 		_codecId = AV_CODEC_ID_MPEG1VIDEO;
 		break;
-	case mmioFOURCC('W','V','C','1'):
-	case mmioFOURCC('w','v','c','1'):
-	case mmioFOURCC('V','C','-','1'):
-	case mmioFOURCC('v','c','-','1'):
+	case MKTAG('W','V','C','1'):
+	case MKTAG('w','v','c','1'):
+	case MKTAG('V','C','-','1'):
+	case MKTAG('v','c','-','1'):
 		_codecId = AV_CODEC_ID_VC1;
 		break;
-	case mmioFOURCC('W','M','V','3'):
+	case MKTAG('W','M','V','3'):
 		_codecId = AV_CODEC_ID_WMV3;
 		break;
 	default:
@@ -429,77 +430,27 @@ static int init(sh_video_t *sh) {
 		_frameBuffers[i]->locked = 0;
 	}
 
+	_mpi = new_mp_image(_frameWidth, _frameHeight);
+	if (!_mpi) {
+		mp_msg(MSGT_DECVIDEO, MSGL_FATAL, "[vd_omap_dce] init() Error: new_mp_image() failed\n");
+		goto fail;
+	}
+
 	return mpcodecs_config_vo(sh, _frameWidth, _frameHeight, IMGFMT_NV12);
 
 fail:
 
-	if (_frameBuffers) {
-		for (i = 0; i < _numFrameBuffers; i++) {
-			if (_frameBuffers[i]) {
-				if (_frameBuffers[i]->buffer.priv) {
-					omap_dce_share.releaseDisplayVideoBuffer(&_frameBuffers[i]->buffer);
-				}
-				free(_frameBuffers[i]);
-			}
-		}
-		free(_frameBuffers);
-		_frameBuffers = NULL;
-	}
-
-	if (_inputBufBo) {
-		omap_bo_del(_inputBufBo);
-		_inputBufBo = NULL;
-	}
-
-	if (_codecHandle) {
-		VIDDEC3_delete(_codecHandle);
-		_codecHandle = NULL;
-	}
-
-	if (_codecParams) {
-		dce_free(_codecParams);
-		_codecParams = NULL;
-	}
-	if (_codecStatus) {
-		dce_free(_codecStatus);
-		_codecStatus = NULL;
-	}
-	if (_codecDynParams) {
-		dce_free(_codecDynParams);
-		_codecDynParams = NULL;
-	}
-	if (_codecInputBufs) {
-		dce_free(_codecInputBufs);
-		_codecInputBufs = NULL;
-	}
-	if (_codecOutputBufs) {
-		dce_free(_codecOutputBufs);
-		_codecOutputBufs = NULL;
-	}
-	if (_codecInputArgs) {
-		dce_free(_codecInputArgs);
-		_codecInputArgs = NULL;
-	}
-	if (_codecOutputArgs) {
-		dce_free(_codecOutputArgs);
-		_codecOutputArgs = NULL;
-	}
-
-	if (_codecEngine) {
-		Engine_close(_codecEngine);
-		_codecEngine = NULL;
-	}
-
-	if (_omapDev) {
-		dce_deinit(_omapDev);
-		_omapDev = NULL;
-	}
-
+	uninit(sh);
 	return 0;
 }
 
 static void uninit(sh_video_t *sh) {
 	int i;
+
+	if (_mpi) {
+		free_mp_image(_mpi);
+		_mpi = NULL;
+	}
 
 	if (_frameBuffers) {
 		for (i = 0; i < _numFrameBuffers; i++) {
@@ -662,7 +613,6 @@ static void unlockBuffer(FrameBuffer *fb) {
 }
 
 static mp_image_t *decode(sh_video_t *sh, void *data, int len, int flags) {
-	mp_image_t *mpi;
 	FrameBuffer *fb;
 	Int32 codecError;
 	int foundIndex = -1;
@@ -671,12 +621,6 @@ static mp_image_t *decode(sh_video_t *sh, void *data, int len, int flags) {
 
 	if (len <= 0)
 		return NULL; // skipped frame
-
-	mpi = mpcodecs_get_image(sh, MP_IMGTYPE_TEMP, MP_IMGFLAG_ACCEPT_STRIDE | MP_IMGFLAG_DIRECT, _frameWidth, _frameHeight);
-	if (!mpi) {
-		mp_msg(MSGT_DECVIDEO, MSGL_FATAL, "[vd_omap_dce] Error: mpcodecs_get_image() failed\n");
-		return NULL;
-	}
 
 	fb = getBuffer();
 	if (!fb) {
@@ -730,20 +674,21 @@ static mp_image_t *decode(sh_video_t *sh, void *data, int len, int flags) {
 
 	fb = (FrameBuffer *)_codecOutputArgs->outputID[foundIndex];
 
-	mpi->imgfmt = IMGFMT_NV12;
-	mpi->width = _frameWidth;
-	mpi->height = _frameHeight;
-	mpi->x = r->topLeft.x;
-	mpi->y = r->topLeft.y;
-	mpi->w = r->bottomRight.x - r->topLeft.x;
-	mpi->h = r->bottomRight.y - r->topLeft.y;
-	mpi->priv = (void *)&fb->buffer;
+	_mpi->type = MP_IMGTYPE_TEMP;
+	_mpi->imgfmt = IMGFMT_NV12;
+	_mpi->width = _frameWidth;
+	_mpi->height = _frameHeight;
+	_mpi->x = r->topLeft.x;
+	_mpi->y = r->topLeft.y;
+	_mpi->w = r->bottomRight.x - r->topLeft.x;
+	_mpi->h = r->bottomRight.y - r->topLeft.y;
+	_mpi->priv = (void *)&fb->buffer;
 
 	if (_codecId == AV_CODEC_ID_MPEG2VIDEO && _frameWidth == 720 && (_frameHeight == 576 || _frameHeight == 480)) {
-		mpi->flags |= 0x800000;
+		_mpi->flags |= 0x800000;
 	}
 	if (_codecOutputArgs->displayBufs.bufDesc[0].contentType == IVIDEO_INTERLACED) {
-		mpi->flags |= MP_IMGFIELD_INTERLACED;
+		_mpi->flags |= MP_IMGFIELD_INTERLACED;
 	}
 	if (_codecOutputArgs->displayBufs.bufDesc[0].contentType == IVIDEO_INTERLACED_TOPFIELD) {
 		mp_msg(MSGT_DECVIDEO, MSGL_ERR, "[vd_omap_dce] decode() IVIDEO_INTERLACED_TOPFIELD\n");
@@ -757,5 +702,5 @@ static mp_image_t *decode(sh_video_t *sh, void *data, int len, int flags) {
 		mp_msg(MSGT_DECVIDEO, MSGL_ERR, "[vd_omap_dce] decode() repeatFirstFieldFlag\n");
 	}
 
-	return mpi;
+	return _mpi;
 }

@@ -866,20 +866,6 @@ static int query_format(uint32_t format) {
 	return 0;
 }
 
-static uint32_t get_image(mp_image_t *mpi) {
-	if (!_dce) {
-		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] Error: get_image() only for hardware decoding\n");
-		return VO_NOTIMPL;
-	}
-	if (mpi->type == MP_IMGTYPE_TEMP) {
-		mpi->flags |= MP_IMGFLAG_DIRECT | MP_IMGFLAG_DRAW_CALLBACK;
-		return VO_TRUE;
-	} else {
-		mp_msg(MSGT_VO, MSGL_FATAL, "[omap_drm_egl] Error: get_image() only for MP_IMGTYPE_TEMP\n");
-		return VO_FALSE;
-	}
-}
-
 static int draw_frame(uint8_t *src[]) {
 	// empty
 	return VO_FALSE;
@@ -1102,26 +1088,8 @@ static int control(uint32_t request, void *data) {
 		vo_screenheight = _modeInfo.vdisplay;
 		aspect_save_screenres(vo_screenwidth, vo_screenheight);
 		return VO_TRUE;
-	case VOCTRL_GET_IMAGE:
-		return get_image(data);
 	case VOCTRL_DRAW_IMAGE:
 		return put_image(data);
-	case VOCTRL_GET_EOSD_RES: {
-			struct mp_eosd_settings *r = data;
-			r->mt = r->mb = r->ml = r->mr = 0;
-			r->srcw = _modeInfo.hdisplay;
-			r->srch = _modeInfo.vdisplay;
-			r->w = _modeInfo.hdisplay;
-			r->h = _modeInfo.vdisplay;
-		}
-		// todo
-		return VO_TRUE;
-	case VOCTRL_DRAW_EOSD:
-		if (!data)
-			return VO_FALSE;
-		// todo
-		return VO_TRUE;
 	}
-
 	return VO_NOTIMPL;
 }
