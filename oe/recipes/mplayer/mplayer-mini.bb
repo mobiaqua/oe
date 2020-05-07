@@ -10,7 +10,7 @@ LICENSE = "GPL"
 
 RCONFLICTS_${PN} = "mplayer"
 
-SRCREV = "5ae883574e7839ed285134a67407437626647b3f"
+SRCREV = "5a163d8c0cfd5a1e54e3e0f2edd3013315856620"
 SRC_URI = "git://github.com/mobiaqua/mplayer-mini.git;protocol=git"
 
 ARM_INSTRUCTION_SET = "ARM"
