@@ -1,0 +1,60 @@
+diff -urp old/scripts/mod/mk_elfconfig.c new/scripts/mod/mk_elfconfig.c
+--- old/scripts/mod/mk_elfconfig.c	2020-05-10 09:45:10.000000000 +0200
++++ new/scripts/mod/mk_elfconfig.c	2020-05-10 11:52:31.000000000 +0200
+@@ -2,7 +2,7 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+-#include <elf.h>
++#include "../elf.h"
+ 
+ int
+ main(int argc, char **argv)
+diff -urp old/scripts/mod/modpost.c new/scripts/mod/modpost.c
+--- old/scripts/mod/modpost.c	2020-05-10 09:45:10.000000000 +0200
++++ new/scripts/mod/modpost.c	2020-05-10 11:52:18.000000000 +0200
+@@ -12,7 +12,7 @@
+  */
+ 
+ #define _GNU_SOURCE
+-#include <elf.h>
++#include "../elf.h"
+ #include <stdio.h>
+ #include <ctype.h>
+ #include <string.h>
+diff -urp old/scripts/mod/modpost.h new/scripts/mod/modpost.h
+--- old/scripts/mod/modpost.h	2020-05-10 09:45:10.000000000 +0200
++++ new/scripts/mod/modpost.h	2020-05-10 11:52:09.000000000 +0200
+@@ -8,7 +8,7 @@
+ #include <sys/mman.h>
+ #include <fcntl.h>
+ #include <unistd.h>
+-#include <elf.h>
++#include "../elf.h"
+ 
+ #include "elfconfig.h"
+ 
+diff -urp old/scripts/sorttable.c new/scripts/sorttable.c
+--- old/scripts/sorttable.c	2020-05-10 09:45:10.000000000 +0200
++++ new/scripts/sorttable.c	2020-05-10 11:52:44.000000000 +0200
+@@ -24,7 +24,7 @@
+ #include <sys/mman.h>
+ #include <sys/stat.h>
+ #include <getopt.h>
+-#include <elf.h>
++#include "elf.h"
+ #include <fcntl.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+diff -urp old/arch/arm/vdso/vdsomunge.c new/arch/arm/vdso/vdsomunge.c
+--- old/arch/arm/vdso/vdsomunge.c	2020-05-10 09:44:47.000000000 +0200
++++ new/arch/arm/vdso/vdsomunge.c	2020-05-10 17:16:03.000000000 +0200
+@@ -32,7 +32,7 @@
+  * it does.
+  */
+ 
+-#include <elf.h>
++#include "../../../scripts/elf.h"
+ #include <errno.h>
+ #include <fcntl.h>
+ #include <stdarg.h>
