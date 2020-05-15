@@ -17,6 +17,10 @@ python __anonymous () {
     	depends = bb.data.getVar("DEPENDS", d, 1)
     	depends = "%s u-boot-mkimage-native" % depends
     	bb.data.setVar("DEPENDS", depends, d)
+        bb.data.setVar('KERNEL_IMAGETYPE_FOR_MAKE', kerneltype, d)
+
+    if kerneltype:
+        bb.data.setVar('KERNEL_IMAGETYPES', kerneltype, d)
 
     image = bb.data.getVar('INITRAMFS_IMAGE', d, True)
     if image:
