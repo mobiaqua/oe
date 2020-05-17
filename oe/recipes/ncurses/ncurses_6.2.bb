@@ -4,22 +4,22 @@ LICENSE = "MIT"
 SECTION = "libs"
 PR = "r1"
 
-DEPENDS = "ncurses-native unifdef-native"
-DEPENDS_virtclass-native = "unifdef-native"
+DEPENDS = "ncurses-native"
 
-inherit autotools binconfig test
+inherit autotools binconfig
 
 SRC_URI = "${GNU_MIRROR}/ncurses/ncurses-${PV}.tar.gz \
-        file://tic-hang.patch \
-        file://ncurses_patch_5.9p_src_all.patch \
+        file://0001-tic-hang.patch \
+        file://0002-configure-reproducible.patch \
+        file://hex.diff \
         file://config.cache \
 "
 
-SRC_URI[md5sum] = "8cb9c412e5f2d96bc6f459aa8c6282a1"
-SRC_URI[sha256sum] = "9046298fb440324c9d4135ecea7879ffed8546dd1b58e59430ea07a4633f563b"
+SRC_URI[md5sum] = "e812da327b1c2214ac1aed440ea3ae8d"
+SRC_URI[sha256sum] = "30306e0c76e0f9f1f0de987cf1c82a5c21e1ce6568b9227f7da5b71cbea86c9d"
 
 PARALLEL_MAKE = ""
-EXTRA_AUTORECONF = "-I m4"
+EXTRA_AUTORECONF = "-I m4 --with-abi-version=5"
 CONFIG_SITE =+ "${WORKDIR}/config.cache"
 
 # Whether to enable separate widec libraries; must be 'true' or 'false'
@@ -67,6 +67,10 @@ do_configure() {
                         --enable-sigwinch \
                         --enable-pc-files \
                         --disable-rpath-hack \
+                        --disable-mixed-case \
+                        --with-manpage-format=normal \
+                        --without-manpage-renames \
+                        --disable-stripping \
                         --with-build-cc="${BUILD_CC}" \
                         --with-build-cpp="${BUILD_CPP}" \
                         --with-build-ld="${BUILD_LD}" \
@@ -86,28 +90,9 @@ do_compile() {
             oe_runmake -C widec libs
 }
 
-# set of expected differences between narrowc and widec header
-#
-# TODO: the NCURSES_CH_T difference can cause real problems :(
-_unifdef_cleanup = " \
-  -e '\!/\* \$Id: curses.wide,v!,\!/\* \$Id: curses.tail,v!d' \
-  -e '/^#define NCURSES_CH_T /d' \
-  -e '/^#include <wchar.h>/d' \
-  -e '\!^/\* .* \*/!d' \
-"
-
 do_test[dirs] = "${S}"
 do_test() {
-        ${ENABLE_WIDEC} || return 0
-
-        # make sure that the narrow and widec header are compatible
-        # and differ only in minor details.
-        unifdef -k narrowc/include/curses.h | \
-            sed ${_unifdef_cleanup} > curses-narrowc.h
-        unifdef -k widec/include/curses.h | \
-            sed ${_unifdef_cleanup} > curses-widec.h
-
-        diff curses-narrowc.h curses-widec.h
+        :
 }
 
 _install_opts = "\
@@ -165,7 +150,7 @@ do_install() {
                 test -h $f || continue
                 rm -f $f
                 echo '/* GNU ld script */'  >$f
-                echo "INPUT($i.so.5 AS_NEEDED(-ltinfo))" >>$f
+                echo "INPUT($i.so.6 AS_NEEDED(-ltinfo))" >>$f
         done
 
         # create libtermcap.so linker script for backward compatibility
