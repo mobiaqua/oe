@@ -91,7 +91,7 @@ do_configure_prepend_chinook-compat () {
 do_compile () {
 	set -e
 	oe_runmake ARCH=${TARGET_ARCH} CPU= CPUOPT= \
-		'OPT=${CFLAGS}' 'LDFLAGS=-lmenu -lncurses -lpanel' \
+		'OPT=${CFLAGS}' \
 		'V=1'
 }
 
