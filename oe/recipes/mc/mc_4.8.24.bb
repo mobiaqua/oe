@@ -2,15 +2,19 @@ require mc.inc
 PR = "${INC_PR}.0"
 HOMEPAGE = "http://www.midnight-commander.org/"
 
-SRC_URI = "http://www.midnight-commander.org/downloads/${P}.tar.gz \
-          "
-SRC_URI[md5sum] = "5bb6a0130df3f3df3092a7b1b3e14fc7"
-SRC_URI[sha256sum] = "668d8d66ce092ad17caaa82b2a281b9486b2b2137e662b7e9ff20f77e0782401"
+SRC_URI = "http://www.midnight-commander.org/downloads/${BPN}-${PV}.tar.bz2 \
+           file://0001-mc-replace-perl-w-with-use-warnings.patch \
+           file://nomandate.patch \
+           file://0001-Ticket-4070-misc-Makefile.am-install-mc.lib-only-onc.patch \
+           "
+SRC_URI[md5sum] = "2621de1fa9058a9c41a4248becc969f9"
+SRC_URI[sha256sum] = "cfcc4d0546d0c3a88645a8bf71612ed36647ea3264d973b1f28183a0c84bae34"
 
 EXTRA_OECONF = "--without-x --without-samba \
 --without-nfs --without-gpm-mouse --enable-charset \
 --with-screen=ncurses \
-ac_cv_path_PERL=${bindir}/perl \
+ac_cv_path_PERL='/usr/bin/env perl' \
+ac_cv_path_PYTHON='/usr/bin/env python' \
 ac_cv_path_ZIP=${bindir}/zip \
 ac_cv_path_UNZIP=${bindir}/unzip \
 "
@@ -57,7 +61,7 @@ do_utf8_conversion() {
 
 do_configure_prepend() {
 
-AUTOFOO="config.guess config.sub depcomp install-sh missing mkinstalldirs"
+AUTOFOO="config.guess config.sub depcomp install-sh missing"
 
          for i in ${AUTOFOO}; do
            rm config/${i}
