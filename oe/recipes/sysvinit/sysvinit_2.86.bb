@@ -43,7 +43,7 @@ PACKAGES =+ "sysvinit-utils sysvinit-pidof sysvinit-sulogin"
 FILES_${PN} += "${base_sbindir}/* ${base_bindir}/*"
 FILES_sysvinit-pidof = "${base_bindir}/pidof.sysvinit"
 FILES_sysvinit-sulogin = "${base_sbindir}/sulogin"
-FILES_sysvinit-utils = "${bindir}/last.${PN} ${bindir}/mesg.${PN} ${bindir}/wall.${PN} ${bindir}/lastb ${bindir}/utmpdump ${base_sbindir}/killall5 ${base_sbindir}/runlevel"
+FILES_sysvinit-utils = "${bindir}/last.${PN} ${bindir}/mesg.${PN} ${bindir}/wall.${PN} ${bindir}/lastb ${base_sbindir}/killall5 ${base_sbindir}/runlevel"
 RRECOMMENDS_${PN} = "sysvinit-utils"
 RRECOMMENDS_${PN}_micro = ""
 RRECOMMENDS_${PN}_slugos = ""
@@ -108,6 +108,7 @@ EOF
 	mv ${D}${bindir}/last ${D}${bindir}/last.${PN}
 	mv ${D}${bindir}/mesg ${D}${bindir}/mesg.${PN}
 	mv ${D}${bindir}/wall ${D}${bindir}/wall.${PN}
+	rm -f ${D}${bindir}/utmpdump
 }
 
 pkg_postinst_${PN} () {

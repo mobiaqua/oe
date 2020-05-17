@@ -6,7 +6,7 @@ LICENSE = "GPLv2+"
 PR = "r10"
 
 #MobiAqua: remove libevent
-DEPENDS = "util-linux-ng tcp-wrappers"
+DEPENDS = "util-linux tcp-wrappers"
 
 #MobiAqua: added fix-compilation.patch
 SRC_URI = "${SOURCEFORGE_MIRROR}/nfs/nfs-utils-${PV}.tar.gz \

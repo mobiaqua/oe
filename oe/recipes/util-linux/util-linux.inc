@@ -1,4 +1,4 @@
-DESCRIPTION = "Util-linux-ng is a suite of essential utilities for any Linux system."
+DESCRIPTION = "Util-linux is a suite of essential utilities for any Linux system."
 SECTION = "base"
 LICENSE = "GPL"
 #MobiAqua: added pkgconfig-native
@@ -7,56 +7,56 @@ DEPENDS_virtclass-native = "zlib-native pkgconfig-native"
 
 inherit autotools gettext
 
-INC_PR = "r36"
+INC_PR = "r1"
 
 # allows for a release candidate
 RC ?= ""
 
-SRC_URI = "${KERNELORG_MIRROR}/linux/utils/util-linux/v${PV}/util-linux-ng-${PV}${RC}.tar.bz2;name=archive"
-
-SRC_URI_append_chinook-compat = " file://chinook_libtool.patch "
+SRC_URI = "${KERNELORG_MIRROR}/linux/utils/util-linux/v${PV}/util-linux-${PV}${RC}.tar.bz2;name=archive"
 
 PACKAGES =+ "${PN}-fdisk ${PN}-cfdisk ${PN}-sfdisk ${PN}-swaponoff \
 	     ${PN}-losetup ${PN}-umount ${PN}-mount ${PN}-readprofile \
 	     ${PN}-fsck ${PN}-blkid ${PN}-mountall ${PN}-reset"
 
-PACKAGES_virtclass-native = ""	     
+PACKAGES_virtclass-native = ""
+
+FILESPATHPKG =. "util-linux:"
 
 PACKAGES_DYNAMIC = "libblkid* libuuid*"
 
 # Provide old util-linux names (several recipes still use DEPENDS or RDEPENDS_${PN} = "util-linux"):
 PROVIDES = "util-linux"
 RPROVIDES_${PN} = "util-linux"
-RPROVIDES_util-linux-ng-fdisk = "util-linux-fdisk"
-RPROVIDES_util-linux-ng-cfdisk = "util-linux-cfdisk"
-RPROVIDES_util-linux-ng-sfdisk = "util-linux-sfdisk"
-RPROVIDES_util-linux-ng-swaponoff = "util-linux-swaponoff"
-RPROVIDES_util-linux-ng-losetup = "util-linux-losetup"
-RPROVIDES_util-linux-ng-umount = "util-linux-umount"
-RPROVIDES_util-linux-ng-mount = "util-linux-mount"
-RPROVIDES_util-linux-ng-readprofile = "util-linux-readprofile"
-RPROVIDES_util-linux-ng-fsck = "e2fsprogs-fsck"
-RPROVIDES_util-linux-ng-blkid = "e2fsprogs-blkid"
+RPROVIDES_util-linux-fdisk = "util-linux-fdisk"
+RPROVIDES_util-linux-cfdisk = "util-linux-cfdisk"
+RPROVIDES_util-linux-sfdisk = "util-linux-sfdisk"
+RPROVIDES_util-linux-swaponoff = "util-linux-swaponoff"
+RPROVIDES_util-linux-losetup = "util-linux-losetup"
+RPROVIDES_util-linux-umount = "util-linux-umount"
+RPROVIDES_util-linux-mount = "util-linux-mount"
+RPROVIDES_util-linux-readprofile = "util-linux-readprofile"
+RPROVIDES_util-linuc-fsck = "e2fsprogs-fsck"
+RPROVIDES_util-linux-blkid = "e2fsprogs-blkid"
 
 FILES_${PN}-doc += "/usr/share/misc/getopt/getopt-*.*"
 FILES_${PN} = "${bindir} ${sbindir} ${base_bindir} ${base_sbindir}"
 
-FILES_util-linux-ng-fdisk = "${base_sbindir}/fdisk.${PN}"
-FILES_util-linux-ng-cfdisk = "${base_sbindir}/cfdisk"
+FILES_util-linux-fdisk = "${base_sbindir}/fdisk.${PN}"
+FILES_util-linux-cfdisk = "${base_sbindir}/cfdisk"
 # Moved to ${sbindir} in new versions:
-FILES_util-linux-ng-sfdisk = "${base_sbindir}/sfdisk ${sbindir}/sfdisk"
-FILES_util-linux-ng-swaponoff = "${base_sbindir}/swapon.${PN} ${base_sbindir}/swapoff.${PN}"
-FILES_util-linux-ng-losetup = "${base_sbindir}/losetup.${PN}"
-FILES_util-linux-ng-mount = "${base_bindir}/mount.${PN} ${sysconfdir}/default/mountall"
-FILES_util-linux-ng-umount = "${base_bindir}/umount.${PN}"
+FILES_util-linux-sfdisk = "${base_sbindir}/sfdisk ${sbindir}/sfdisk"
+FILES_util-linux-swaponoff = "${base_sbindir}/swapon.${PN} ${base_sbindir}/swapoff.${PN}"
+FILES_util-linux-losetup = "${base_sbindir}/losetup.${PN}"
+FILES_util-linux-mount = "${base_bindir}/mount.${PN} ${sysconfdir}/default/mountall"
+FILES_util-linux-umount = "${base_bindir}/umount.${PN}"
 # Moved to ${base_sbindir} by do_install:
-FILES_util-linux-ng-readprofile = "${sbindir}/readprofile.${PN}"
-FILES_util-linux-ng-fsck = "${base_sbindir}/fsck.${PN}"
-FILES_util-linux-ng-blkid = "${base_sbindir}/blkid.${PN}"
+FILES_util-linux-readprofile = "${sbindir}/readprofile.${PN}"
+FILES_util-linux-fsck = "${base_sbindir}/fsck.${PN}"
+FILES_util-linux-blkid = "${base_sbindir}/blkid.${PN}"
 FILES_${PN}-mountall = "${sysconfdir}/default/mountall.${PN}"
 FILES_${PN}-reset = "${bindir}/reset.${PN}"
 
-RREPLACES_util-linux-ng-blkid = "e2fsprogs-blkid"
+RREPLACES_util-linux-blkid = "e2fsprogs-blkid"
 RREPLACES_${PN}-mountall = "busybox-mountall"
 
 RRECOMMENDS_${PN} = "${PN}-fdisk ${PN}-cfdisk ${PN}-sfdisk ${PN}-mount ${PN}-readprofile"
@@ -73,12 +73,12 @@ EXTRA_OECONF = "--disable-use-tty-group --disable-makeinstall-chown \
 --enable-kill --enable-last --enable-mesg --enable-raw --enable-login-utils \
 --enable-arch --enable-init --enable-partx --enable-schedutils \
 --with-fsprobe=builtin --enable-libuuid --enable-libblkid \
---enable-fsck --enable-reset ${NATIVECONF}"
+--enable-fsck --enable-reset ${NATIVECONF} --disable-nls"
 
 LDFLAGS_append_libc-uclibc = "${@['',' -lintl'][bb.data.getVar('USE_NLS', d, 1) == 'yes']}"
 LDFLAGS_virtclass-native = "${BUILD_LDFLAGS}"
 
-S = "${WORKDIR}/util-linux-ng-${PV}${RC}"
+S = "${WORKDIR}/util-linux-${PV}${RC}"
 
 do_configure_prepend_chinook-compat () {
 
@@ -91,8 +91,8 @@ do_configure_prepend_chinook-compat () {
 do_compile () {
 	set -e
 	oe_runmake ARCH=${TARGET_ARCH} CPU= CPUOPT= \
-		'OPT=${CFLAGS}' 'CC=${CC}' 'LD=${LD}' \
-		'LDFLAGS=${LDFLAGS}'
+		'OPT=${CFLAGS}' 'LDFLAGS=-lmenu -lncurses -lpanel' \
+		'V=1'
 }
 
 checklink() {
@@ -190,10 +190,10 @@ do_install () {
 python populate_packages_prepend () {
 	ulinxng_libdir = bb.data.expand('${libdir}', d)
 	ulinxng_libdir_dbg = bb.data.expand('${libdir}/.debug', d)
-	do_split_packages(d, ulinxng_libdir, '^lib(.*)\.so$', 'lib%s-dev', 'util-linux-ng %s development package', extra_depends='${PN}-dev', allow_links=True)
-	do_split_packages(d, ulinxng_libdir, '^lib(.*)\.la$', 'lib%s-dev', 'util-linux-ng %s development package', extra_depends='${PN}-dev')
-	do_split_packages(d, ulinxng_libdir, '^lib(.*)\.a$', 'lib%s-dev', 'util-linux-ng %s development package', extra_depends='${PN}-dev')
-	do_split_packages(d, ulinxng_libdir, '^lib(.*)\.so\.*', 'lib%s', 'util-linux-ng %s library', extra_depends='', allow_links=True)
+	do_split_packages(d, ulinxng_libdir, '^lib(.*)\.so$', 'lib%s-dev', 'util-linux %s development package', extra_depends='${PN}-dev', allow_links=True)
+	do_split_packages(d, ulinxng_libdir, '^lib(.*)\.la$', 'lib%s-dev', 'util-linux %s development package', extra_depends='${PN}-dev')
+	do_split_packages(d, ulinxng_libdir, '^lib(.*)\.a$', 'lib%s-dev', 'util-linux %s development package', extra_depends='${PN}-dev')
+	do_split_packages(d, ulinxng_libdir, '^lib(.*)\.so\.*', 'lib%s', 'util-linux %s library', extra_depends='', allow_links=True)
 }
 
 
@@ -244,84 +244,85 @@ pkg_prerm_${PN} () {
 	done
 }
 
-pkg_postinst_util-linux-ng-reset() {
+pkg_postinst_util-linux-reset() {
 	update-alternatives --install ${bindir}/reset reset reset.${PN} 100
 }
 
-pkg_prerm_util-linux-ng-reset () {
+pkg_prerm_util-linux-reset () {
 	update-alternatives --remove reset reset.${PN}
 }
 
-pkg_postinst_util-linux-ng-fdisk () {
+pkg_postinst_util-linux-fdisk () {
 	update-alternatives --install ${base_sbindir}/fdisk fdisk fdisk.${PN} 100
 }
 
-pkg_prerm_util-linux-ng-fdisk () {
+pkg_prerm_util-linux-fdisk () {
 	update-alternatives --remove fdisk fdisk.${PN}
 }
 
-pkg_postinst_util-linux-ng-mount () {
+pkg_postinst_util-linux-mount () {
 	update-alternatives --install ${base_bindir}/mount mount mount.${PN} 100
 }
 
-pkg_prerm_util-linux-ng-mount () {
+pkg_prerm_util-linux-mount () {
 	update-alternatives --remove mount mount.${PN}
 }
 
-pkg_postinst_util-linux-ng-umount () {
+pkg_postinst_util-linux-umount () {
 	update-alternatives --install ${base_bindir}/umount umount umount.${PN} 100
 }
 
-pkg_prerm_util-linux-ng-umount () {
+pkg_prerm_util-linux-umount () {
 	update-alternatives --remove umount umount.${PN}
 }
 
-pkg_postinst_util-linux-ng-losetup () {
+pkg_postinst_util-linux-losetup () {
 	update-alternatives --install ${base_sbindir}/losetup losetup losetup.${PN} 100
 }
 
-pkg_prerm_util-linux-ng-losetup () {
+pkg_prerm_util-linux-losetup () {
 	update-alternatives --remove losetup losetup.${PN}
 }
 
-pkg_postinst_util-linux-ng-swaponoff () {
+pkg_postinst_util-linux-swaponoff () {
 	update-alternatives --install ${base_sbindir}/swapoff swapoff swapon.${PN} 100
 	update-alternatives --install ${base_sbindir}/swapon swapon swapon.${PN} 100
 }
 
-pkg_prerm_util-linux-ng-swaponoff () {
+pkg_prerm_util-linux-swaponoff () {
 	update-alternatives --remove swapoff swapon.${PN}
 	update-alternatives --remove swapon swapon.${PN}
 }
 
-pkg_postinst_util-linux-ng-readprofile() {
+pkg_postinst_util-linux-readprofile() {
     update-alternatives --install ${sbindir}/readprofile readprofile readprofile.${PN} 100
 }
 
-pkg_prerm_util-linux-ng-readprofile () {
+pkg_prerm_util-linux-readprofile () {
     update-alternatives --remove readprofile readprofile.${PN} 100
 }
 
-pkg_postinst_util-linux-ng-mountall () {
+pkg_postinst_util-linux-mountall () {
         update-alternatives --install ${sysconfdir}/default/mountall default_mountall mountall.${PN} 100
 }
-pkg_prerm_util-linux-ng-mountall () {
+
+pkg_prerm_util-linux-mountall () {
         update-alternatives --remove default_mountall mountall.${PN}
 }
 
-pkg_postinst_util-linux-ng-fsck () {
+pkg_postinst_util-linux-fsck () {
 	update-alternatives --install ${base_sbindir}/fsck fsck fsck.${PN} 100
 }
 
-pkg_prerm_util-linux-ng-fsck () {
+pkg_prerm_util-linux-fsck () {
 	update-alternatives --remove fsck fsck.${PN}
 }
 
-pkg_postinst_util-linux-ng-blkid () {
+pkg_postinst_util-linux-blkid () {
 	update-alternatives --install ${base_sbindir}/blkid blkid blkid.${PN} 100
 }
 
-pkg_prerm_util-linux-ng-blkid () {
+pkg_prerm_util-linux-blkid () {
 	update-alternatives --remove blkid blkid.${PN}
 }
 

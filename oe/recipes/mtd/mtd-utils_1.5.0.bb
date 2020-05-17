@@ -1,7 +1,6 @@
 DESCRIPTION = "Tools for managing memory technology devices."
 SECTION = "base"
-#MobiAqua: replaced to util-linux-ng; added native to remove util-linux-ng
-DEPENDS = "zlib lzo util-linux-ng"
+DEPENDS = "zlib lzo util-linux"
 DEPENDS_virtclass-native = "zlib-native lzo-native"
 HOMEPAGE = "http://www.linux-mtd.infradead.org/"
 LICENSE = "GPLv2+"

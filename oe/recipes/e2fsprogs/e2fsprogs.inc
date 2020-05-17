@@ -2,7 +2,7 @@ DESCRIPTION = "EXT2 Filesystem Utilities"
 HOMEPAGE = "http://e2fsprogs.sf.net"
 LICENSE = "GPLv2+|LGPLv2+|NewBSD|MIT"
 SECTION = "base"
-DEPENDS = "util-linux-ng"
+DEPENDS = "util-linux"
 
 SRC_URI = "git://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git;protocol=git"
 S = "${WORKDIR}/git"
@@ -90,7 +90,7 @@ pkg_prerm_e2fsprogs-mke2fs () {
 # blkid used to be part of e2fsprogs but is useful outside, add it
 # as an RDEPENDS_${PN} so that anything relying on it being in e2fsprogs
 # still works
-RDEPENDS_e2fsprogs = "util-linux-ng e2fsprogs-badblocks"
+RDEPENDS_e2fsprogs = "util-linux e2fsprogs-badblocks"
 
 FILES_${PN} += "${libdir}/e2initrd_helper"
 
