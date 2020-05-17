@@ -27,6 +27,7 @@ export OS = "Linux"
 SRC_URI = "git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git;protocol=git \
            file://use_local_elf.patch \
            file://remove_uuid_usage.patch \
+           file://0001-HACK-PandaBoard-Bring-back-twl6030-clk32kg-regulator.patch \
            file://defconfig"
 
 S = "${WORKDIR}/git"
