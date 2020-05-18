@@ -70,7 +70,7 @@ NATIVECONF = ""
 NATIVECONF_virtclass-native = "--without-ncurses"
 
 EXTRA_OECONF = "--disable-use-tty-group --disable-makeinstall-chown \
---enable-kill --enable-last --enable-mesg --enable-raw --enable-login-utils \
+--enable-kill --enable-last --enable-mesg --enable-raw --disable-login \
 --enable-arch --enable-init --enable-partx --enable-schedutils \
 --with-fsprobe=builtin --enable-libuuid --enable-libblkid \
 --enable-fsck --enable-reset ${NATIVECONF} --disable-nls"
@@ -129,7 +129,7 @@ do_install () {
         sbinprogs_a="pivot_root hwclock mkswap shutdown mkfs.minix fsck.minix losetup swapon fdisk fsck blkid blockdev vigr vipw uuidd"
         usrbinprogs_a="chfn chsh hexdump last logger mesg newgrp renice wall setsid chrt reset cal script flock"
         usrsbinprogs_a="readprofile"
-        binprogs_a="dmesg kill more umount mount login"
+        binprogs_a="dmesg kill more umount mount"
 
         if [ "${base_sbindir}" != "${sbindir}" ]; then
         	mkdir -p ${D}${base_sbindir}
@@ -217,7 +217,6 @@ pkg_postinst_${PN} () {
 	update-alternatives --install ${bindir}/cal cal cal.${PN} 100
 	update-alternatives --install ${bindir}/script script script.${PN} 100
 	update-alternatives --install ${bindir}/flock flock flock.${PN} 100
-	update-alternatives --install ${base_bindir}/login login login.${PN} 100
 	update-alternatives --install ${base_sbindir}/vipw vipw vipw.${PN} 100
 	update-alternatives --install ${base_sbindir}/vigr vigr vigr.${PN} 100
 	update-alternatives --install ${base_sbindir}/blockdev blockdev blockdev.${PN} 100
@@ -237,7 +236,7 @@ pkg_prerm_${PN} () {
 	test -x ${base_sbindir}/pivot_root.${PN} && \
 	update-alternatives --remove pivot_root pivot_root.${PN}
 
-	for i in dmesg kill more halt hwclock mkswap reboot shutdown sln mkfs.minix fsck.minix hexdump setsid chrt last logger mesg renice wall vipw vigr blockdev chfn newgrp chsh login cal script flock uuidd; do
+	for i in dmesg kill more halt hwclock mkswap reboot shutdown sln mkfs.minix fsck.minix hexdump setsid chrt last logger mesg renice wall vipw vigr blockdev chfn newgrp chsh cal script flock uuidd; do
 		update-alternatives --remove $i $i.${PN}
 	done
 }
