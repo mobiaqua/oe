@@ -6,12 +6,13 @@ SRC_URI = "http://www.midnight-commander.org/downloads/${BPN}-${PV}.tar.bz2 \
            file://0001-mc-replace-perl-w-with-use-warnings.patch \
            file://nomandate.patch \
            file://0001-Ticket-4070-misc-Makefile.am-install-mc.lib-only-onc.patch \
+           file://fixed_ncurses.patch \
            "
 SRC_URI[md5sum] = "2621de1fa9058a9c41a4248becc969f9"
 SRC_URI[sha256sum] = "cfcc4d0546d0c3a88645a8bf71612ed36647ea3264d973b1f28183a0c84bae34"
 
 EXTRA_OECONF = "--without-x --without-samba \
---without-nfs --without-gpm-mouse --enable-charset \
+--without-nfs --without-gpm-mouse \
 --with-screen=ncurses \
 ac_cv_path_PERL='/usr/bin/env perl' \
 ac_cv_path_PYTHON='/usr/bin/env python' \

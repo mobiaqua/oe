@@ -1,0 +1,30 @@
+diff -urp old/m4.include/mc-with-screen-ncurses.m4 new/m4.include/mc-with-screen-ncurses.m4
+--- old/m4.include/mc-with-screen-ncurses.m4	2020-01-01 16:52:34.000000000 +0100
++++ new/m4.include/mc-with-screen-ncurses.m4	2020-05-18 15:33:01.000000000 +0200
+@@ -111,23 +111,21 @@ AC_DEFUN([mc_WITH_NCURSES], [
+                   [Define to use ncurses for screen management])
+     else
+         LIBS=
+-        AC_SEARCH_LIBS([addwstr], [ncursesw ncurses curses], [MCLIBS="$MCLIBS $LIBS";ncursesw_found=yes],
++        AC_SEARCH_LIBS([addwstr], [ncurses curses], [MCLIBS="$MCLIBS $LIBS"],
+                        [AC_MSG_WARN([Cannot find ncurses library, that support wide characters])])
+ 
+-        AC_SEARCH_LIBS([stdscr], [tinfow tinfo ncursesw ncurses curses], [MCLIBS="$MCLIBS $LIBS"],
++        AC_SEARCH_LIBS([stdscr], [tinfo ncurses curses], [MCLIBS="$MCLIBS $LIBS"],
+                        [AC_MSG_ERROR([Cannot find a library providing stdscr])])
+ 
+-        if test x"$ncursesw_found" = "x"; then
+             LIBS=
+             AC_SEARCH_LIBS([has_colors], [ncurses curses], [MCLIBS="$MCLIBS $LIBS"], 
+                            [AC_MSG_ERROR([Cannot find ncurses library])])
+             AC_SEARCH_LIBS([stdscr], [tinfo ncurses curses], [MCLIBS="$MCLIBS $LIBS"],
+                            [AC_MSG_ERROR([Cannot find a library providing stdscr])])
+-        fi
+ 
+         dnl Check the header
+         ncurses_h_found=
+-        AC_CHECK_HEADERS([ncursesw/curses.h ncurses/curses.h ncurses.h curses.h], 
++        AC_CHECK_HEADERS([ncurses/curses.h ncurses.h curses.h], 
+                          [ncurses_h_found=yes; break])
+ 
+         if test x"$ncurses_h_found" = "x"; then
