@@ -6,8 +6,8 @@ SRC_URI = "http://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-${PV}.tar
            file://sshd_config \
            file://ssh_config \
            file://init \
-           file://openssh-5.2-sftp-server-nolibcrypto.patch \
+           file://fix-potential-signed-overflow-in-pointer-arithmatic.patch \
           "
-SRC_URI[md5sum] = "e6ee52e47c768bf0ec42a232b5d18fb0"
-SRC_URI[sha256sum] = "538af53b2b8162c21a293bb004ae2bdb141abd250f61b4cea55244749f3c6c2b"
 
+SRC_URI[md5sum] = "3076e6413e8dbe56d33848c1054ac091"
+SRC_URI[sha256sum] = "43925151e6cf6cee1450190c0e9af4dc36b41c12737619edff8bcebdff64e671"

@@ -17,7 +17,7 @@ used to provide applications with a secure communication channel."
 HOMEPAGE = "http://www.openssh.org/"
 LICENSE = "BSD"
 
-INC_PR = "r9"
+INC_PR = "r1"
 
 inherit autotools
 
@@ -31,17 +31,25 @@ EXTRA_OECONF = "--disable-suid-ssh --with-ssl=${STAGING_LIBDIR}/ssl \
 		${@base_contains('DISTRO_FEATURES', 'pam', '--with-pam', '--without-pam', d)} \
 	        --without-zlib-version-check \
 		--with-privsep-path=/var/run/sshd \
-		--sysconfdir=${sysconfdir}/ssh \
-		--with-xauth=/usr/bin/xauth"
+		--sysconfdir=${sysconfdir}/ssh"
 
 # this is a workaround for uclibc becasue including stdio.h
 # pulls in pthreads.h and causes conflicts in function prototypes
 # ending in compilation failure so unless this is fixed disable
 # pam for uclibc
 
-EXTRA_OECONF_append_libc-uclibc=" --without-pam"
-
 EXTRA_OEMAKE = "'STRIP_OPT='"
+
+# Since we do not depend on libbsd, we do not want configure to use it
+# just because it finds libutil.h.  But, specifying --disable-libutil
+# causes compile errors, so...
+CACHED_CONFIGUREVARS += "ac_cv_header_bsd_libutil_h=no ac_cv_header_libutil_h=no"
+
+# passwd path is hardcoded in sshd
+CACHED_CONFIGUREVARS += "ac_cv_path_PATH_PASSWD_PROG=${bindir}/passwd"
+
+# We don't want to depend on libblockfile
+CACHED_CONFIGUREVARS += "ac_cv_header_maillock_h=no"
 
 do_configure_prepend () {
 	if [ ! -e acinclude.m4 -a -e aclocal.m4 ]; then
