@@ -31,7 +31,7 @@ get_real_dtb_path_in_kernel () {
 do_compile_append() {
 	for DTB in ${KERNEL_DEVICETREE}; do
 		DTB=`normalize_dtb "${DTB}"`
-		oe_runmake ${DTB}
+		oe_runmake ${DTB} HOSTCFLAGS=${HOSTCFLAGS} HOSTLDFLAGS=${HOSTLDFLAGS}
 	done
 }
 
