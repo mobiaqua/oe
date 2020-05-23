@@ -8,18 +8,15 @@ S = "${WORKDIR}/openssl-${PV}"
 
 inherit siteinfo
 
-INC_PR = "r14"
+INC_PR = "r1"
 
 AR_append = " r"
 CFLAG = "${@base_conditional('SITEINFO_ENDIANNESS', 'le', '-DL_ENDIAN', '-DB_ENDIAN', d)} \
-	-DTERMIO ${FULL_OPTIMIZATION} -Wall"
-
-# -02 does not work on mipsel: ssh hangs when it tries to read /dev/urandom
-CFLAG_mtx-1 := "${@'${CFLAG}'.replace('-O2', '')}"
-CFLAG_mtx-2 := "${@'${CFLAG}'.replace('-O2', '')}"
+	${FULL_OPTIMIZATION} -Wall -Wa,--noexecstack"
 
 export DIRS = "crypto ssl apps"
-export EX_LIBS = "-lgcc -ldl"
+#export EX_LIBS = "-lgcc -ldl"
+export EX_LIBS = "-ldl"
 export AS = "${CC} -c"
 
 PACKAGES =+ "libcrypto libssl ${PN}-misc openssl-conf"
@@ -35,13 +32,15 @@ FILES_openssl-conf = "${libdir}/ssl/openssl.cnf"
 CONFFILES_openssl-conf = "${libdir}/ssl/openssl.cnf"
 RRECOMMENDS_libcrypto += "openssl-conf"
 
+# Remove this to enable SSLv3. SSLv3 is defaulted to disabled due to the POODLE
+# vulnerability
+EXTRA_OECONF = " -no-ssl3"
+
 do_configure_prepend_darwin () {
 	sed -i -e '/version-script=openssl\.ld/d' Configure
 }
 
 do_configure () {
-	#MobiAqua: set PERL env
-	#export PERL=${STAGING_BINDIR_NATIVE}/perl
 	cd util
 	perl perlpath.pl ${bindir}
 	cd ..
@@ -95,6 +94,9 @@ do_configure () {
 	darwin-i386)
 		target=darwin-i386-cc
 		;;
+	darwin-x86_64)
+		target=darwin64-x86_64-cc
+		;;
 	esac
 	# inject machine-specific flags
 	sed -i -e "s|^\(\"$target\",\s*\"[^:]\+\):\([^:]\+\)|\1:${CFLAG}|g" Configure
@@ -104,8 +106,8 @@ do_configure () {
         fi        
 	perl ./Configure ${EXTRA_OECONF} shared --prefix=$useprefix --openssldir=${libdir}/ssl $target
 
-	eval "${@base_contains('DISTRO_FEATURES', 'largefile', '', 'sed -i -e "/_FILE_OFFSET_BITS/,/#endif/d" ${S}/crypto/bio/bss_file.c', d)}"
-	eval "${@base_contains('DISTRO_FEATURES', 'ipv6', '', 'sed -i -e "/AF_INET6/,/break/d" ${S}/crypto/bio/bss_dgram.c', d)}"
+	#eval "${@base_contains('DISTRO_FEATURES', 'largefile', '', 'sed -i -e "/_FILE_OFFSET_BITS/,/#endif/d" ${S}/crypto/bio/bss_file.c', d)}"
+	#eval "${@base_contains('DISTRO_FEATURES', 'ipv6', '', 'sed -i -e "/AF_INET6/,/break/d" ${S}/crypto/bio/bss_dgram.c', d)}"
 }
 
 do_compile () {
