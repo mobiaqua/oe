@@ -23,6 +23,7 @@ SRC_URI = "git://gitlab.denx.de/u-boot.git;protocol=git;branch=${PV} \
 	   file://older-gcc.patch \
 	   file://0001-Add-linux-compiler-gcc5.h-to-fix-builds-with-gcc5.patch \
 	   file://disable-gcc-check.patch \
+	   file://muxes.patch \
 	   file://boot-panda-label.script \
 	   file://boot-panda-sdcard.script \
 	   file://boot-panda-nfs.script \
