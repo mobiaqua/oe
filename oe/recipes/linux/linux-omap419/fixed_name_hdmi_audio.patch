@@ -1,0 +1,12 @@
+diff -urp old/sound/soc/omap/omap-hdmi-audio.c new/sound/soc/omap/omap-hdmi-audio.c
+--- old/sound/soc/omap/omap-hdmi-audio.c	2020-05-14 07:57:23.000000000 +0200
++++ new/sound/soc/omap/omap-hdmi-audio.c	2020-05-17 08:29:18.000000000 +0200
+@@ -362,7 +362,7 @@ static int omap_hdmi_audio_probe(struct 
+ 		return -ENOMEM;
+ 
+ 	card->name = devm_kasprintf(dev, GFP_KERNEL,
+-				    "HDMI %s", dev_name(ad->dssdev));
++				    "OMAPHDMI");
+ 	if (!card->name)
+ 		return -ENOMEM;
+ 
