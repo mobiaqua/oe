@@ -159,81 +159,30 @@ kernel_do_install() {
 
 sysroot_stage_all_append() {
 
-	kerneldir=${SYSROOT_DESTDIR}${STAGING_KERNEL_DIR}
+	kerneldir=${STAGING_KERNEL_DIR}
+	install -d $kerneldir
 
-	if [ -e include/asm ] ; then
-		# This link is generated only in kernel before 2.6.33-rc1, don't stage it for newer kernels
-		ASMDIR=`readlink include/asm`
+	echo "${KERNEL_VERSION}" > $kerneldir/kernel-abiversion
 
-		mkdir -p $kerneldir/include/$ASMDIR
-		cp -fR include/$ASMDIR/* $kerneldir/include/$ASMDIR/
-	fi
-
-	# Kernel 2.6.27 moved headers from includes/asm-${ARCH} to arch/${ARCH}/include/asm	
-	if [ -e arch/${ARCH}/include/asm/ ] ; then 
-		if [ -e include/asm ] ; then
-			cp -fR arch/${ARCH}/include/asm/* $kerneldir/include/$ASMDIR/
-		fi
-		install -d $kerneldir/arch/${ARCH}/include
-		cp -fR arch/${ARCH}/* $kerneldir/arch/${ARCH}/	
-
-	# Check for arch/x86 on i386
-	elif [ -d arch/x86/include/asm/ ]; then
-		mkdir -p $kerneldir/include/asm-x86/
-		cp -fR arch/x86/include/asm/* $kerneldir/include/asm-x86/
-		install -d $kerneldir/arch/x86/include
-		cp -fR arch/x86/* $kerneldir/arch/x86/
-	fi
-
-	if [ -e include/asm ] ; then
-		rm -f $kerneldir/include/asm
-		ln -sf $ASMDIR $kerneldir/include/asm
-	fi
-
-	mkdir -p $kerneldir/include/asm-generic
-	cp -fR include/asm-generic/* $kerneldir/include/asm-generic/
-
-	for entry in drivers/crypto drivers/media include/generated include/linux include/net include/pcmcia include/media include/acpi include/sound include/video include/scsi include/trace include/mtd include/rdma include/drm include/xen crypto/ocf include/crypto; do
-		if [ -d $entry ]; then
-			mkdir -p $kerneldir/$entry
-			cp -fR $entry/* $kerneldir/$entry/
-		fi
-	done
-	if [ -f include/Kbuild ]; then
-		cp -fR include/Kbuild $kerneldir/include
-	fi
-
-	if [ -d drivers/sound ]; then
-		# 2.4 alsa needs some headers from this directory
-		mkdir -p $kerneldir/include/drivers/sound
-		cp -fR drivers/sound/*.h $kerneldir/include/drivers/sound/
-	fi
-
-	install -m 0644 .config $kerneldir/config-${KERNEL_VERSION}
-	ln -sf config-${KERNEL_VERSION} $kerneldir/.config
-	ln -sf config-${KERNEL_VERSION} $kerneldir/kernel-config
-	echo "${KERNEL_VERSION}" >$kerneldir/kernel-abiversion
-	echo "${S}" >$kerneldir/kernel-source
-	echo "${KERNEL_CCSUFFIX}" >$kerneldir/kernel-ccsuffix
-	echo "${KERNEL_LDSUFFIX}" >$kerneldir/kernel-ldsuffix
-	[ -e Rules.make ] && install -m 0644 Rules.make $kerneldir/
+	# Copy files required for module builds
+	cp System.map $kerneldir/System.map-${KERNEL_VERSION}
+	cp Module.symvers $kerneldir/
+	cp .config $kerneldir/
+	mkdir -p $kerneldir/include/config
+	cp include/config/kernel.release $kerneldir/include/config/kernel.release
 	[ -e Makefile ] && install -m 0644 Makefile $kerneldir/
-	
-	# Check if arch/${ARCH}/Makefile exists and install it
-	if [ -e arch/${ARCH}/Makefile ]; then
-		install -d $kerneldir/arch/${ARCH}
-		install -m 0644 arch/${ARCH}/Makefile* $kerneldir/arch/${ARCH}
-	# Otherwise check arch/x86/Makefile for i386 and x86_64 on kernels >= 2.6.24
-	elif [ -e arch/x86/Makefile ]; then
-		install -d $kerneldir/arch/x86
-		install -m 0644 arch/x86/Makefile* $kerneldir/arch/x86
+	[ -e vmlinux ] && install -m 0644 vmlinux $kerneldir/
+
+	cp -fR include $kerneldir/
+
+	mkdir -p $kerneldir/include/asm
+	cp -fR arch/${ARCH}/include/asm/* $kerneldir/include/asm/
+
+	if [ -d arch/${ARCH}/include/generated ]; then
+		mkdir -p $kerneldir/arch/${ARCH}/include/generated/
+		cp -fR arch/${ARCH}/include/generated/* $kerneldir/arch/${ARCH}/include/generated/
 	fi
-	cp -fR include/config* $kerneldir/include/	
-	# Install kernel images and system.map to staging
-	[ -e vmlinux ] && install -m 0644 vmlinux $kerneldir/	
-	install -m 0644 ${KERNEL_OUTPUT} $kerneldir/${KERNEL_IMAGETYPE}
-	install -m 0644 System.map $kerneldir/System.map-${KERNEL_VERSION}
-	[ -e Module.symvers ] && install -m 0644 Module.symvers $kerneldir/
+	cp -fR arch/${ARCH}/Makefile $kerneldir/arch/${ARCH}/Makefile
 
 	cp -fR scripts $kerneldir/
 }
