@@ -29,7 +29,6 @@ SRC_URI = "${KERNELORG_MIRROR}/linux/kernel/v4.x/linux-${PV}.tar.xz \
            file://0002-HACK-PandaBoard-Bring-back-twl6030-clk32kg-regulator.patch \
            file://twl6030.dtsi.patch \
            file://0003-hack-gpiolib-yes-we-have-drivers-stomping-on-each-ot.patch \
-           file://0001-backports-remoteproc-from-linux.git.patch \
            file://fixed_name_hdmi_audio.patch \
            file://smsc95xx-add-macaddr-module-parameter.patch \
            file://panda-bt-fixes.patch \
