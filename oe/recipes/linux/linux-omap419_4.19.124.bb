@@ -32,6 +32,7 @@ SRC_URI = "${KERNELORG_MIRROR}/linux/kernel/v4.x/linux-${PV}.tar.xz \
            file://fixed_name_hdmi_audio.patch \
            file://smsc95xx-add-macaddr-module-parameter.patch \
            file://panda-bt-fixes.patch \
+           file://0003-bootup-hacks-xor-select-neon-or-arm4regs.patch \
            file://defconfig"
 
 SRC_URI[md5sum] = "0b7e8139efeb20c69dc375649aedc7b8"
