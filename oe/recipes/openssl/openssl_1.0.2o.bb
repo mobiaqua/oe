@@ -4,7 +4,7 @@ require openssl.inc
 
 PR = "${INC_PR}.1"
 
-CFLAG_linux += "-DHAVE_CRYPTODEV -DUSE_CRYPTODEV_DIGESTS -DTERMIO"
+CFLAG_linux += "-DTERMIO"
 CFLAG_append_class-native = " -fPIC"
 
 export DIRS = "crypto ssl apps engines"
