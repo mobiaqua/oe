@@ -8,7 +8,6 @@ SRC_URI = "\
   ${SOURCEFORGE_MIRROR}/freetype/freetype-${PV}.tar.bz2 \
   file://no-hardcode.patch \
   file://libtool-tag.patch \
-  file://use-right-libtool.patch \
 "
 S = "${WORKDIR}/freetype-${PV}"
 
