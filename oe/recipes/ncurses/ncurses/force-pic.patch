@@ -1,0 +1,12 @@
+diff -urp old/ncurses/Makefile.in new/ncurses/Makefile.in
+--- old/ncurses/Makefile.in	2020-06-03 19:06:54.183847960 +0200
++++ new/ncurses/Makefile.in	2020-06-03 19:04:27.249175410 +0200
+@@ -91,7 +91,7 @@ CFLAGS		= @CFLAGS@
+ INCDIR		= $(srcdir)/../include
+ CPPFLAGS	= -DHAVE_CONFIG_H -I../ncurses -I$(srcdir) @CPPFLAGS@
+ 
+-CCFLAGS		= $(CPPFLAGS) $(CFLAGS)
++CCFLAGS		= $(CPPFLAGS) $(CFLAGS) -fPIC
+ 
+ BUILD_CC	= @BUILD_CC@
+ BUILD_CCFLAGS	= -DHAVE_CONFIG_H -I../ncurses -I$(srcdir) @BUILD_CPPFLAGS@ @BUILD_CFLAGS@

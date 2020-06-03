@@ -1,7 +1,8 @@
 SRC_URI = "${GNU_MIRROR}/ncurses/ncurses-${PV}.tar.gz \
            file://makefile_tweak.patch \
            file://use_ldflags.patch \
-           file://visibility.patch"
+           file://visibility.patch \
+           file://force-pic.patch"
 S = "${WORKDIR}/ncurses-${PV}"
 
 #MobiAqua: keep this version for native
