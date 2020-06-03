@@ -182,7 +182,8 @@ sysroot_stage_all_append() {
 		mkdir -p $kerneldir/arch/${ARCH}/include/generated/
 		cp -fR arch/${ARCH}/include/generated/* $kerneldir/arch/${ARCH}/include/generated/
 	fi
-	cp -fR arch/${ARCH}/Makefile $kerneldir/arch/${ARCH}/Makefile
+	#cp -fR arch/${ARCH}/Makefile $kerneldir/arch/${ARCH}/Makefile
+	cp -fR arch/${ARCH}/* $kerneldir/arch/${ARCH}/
 
 	cp -fR scripts $kerneldir/
 }
