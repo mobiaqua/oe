@@ -23,12 +23,19 @@ LDFLAGS_append = " -Wl,-rpath-link -Wl,${STAGING_DIR_TARGET}${libdir}"
 
 do_configure() {
 	cd builds/unix
+	rm ${S}/builds/unix/ltmain.sh
+	rm ${S}/builds/unix/aclocal.m4
+	rm ${S}/builds/unix/configure
+	rm ${S}/builds/unix/config.*
 	libtoolize --force --copy
 	gnu-configize --force
 	aclocal -I .
 	autoconf
 	cd ${S}
 	oe_runconf
+	if [ ! -f "${LIBTOOL}" ]; then
+		cp ${S}/builds/unix/libtool ${LIBTOOL}
+	fi
 }
 
 do_compile_prepend() {
