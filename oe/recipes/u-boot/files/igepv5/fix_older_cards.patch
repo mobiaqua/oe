@@ -1,0 +1,12 @@
+diff -urp old/drivers/mmc/omap_hsmmc.c new/drivers/mmc/omap_hsmmc.c
+--- old/drivers/mmc/omap_hsmmc.c	2013-01-05 00:38:38.000000000 +0100
++++ new/drivers/mmc/omap_hsmmc.c	2013-01-05 01:28:39.000000000 +0100
+@@ -198,7 +198,7 @@ static int mmc_send_cmd(struct mmc *mmc,
+ 	ulong start;
+ 
+ 	start = get_timer(0);
+-	while ((readl(&mmc_base->pstate) & (DATI_MASK | CMDI_MASK)) != 0) {
++	while ((readl(&mmc_base->pstate) & DATI_MASK) == DATI_MASK) {
+ 		if (get_timer(0) - start > MAX_RETRY_MS) {
+ 			printf("%s: timedout waiting on cmd inhibit to clear\n",
+ 					__func__);

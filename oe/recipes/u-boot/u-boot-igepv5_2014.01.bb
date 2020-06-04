@@ -23,6 +23,7 @@ SRC_URI = "git://github.com/mobiaqua/u-boot-igep0050.git;protocol=git;branch=${P
 	   file://0001-Add-linux-compiler-gcc5.h-to-fix-builds-with-gcc5.patch \
 	   file://0002-ARM-asm-io.h-use-static-inline.patch \
 	   file://fix-weak.patch \
+	   file://fix_older_cards.patch \
 	  "
 
 S = "${WORKDIR}/git"
