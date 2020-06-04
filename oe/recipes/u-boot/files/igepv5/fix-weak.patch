@@ -1,0 +1,49 @@
+diff -urp old/arch/arm/lib/board.c new/arch/arm/lib/board.c
+--- old/arch/arm/lib/board.c	2017-09-04 00:15:09.000000000 +0200
++++ new/arch/arm/lib/board.c	2017-09-16 15:43:51.000000000 +0200
+@@ -83,24 +83,24 @@ extern void dataflash_print_info(void);
+  ************************************************************************
+  * May be supplied by boards if desired
+  */
+-inline void __coloured_LED_init(void) {}
++void __coloured_LED_init(void) {}
+ void coloured_LED_init(void)
+ 	__attribute__((weak, alias("__coloured_LED_init")));
+-inline void __red_led_on(void) {}
++void __red_led_on(void) {}
+ void red_led_on(void) __attribute__((weak, alias("__red_led_on")));
+-inline void __red_led_off(void) {}
++void __red_led_off(void) {}
+ void red_led_off(void) __attribute__((weak, alias("__red_led_off")));
+-inline void __green_led_on(void) {}
++void __green_led_on(void) {}
+ void green_led_on(void) __attribute__((weak, alias("__green_led_on")));
+-inline void __green_led_off(void) {}
++void __green_led_off(void) {}
+ void green_led_off(void) __attribute__((weak, alias("__green_led_off")));
+-inline void __yellow_led_on(void) {}
++void __yellow_led_on(void) {}
+ void yellow_led_on(void) __attribute__((weak, alias("__yellow_led_on")));
+-inline void __yellow_led_off(void) {}
++void __yellow_led_off(void) {}
+ void yellow_led_off(void) __attribute__((weak, alias("__yellow_led_off")));
+-inline void __blue_led_on(void) {}
++void __blue_led_on(void) {}
+ void blue_led_on(void) __attribute__((weak, alias("__blue_led_on")));
+-inline void __blue_led_off(void) {}
++void __blue_led_off(void) {}
+ void blue_led_off(void) __attribute__((weak, alias("__blue_led_off")));
+ 
+ /*
+diff -urp old/common/main.c new/common/main.c
+--- old/common/main.c	2017-09-04 00:15:11.000000000 +0200
++++ new/common/main.c	2017-09-16 15:44:55.000000000 +0200
+@@ -54,7 +54,7 @@ DECLARE_GLOBAL_DATA_PTR;
+ /*
+  * Board-specific Platform code can reimplement show_boot_progress () if needed
+  */
+-void inline __show_boot_progress (int val) {}
++void __show_boot_progress (int val) {}
+ void show_boot_progress (int val) __attribute__((weak, alias("__show_boot_progress")));
+ 
+ #if defined(CONFIG_UPDATE_TFTP)
