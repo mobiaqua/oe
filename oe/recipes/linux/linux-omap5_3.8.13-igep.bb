@@ -20,7 +20,7 @@ COMPATIBLE_HOST = "arm.*-linux"
 export ARCH = "arm"
 export OS = "Linux"
 
-SRC_URI = "git://git.isee.biz/pub/scm/linux-omap-2.6.git;protocol=git;branch=linux-3.8.y-omap5 \
+SRC_URI = "git@github.com:mobiaqua/igep-linux.git;protocol=git;branch=linux-3.8.y-omap5 \
            file://fix_nonlinux_compile.patch \
            file://defconfig"
 
