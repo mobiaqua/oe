@@ -20,11 +20,16 @@ COMPATIBLE_HOST = "arm.*-linux"
 export ARCH = "arm"
 export OS = "Linux"
 
-SRC_URI = "git@github.com:mobiaqua/igep-linux.git;protocol=git;branch=linux-3.8.y-omap5 \
+SRC_URI = "git://github.com/mobiaqua/igep-linux.git;protocol=git;branch=linux-3.8.y-omap5 \
+           file://compiler-gcc5.h \
            file://fix_nonlinux_compile.patch \
            file://defconfig"
 
 S = "${WORKDIR}/git"
+
+do_configure_prepend () {
+	cp ${WORKDIR}/compiler-gcc5.h ${S}/include/linux
+}
 
 do_configure() {
 	install ${WORKDIR}/defconfig ${S}/.config
@@ -35,7 +40,6 @@ do_configure() {
 do_compile() {
 	HOST_INC=-I${STAGING_INCDIR_NATIVE}
 	unset CFLAGS CPPFLAGS CXXFLAGS LDFLAGS MACHINE
-	oe_runmake include/linux/version.h ${KERNEL_EXTRA_OEMAKE}
 	oe_runmake ${KERNEL_IMAGETYPE} ${KERNEL_EXTRA_OEMAKE} HOST_INC=${HOST_INC}
 }
 

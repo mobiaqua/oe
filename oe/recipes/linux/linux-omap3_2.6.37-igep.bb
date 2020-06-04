@@ -17,7 +17,7 @@ PR = "r1"
 
 SRCREV = "df5d3177e220f3a06e42837be913ca7529c897f8"
 
-SRC_URI = "git@github.com:mobiaqua/igep-linux.git;protocol=git;branch=linux-2.6.37.y \
+SRC_URI = "git://github.com/mobiaqua/igep-linux.git;protocol=git;branch=linux-2.6.37.y \
            file://tidspbridge_fix.patch \
            file://fix_nonlinux_compile.patch \
            file://patch_2.6.37.6.patch \
