@@ -15,6 +15,8 @@ FILESPATHPKG =. "linux-omap5:"
 
 SRCREV = "21a15144ad912b3377babaf366ca47e3a956dd84"
 
+KERNEL_DEVICETREE_board-tv = "omap5-igep0050.dtb"
+
 COMPATIBLE_HOST = "arm.*-linux"
 
 export ARCH = "arm"
