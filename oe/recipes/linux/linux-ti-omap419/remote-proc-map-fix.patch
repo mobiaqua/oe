@@ -1,0 +1,24 @@
+diff -urp old/arch/arm/boot/dts/omap4-panda-common.dtsi new/arch/arm/boot/dts/omap4-panda-common.dtsi
+--- old/arch/arm/boot/dts/omap4-panda-common.dtsi	2020-06-01 18:04:00.000000000 +0200
++++ new/arch/arm/boot/dts/omap4-panda-common.dtsi	2020-06-07 08:42:52.000000000 +0200
+@@ -19,16 +19,16 @@
+ 		#size-cells = <1>;
+ 		ranges;
+ 
+-		dsp_memory_region: dsp-memory@98000000 {
++		dsp_memory_region: dsp-memory@98800000 {
+ 			compatible = "shared-dma-pool";
+-			reg = <0x98000000 0x800000>;
++			reg = <0x98800000 0x800000>;
+ 			reusable;
+ 			status = "okay";
+ 		};
+ 
+-		ipu_memory_region: ipu-memory@98800000 {
++		ipu_memory_region: ipu-memory@99000000 {
+ 			compatible = "shared-dma-pool";
+-			reg = <0x98800000 0x7000000>;
++			reg = <0x99000000 0x7000000>;
+ 			reusable;
+ 			status = "okay";
+ 		};
