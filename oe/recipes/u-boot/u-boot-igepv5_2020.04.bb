@@ -74,10 +74,10 @@ do_configure () {
 	oe_runmake ARCH=arm ${UBOOT_MACHINE}
 
 	sed -i -e s,NFS_IP,${MA_NFS_IP},g ${WORKDIR}/boot-nfs.script
-	sed -i -e s,NFS_PATH,${MA_NFS_PATH},g ${WORKDIR}/boot-nfs.script
+	sed -i -e s,NFS_PATH,${MA_NFS_PATH}\/igep,g ${WORKDIR}/boot-nfs.script
 
 	sed -i -e s,NFS_IP,${MA_NFS_IP},g ${WORKDIR}/boot-nfs2.script
-	sed -i -e s,NFS_PATH,${MA_NFS_PATH},g ${WORKDIR}/boot-nfs2.script
+	sed -i -e s,NFS_PATH,${MA_NFS_PATH}\/igep,g ${WORKDIR}/boot-nfs2.script
 	sed -i -e s,TARGET_IP,${MA_TARGET_IP},g ${WORKDIR}/boot-nfs2.script
 	sed -i -e s,GATEWAY_IP,${MA_GATEWAY_IP},g ${WORKDIR}/boot-nfs2.script
 }

@@ -208,7 +208,7 @@ int misc_init_r(void)
 		eth_env_set_enetaddr_by_index("usbethaddr", 0, getBoardMacAddr());
 	}
 	// eth_setenv_enetaddr("mac_addr", getBoardMacAddr());
-	sprintf(vMacAddress, "0x%x,0x%x,0x%x,0x%x,0x%x,0x%x", getBoardMacAddr()[0], \
+	sprintf(vMacAddress, "0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x", getBoardMacAddr()[0], \
 							      getBoardMacAddr()[1], \
 							      getBoardMacAddr()[2], \
 							      getBoardMacAddr()[3], \

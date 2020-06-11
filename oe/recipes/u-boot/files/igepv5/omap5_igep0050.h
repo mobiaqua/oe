@@ -13,6 +13,20 @@
 
 #include <configs/ti_omap5_common.h>
 
+#undef  CONFIG_EXTRA_ENV_SETTINGS
+#define CONFIG_EXTRA_ENV_SETTINGS \
+	DEFAULT_LINUX_BOOT_ENV \
+	DEFAULT_MMC_TI_ARGS \
+	DEFAULT_FIT_TI_ARGS \
+	DEFAULT_COMMON_BOOT_TI_ARGS \
+	DEFAULT_FDT_TI_ARGS \
+	DFUARGS \
+	NETARGS \
+	NANDARGS \
+	"findmac="\
+		"if test $board_name = igep0050; then " \
+			"setenv mac_addr ${mac_addr}; fi; " \
+
 #define CONFIG_OMAP5_IGEPv5
 
 #define CONFIG_SYS_NS16550_COM3		UART3_BASE
