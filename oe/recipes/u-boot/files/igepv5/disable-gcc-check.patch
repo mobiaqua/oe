@@ -1,0 +1,20 @@
+diff -urp old/arch/arm/config.mk new/arch/arm/config.mk
+--- old/arch/arm/config.mk	2020-05-16 10:04:15.000000000 +0200
++++ new/arch/arm/config.mk	2020-05-16 10:53:07.000000000 +0200
+@@ -63,11 +63,11 @@ archprepare: checkgcc6
+ endif
+ 
+ checkgcc6:
+-	@if test "$(call cc-name)" = "gcc" -a \
+-			"$(call cc-version)" -lt "0600"; then \
+-		echo '*** Your GCC is older than 6.0 and is not supported'; \
+-		false; \
+-	fi
++#	@if test "$(call cc-name)" = "gcc" -a \
++#			"$(call cc-version)" -lt "0600"; then \
++#		echo '*** Your GCC is older than 6.0 and is not supported'; \
++#		false; \
++#	fi
+ 
+ 
+ # Try if EABI is supported, else fall back to old API,

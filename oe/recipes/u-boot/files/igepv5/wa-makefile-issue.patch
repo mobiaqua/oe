@@ -1,0 +1,12 @@
+diff -urp old/Makefile new/Makefile
+--- old/Makefile	2020-05-16 10:04:15.000000000 +0200
++++ new/Makefile	2020-05-16 10:15:37.000000000 +0200
+@@ -34,7 +34,7 @@ else ifeq ("riscv32", $(MK_ARCH))
+ else ifeq ("riscv64", $(MK_ARCH))
+   export HOST_ARCH=$(HOST_ARCH_RISCV64)
+ endif
+-undefine MK_ARCH
++#undefine (MK_ARCH)
+ 
+ # Avoid funny character set dependencies
+ unexport LC_ALL
