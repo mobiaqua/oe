@@ -1,0 +1,12 @@
+diff -urp old/arch/arm/boot/dts/omap5-igep0050.dts new/arch/arm/boot/dts/omap5-igep0050.dts
+--- old/arch/arm/boot/dts/omap5-igep0050.dts	2020-06-11 13:32:49.000000000 +0200
++++ new/arch/arm/boot/dts/omap5-igep0050.dts	2020-06-12 19:32:33.000000000 +0200
+@@ -119,7 +119,7 @@
+ 
+ 	sound_hdmi {
+ 		compatible = "ti,omap-hdmi-tpd12s015-audio";
+-		ti,model = "OMAP5HDMI";
++		ti,model = "OMAPHDMI";
+ 
+ 		ti,hdmi_audio = <&hdmi>;
+ 		ti,level_shifter = <&tpd12s015>;

@@ -25,6 +25,7 @@ export OS = "Linux"
 SRC_URI = "git://github.com/mobiaqua/igep-linux.git;protocol=git;branch=linux-3.8.y-omap5 \
            file://compiler-gcc5.h \
            file://fix_nonlinux_compile.patch \
+           file://fixed_name_hdmi_audio.patch \
            file://defconfig"
 
 S = "${WORKDIR}/git"
