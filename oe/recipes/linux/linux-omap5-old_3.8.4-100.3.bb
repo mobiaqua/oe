@@ -21,6 +21,7 @@ export ARCH = "arm"
 export OS = "Linux"
 
 SRC_URI = "git://dev.omapzoom.org/pub/scm/integration/kernel-ubuntu.git;protocol=git;branch=ti-ubuntu-3.8.x \
+           file://patch-3.8.13.patch \
            file://compiler-gcc5.h \
            file://omap5-igep0050.dts \
            file://fix_nonlinux_compile.patch \
