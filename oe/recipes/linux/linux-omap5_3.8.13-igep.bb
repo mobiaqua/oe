@@ -24,21 +24,32 @@ export OS = "Linux"
 
 SRC_URI = "git://github.com/mobiaqua/igep-linux.git;protocol=git;branch=linux-3.8.y-omap5 \
            file://compiler-gcc5.h \
+           file://Kconfig \
+           file://Makefile \
+           file://dce.c \
+           file://dce_rpc.h \
+           file://omap_dce.h \
            file://fix_nonlinux_compile.patch \
            file://fixed_name_hdmi_audio.patch \
            file://enable-sata.patch \
+           file://omapdce.patch \
            file://defconfig"
 
 S = "${WORKDIR}/git"
 
 do_configure_prepend () {
 	cp ${WORKDIR}/compiler-gcc5.h ${S}/include/linux
+	mkdir -p ${S}/drivers/staging/omapdce
+	cp ${WORKDIR}/Kconfig ${S}/drivers/staging/omapdce
+	cp ${WORKDIR}/Makefile ${S}/drivers/staging/omapdce
+	cp ${WORKDIR}/dce.c ${S}/drivers/staging/omapdce
+	cp ${WORKDIR}/dce_rpc.h ${S}/drivers/staging/omapdce
+	cp ${WORKDIR}/omap_dce.h ${S}/drivers/staging/omapdce
 }
 
 do_configure() {
 	install ${WORKDIR}/defconfig ${S}/.config
 	install ${WORKDIR}/defconfig ${S}/.config.old
-#	yes '' | oe_runmake oldconfig
 }
 
 do_compile() {
@@ -58,7 +69,7 @@ do_compile_kernelmodules() {
 }
 
 do_install_append() {
-	oe_runmake headers_install INSTALL_HDR_PATH=${D}${exec_prefix}/src/linux-${KERNEL_VERSION} ARCH=$ARCH
+	#oe_runmake headers_install INSTALL_HDR_PATH=${D}${exec_prefix}/src/linux-${KERNEL_VERSION} ARCH=$ARCH
 	install -d ${D}${exec_prefix}/include/linux
 }
 
