@@ -40,6 +40,7 @@ SRC_URI = "git://dev.omapzoom.org/pub/scm/integration/kernel-ubuntu.git;protocol
            file://reverse_zorder.patch \
            file://fixed-drm-flags.patch \
            file://fixed-bt-mux.patch \
+           file://rpmsg-new-ns.patch \
            file://defconfig"
 
 S = "${WORKDIR}/git"
