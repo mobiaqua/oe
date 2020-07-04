@@ -26,14 +26,15 @@ SRCREV = "4f116c97e84d0a35f29977a6f4d1e3dd9e438eae"
 
 SRC_URI = "git://git.ti.com/ti-linux-kernel/ti-linux-kernel.git;protocol=git;branch=ti-linux-3.8.y \
            file://compiler-gcc5.h \
+           file://omap5-igep0050.dts \
            file://fix_nonlinux_compile.patch \
-           file://fixed_name_hdmi_audio.patch \
            file://defconfig"
 
 S = "${WORKDIR}/git"
 
 do_configure_prepend () {
 	cp ${WORKDIR}/compiler-gcc5.h ${S}/include/linux
+	cp ${WORKDIR}/omap5-igep0050.dts ${S}/arch/arm/boot/dts
 }
 
 do_configure() {
