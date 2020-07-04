@@ -15,7 +15,7 @@ require linux-dtb.inc
 
 FILESPATHPKG =. "linux-ti-omap38:"
 
-KERNEL_DEVICETREE_board-tv = "omap4-panda.dtb omap4-panda-es.dtb"
+KERNEL_DEVICETREE_board-tv = "omap5-igep0050.dtb"
 
 COMPATIBLE_HOST = "arm.*-linux"
 
@@ -27,6 +27,7 @@ SRCREV = "4f116c97e84d0a35f29977a6f4d1e3dd9e438eae"
 SRC_URI = "git://git.ti.com/ti-linux-kernel/ti-linux-kernel.git;protocol=git;branch=ti-linux-3.8.y \
            file://compiler-gcc5.h \
            file://fix_nonlinux_compile.patch \
+           file://fixed_name_hdmi_audio.patch \
            file://defconfig"
 
 S = "${WORKDIR}/git"
