@@ -11,7 +11,7 @@ DEPENDS = "elf-native"
 
 inherit kernel
 
-FILESPATHPKG =. "linux-omap5:"
+FILESPATHPKG =. "linux-omap5-omapzoom:"
 
 SRCREV = "2c871a879dbb4234232126f7075468d5bf0a50e3"
 

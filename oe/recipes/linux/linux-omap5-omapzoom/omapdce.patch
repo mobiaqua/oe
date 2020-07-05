@@ -1,0 +1,18 @@
+diff -urp old/drivers/staging/Kconfig new/drivers/staging/Kconfig
+--- old/drivers/staging/Kconfig	2020-06-13 13:16:32.000000000 +0200
++++ new/drivers/staging/Kconfig	2020-06-30 19:43:00.000000000 +0200
+@@ -140,4 +140,6 @@ source "drivers/staging/sb105x/Kconfig"
+ 
+ source "drivers/staging/fwserial/Kconfig"
+ 
++source "drivers/staging/omapdce/Kconfig"
++
+ endif # STAGING
+diff -urp old/drivers/staging/Makefile new/drivers/staging/Makefile
+--- old/drivers/staging/Makefile	2020-06-13 13:16:31.000000000 +0200
++++ new/drivers/staging/Makefile	2020-06-30 19:43:39.000000000 +0200
+@@ -62,3 +62,4 @@ obj-$(CONFIG_DRM_IMX)		+= imx-drm/
+ obj-$(CONFIG_DGRP)		+= dgrp/
+ obj-$(CONFIG_SB105X)		+= sb105x/
+ obj-$(CONFIG_FIREWIRE_SERIAL)	+= fwserial/
++obj-$(CONFIG_DRM_OMAP_DCE)	+= omapdce/
