@@ -5,7 +5,7 @@ KERNEL_IMAGETYPE = "uImage"
 COMPATIBLE_MACHINE = "board-tv"
 
 DEFAULT_PREFERENCE = "-1"
-DEFAULT_PREFERENCE_board-tv = "9"
+DEFAULT_PREFERENCE_board-tv = "10"
 
 DEPENDS = "elf-native"
 
@@ -13,7 +13,7 @@ inherit kernel
 
 FILESPATHPKG =. "linux-omap5:"
 
-SRCREV = "21a15144ad912b3377babaf366ca47e3a956dd84"
+SRCREV = "2c871a879dbb4234232126f7075468d5bf0a50e3"
 
 KERNEL_DEVICETREE_board-tv = "omap5-igep0050.dtb"
 
@@ -22,16 +22,15 @@ COMPATIBLE_HOST = "arm.*-linux"
 export ARCH = "arm"
 export OS = "Linux"
 
-SRC_URI = "git://github.com/mobiaqua/igep-linux.git;protocol=git;branch=linux-3.8.y-omap5 \
+SRC_URI = "git://git.omapzoom.org/kernel/omap.git;protocol=git;branch=p-ti-glsdk-3.8.y \
            file://compiler-gcc5.h \
+           file://omap5-igep0050.dts \
            file://Kconfig \
            file://Makefile \
            file://dce.c \
            file://dce_rpc.h \
            file://omap_dce.h \
            file://fix_nonlinux_compile.patch \
-           file://fixed_name_hdmi_audio.patch \
-           file://enable-sata.patch \
            file://omapdce.patch \
            file://defconfig"
 
@@ -39,6 +38,7 @@ S = "${WORKDIR}/git"
 
 do_configure_prepend () {
 	cp ${WORKDIR}/compiler-gcc5.h ${S}/include/linux
+	cp ${WORKDIR}/omap5-igep0050.dts ${S}/arch/arm/boot/dts
 	mkdir -p ${S}/drivers/staging/omapdce
 	cp ${WORKDIR}/Kconfig ${S}/drivers/staging/omapdce
 	cp ${WORKDIR}/Makefile ${S}/drivers/staging/omapdce
