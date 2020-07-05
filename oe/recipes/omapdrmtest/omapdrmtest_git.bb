@@ -2,7 +2,7 @@ DEPENDS = "libdce libdrm ffmpeg libgbm virtual/egl"
 
 inherit autotools
 
-PV = "1.0.6"
+PV = "1.0"
 PR = "r0"
 PR_append = "+gitr-${SRCREV}"
 
