@@ -1,4 +1,4 @@
-DEPENDS = "libdce-firmware libdrm linux-omap4"
+DEPENDS = "libdce-firmware libdrm virtual/kernel libmmrpc"
 
 LICENSE = "BSD"
 
