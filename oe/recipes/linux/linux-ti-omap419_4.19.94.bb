@@ -33,6 +33,7 @@ SRC_URI = "git://git.ti.com/ti-linux-kernel/ti-linux-kernel.git;protocol=git;bra
            file://0003-hack-gpiolib-yes-we-have-drivers-stomping-on-each-ot.patch \
            file://fixed_name_hdmi_audio.patch \
            file://smsc95xx-add-macaddr-module-parameter.patch \
+           file://smsc75xx-add-macaddr-module-parameter.patch \
            file://panda-bt-fixes.patch \
            file://0003-bootup-hacks-xor-select-neon-or-arm4regs.patch \
            file://wait-for-rootfs.patch \
