@@ -9,7 +9,7 @@ PR = "r0"
 PR_append = "+gitr-${SRCREV}"
 
 #SRCREV = "36533bfb6c18e3536c84511a1e4c5a7cae1bb5bf"
-SRCREV = "347c78e1e144d4ae147d662b4cc5606c8bbb6b0a"
+SRCREV = "7e03a352277dd1ddb079bc59eb4434b4cafb00e8"
 SRC_URI = "git://github.com/mobiaqua/libdce.git;protocol=git"
 
 S = "${WORKDIR}/git"
