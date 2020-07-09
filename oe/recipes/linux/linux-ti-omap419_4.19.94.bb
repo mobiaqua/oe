@@ -38,6 +38,7 @@ SRC_URI = "git://git.ti.com/ti-linux-kernel/ti-linux-kernel.git;protocol=git;bra
            file://0003-bootup-hacks-xor-select-neon-or-arm4regs.patch \
            file://wait-for-rootfs.patch \
            file://remote-proc-map-fix.patch \
+           file://reserved-memory-igepv5.patch \
            file://defconfig"
 
 S = "${WORKDIR}/git"
