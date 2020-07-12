@@ -35,10 +35,11 @@ SRC_URI = "${KERNELORG_MIRROR}/linux/kernel/v4.x/linux-${PV}.tar.xz \
            file://panda-bt-fixes.patch \
            file://0003-bootup-hacks-xor-select-neon-or-arm4regs.patch \
            file://reserved-memory-igepv5.patch \
+           file://wait-for-rootfs.patch \
            file://defconfig"
 
-SRC_URI[md5sum] = "0b7e8139efeb20c69dc375649aedc7b8"
-SRC_URI[sha256sum] = "d5d9001879d7a77309dca203656490326d26b068b7b0b9d8003548dba8fdad00"
+SRC_URI[md5sum] = "b460f0e1b4faa8b337a9a5ffcb56140c"
+SRC_URI[sha256sum] = "d7d7ee94962ce4cc070e8db7f7f3755cbef122a3fd77c436d5381a61819a7d44"
 
 S = "${WORKDIR}/linux-${PV}"
 

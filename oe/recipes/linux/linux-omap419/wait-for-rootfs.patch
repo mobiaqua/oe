@@ -1,0 +1,69 @@
+diff -urp old/drivers/base/firmware_loader/main.c new/drivers/base/firmware_loader/main.c
+--- old/drivers/base/firmware_loader/main.c	2020-06-01 18:04:11.000000000 +0200
++++ new/drivers/base/firmware_loader/main.c	2020-06-01 19:54:50.000000000 +0200
+@@ -33,6 +33,7 @@
+ #include <linux/syscore_ops.h>
+ #include <linux/reboot.h>
+ #include <linux/security.h>
++#include <linux/init.h>
+ 
+ #include <generated/utsrelease.h>
+ 
+@@ -312,6 +313,8 @@ fw_get_filesystem_firmware(struct device
+ 	if (!path)
+ 		return -ENOMEM;
+ 
++	wait_for_rootfs();
++
+ 	for (i = 0; i < ARRAY_SIZE(fw_path); i++) {
+ 		/* skip the unset customized path */
+ 		if (!fw_path[i][0])
+diff -urp old/include/linux/init.h new/include/linux/init.h
+--- old/include/linux/init.h	2020-06-01 18:04:13.000000000 +0200
++++ new/include/linux/init.h	2020-06-01 19:57:23.000000000 +0200
+@@ -149,6 +149,7 @@ void setup_arch(char **);
+ void prepare_namespace(void);
+ void __init load_default_modules(void);
+ int __init init_rootfs(void);
++void wait_for_rootfs(void);
+ 
+ #if defined(CONFIG_STRICT_KERNEL_RWX) || defined(CONFIG_STRICT_MODULE_RWX)
+ extern bool rodata_enabled;
+diff -urp old/init/main.c new/init/main.c
+--- old/init/main.c	2020-06-01 18:04:00.000000000 +0200
++++ new/init/main.c	2020-06-01 20:00:36.000000000 +0200
+@@ -1108,6 +1108,25 @@ static int __ref kernel_init(void *unuse
+ 	      "See Linux Documentation/admin-guide/init.rst for guidance.");
+ }
+ 
++static DECLARE_WAIT_QUEUE_HEAD(rootfs_waitq);
++static bool rootfs_mounted;
++
++void wait_for_rootfs(void)
++{
++	/* Avoid waiting for ourselves */
++	if (rootfs_mounted || WARN_ON(is_global_init(current)))
++		return;
++
++	wait_event(rootfs_waitq, rootfs_mounted);
++}
++EXPORT_SYMBOL(wait_for_rootfs);
++
++static inline void wake_up_rootfs_waiters(void)
++{
++	rootfs_mounted = true;
++	wake_up_all(&rootfs_waitq);
++}
++
+ static noinline void __init kernel_init_freeable(void)
+ {
+ 	/*
+@@ -1172,6 +1191,8 @@ static noinline void __init kernel_init_
+ 	 * and default modules
+ 	 */
+ 
++	wake_up_rootfs_waiters();
++
+ 	integrity_load_keys();
+ 	load_default_modules();
+ }
