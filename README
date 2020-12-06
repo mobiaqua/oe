@@ -1,3 +1,7 @@
+This is a fork of classic OpenEmbedded and currently obsolete.
+
+Only macOS 10.14 and Linux hosts supported.
+Only MacPorts with GNU prefix tools supported.
 
 Usage Information:
 
